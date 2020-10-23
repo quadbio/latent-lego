@@ -160,7 +160,7 @@ class CountDecoder(Decoder):
         return [self.input_layer, self.sf_layer], outputs
 
 
-class PoissonDecoder(Decoder):
+class PoissonDecoder(CountDecoder):
     '''
     Poisson decoder model.
     Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019

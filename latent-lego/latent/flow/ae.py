@@ -4,9 +4,9 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
 
-from .modules import Encoder, Decoder
+from .modules import Encoder, Decoder, CountDecoder, PoissonDecoder
 
-class AE(Model):
+class Autoencoder(Model):
     def __init__(
         self,
         x_dim,
@@ -27,7 +27,6 @@ class AE(Model):
         self.l2 = l2
         self.architecture =  architecture
 
-        self.initializer = keras.initializers.glorot_normal()
         self.encoder = Encoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
@@ -47,9 +46,10 @@ class AE(Model):
             architecture = self.architecture[::-1]
         )
         self.input_layer = Input(shape=(self.x_dim, ), name='data')
-        self.model = self._model()
+        inputs, outputs = self._build_model()
+        self.model = model = Model(inputs=inputs, outputs=outputs, name='autoencoder')
 
-    def _model(self):
+    def _build_model(self):
         '''Constructs the full model network'''
         latent = self.encoder(self.input_layer)
         reconstructed = self.decoder(latent)
@@ -67,3 +67,10 @@ class AE(Model):
 
     def transform(self, inputs):
         return self.encoder.predict(inputs)
+
+
+
+class CountAutoencoder(Autoencoder):
+    def __init__(self, **kwargs):
+        self.sf_layer = Input(shape=(1, ), name='size_factors')
+        super().__init__(**kwargs)

@@ -7,7 +7,7 @@ import scanpy as sc
 from keras.losses import mean_squared_error
 from keras.utils import plot_model
 
-from latent.flow.ae import AE
+from latent.flow.ae import Autoencoder
 
 # FUNC
 def interface():
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     batch_num = int(n // args.batch_size)
     m = batch_num * args.batch_size
 
-    autoencoder = AE(
+    autoencoder = Autoencoder(
         x_dim = X_use.shape[1],
         latent_dim = 20
     )
