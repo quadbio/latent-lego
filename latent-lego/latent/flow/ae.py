@@ -59,5 +59,11 @@ class AE(Model):
     def call(self, inputs):
         return self.model(inputs)
 
+    def fit(self, x, y=None, **kwargs):
+        if y:
+            return super().fit(x, y, **kwargs)
+        else:
+            return super().fit(x, x, **kwargs)
+
     def transform(self, inputs):
         return self.encoder.predict(inputs)

@@ -5,6 +5,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import scanpy as sc
 
 from keras.losses import mean_squared_error
+from keras.utils import plot_model
+
 from latent.flow.ae import AE
 
 # FUNC
@@ -55,7 +57,7 @@ if __name__ == '__main__':
     )
     autoencoder.compile(loss=mean_squared_error, optimizer='adam')
     autoencoder.fit(
-        X_use, X_use,
+        X_use,
         batch_size = args.batch_size,
         epochs = args.epochs,
         use_multiprocessing = True,
