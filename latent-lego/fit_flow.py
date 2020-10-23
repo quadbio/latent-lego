@@ -49,7 +49,7 @@ if __name__ == '__main__':
     adata = sc.datasets.paul15()
     X_use = adata.X
     n_umis = X_use.sum(1)
-    size_factors = n_umis / np.median(size_factors)
+    size_factors = n_umis / np.median(n_umis)
 
     n = X_use.shape[0]
     batch_num = int(n // args.batch_size)

@@ -155,7 +155,7 @@ class CountDecoder(Decoder):
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )(inputs)
-        outputs = ColwiseMult([mean, self.sf_layer])
+        outputs = ColwiseMult()([mean, self.sf_layer])
 
         return [self.input_layer, self.sf_layer], outputs
 
@@ -178,6 +178,6 @@ class PoissonDecoder(CountDecoder):
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )(inputs)
         mean = Activation(clipped_exp, name='clipped_exp')(h)
-        outputs = ColwiseMult([mean, self.sf_layer])
+        outputs = ColwiseMult()([mean, self.sf_layer])
 
         return [self.input_layer, self.sf_layer], outputs
