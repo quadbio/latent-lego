@@ -83,7 +83,7 @@ class CountAutoencoder(Autoencoder):
         super().__init__(**kwargs)
 
     def _decoder(self):
-        self.decoder = CountDecoder(
+        decoder = CountDecoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -92,6 +92,7 @@ class CountAutoencoder(Autoencoder):
             l2 = self.l2,
             architecture = self.architecture[::-1]
         )
+        return decoder
 
     def _build_model(self):
         '''Constructs the full model network'''
