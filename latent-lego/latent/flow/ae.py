@@ -27,6 +27,12 @@ class Autoencoder(Model):
         self.l2 = l2
         self.architecture =  architecture
 
+        self.input_layer = Input(shape=(self.x_dim, ), name='data')
+        self._init_modules()
+        inputs, outputs = self._build_model()
+        self.model = model = Model(inputs=inputs, outputs=outputs, name='autoencoder')
+
+    def _init_modules(self):
         self.encoder = Encoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
@@ -45,9 +51,6 @@ class Autoencoder(Model):
             l2 = self.l2,
             architecture = self.architecture[::-1]
         )
-        self.input_layer = Input(shape=(self.x_dim, ), name='data')
-        inputs, outputs = self._build_model()
-        self.model = model = Model(inputs=inputs, outputs=outputs, name='autoencoder')
 
     def _build_model(self):
         '''Constructs the full model network'''
