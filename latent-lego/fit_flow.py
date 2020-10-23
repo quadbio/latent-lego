@@ -2,16 +2,17 @@ import os
 import argparse
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+import numpy as np
 import scanpy as sc
 
 from keras.losses import mean_squared_error
 from keras.utils import plot_model
 
-from latent.flow.ae import Autoencoder
+from latent.flow.ae import Autoencoder, CountAutoencoder
 
 # FUNC
 def interface():
-    parser = argparse.ArgumentParser(description='Downloads sequencing results from openBIS and deposits them in /links/groups/treutlein/DATA/sequencing/')
+    parser = argparse.ArgumentParser(description='Fits autoencoder')
 
     # parser.add_argument('H5AD',
     #                     type=str,
@@ -47,17 +48,20 @@ if __name__ == '__main__':
 
     adata = sc.datasets.paul15()
     X_use = adata.X
+    n_umis = X_use.sum(1)
+    size_factors = n_umis / np.median(size_factors)
+
     n = X_use.shape[0]
     batch_num = int(n // args.batch_size)
     m = batch_num * args.batch_size
 
-    autoencoder = Autoencoder(
+    autoencoder = CountAutoencoder(
         x_dim = X_use.shape[1],
         latent_dim = 20
     )
     autoencoder.compile(loss=mean_squared_error, optimizer='adam')
     autoencoder.fit(
-        X_use,
+        [X_use, size_factors],
         batch_size = args.batch_size,
         epochs = args.epochs,
         use_multiprocessing = True,
