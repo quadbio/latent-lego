@@ -28,12 +28,13 @@ class Autoencoder(Model):
         self.architecture =  architecture
 
         self.input_layer = Input(shape=(self.x_dim, ), name='data')
-        self._init_modules()
+        self.encoder = self._encoder()
+        self.decoder = self._decoder()
         inputs, outputs = self._build_model()
-        self.model = model = Model(inputs=inputs, outputs=outputs, name='autoencoder')
+        self.model = Model(inputs=inputs, outputs=outputs, name='autoencoder')
 
-    def _init_modules(self):
-        self.encoder = Encoder(
+    def _encoder(self):
+        encoder = Encoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -42,7 +43,10 @@ class Autoencoder(Model):
             l2 = self.l2,
             architecture = self.architecture
         )
-        self.decoder = Decoder(
+        return encoder
+
+    def _decoder(self):
+        decoder = Decoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -51,13 +55,13 @@ class Autoencoder(Model):
             l2 = self.l2,
             architecture = self.architecture[::-1]
         )
+        return decoder
 
     def _build_model(self):
         '''Constructs the full model network'''
         latent = self.encoder(self.input_layer)
-        reconstructed = self.decoder(latent)
-        model = Model(inputs=self.input_layer, outputs=reconstructed, name='AE')
-        return model
+        outputs = self.decoder(latent)
+        return self.input_layer, outputs
 
     def call(self, inputs):
         return self.model(inputs)
@@ -77,3 +81,49 @@ class CountAutoencoder(Autoencoder):
     def __init__(self, **kwargs):
         self.sf_layer = Input(shape=(1, ), name='size_factors')
         super().__init__(**kwargs)
+
+    def _decoder(self):
+        self.decoder = CountDecoder(
+            x_dim = self.x_dim,
+            latent_dim = self.latent_dim,
+            dropout_rate = self.dropout_rate,
+            batchnorm = self.batchnorm,
+            l1 = self.l1,
+            l2 = self.l2,
+            architecture = self.architecture[::-1]
+        )
+
+    def _build_model(self):
+        '''Constructs the full model network'''
+        latent = self.encoder(self.input_layer)
+        outputs = self.decoder([latent, self.sf_layer])
+        return [self.input_layer, self.sf_layer], outputs
+
+    def fit(self, x, y=None, **kwargs):
+        if y:
+            return super().fit(x, y, **kwargs)
+        else:
+            return super().fit(x, x[0], **kwargs)
+
+
+class PoissonAutoencoder(CountAutoencoder):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _decoder(self):
+        decoder = PoissonDecoder(
+            x_dim = self.x_dim,
+            latent_dim = self.latent_dim,
+            dropout_rate = self.dropout_rate,
+            batchnorm = self.batchnorm,
+            l1 = self.l1,
+            l2 = self.l2,
+            architecture = self.architecture[::-1]
+        )
+        return decoder
+
+    def fit(self, x, y=None, **kwargs):
+        if y:
+            return super().fit(x, y, **kwargs)
+        else:
+            return super().fit(x, x[0], **kwargs)
