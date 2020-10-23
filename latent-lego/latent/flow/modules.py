@@ -7,6 +7,8 @@ from tensorflow.keras.regularizers import l1_l2
 from tensorflow.keras.layers import Activation, Lambda, Dropout, LeakyReLU
 from tensorflow.keras.layers import BatchNormalization, Dense
 
+from .activations import clipped_softplus, clipped_exp
+from .layers import ColwiseMult, Slice
 
 class Encoder(Model):
     '''Classical encoder model'''
@@ -33,9 +35,10 @@ class Encoder(Model):
         self.initializer = keras.initializers.glorot_normal()
 
         self.input_layer = Input(shape=(self.x_dim, ), name='data')
-        self.model = self._model()
+        inputs, outputs = self._build_model()
+        self.model = Model(inputs=inputs, outputs=outputs, name='encoder')
 
-    def _model(self):
+    def _build_model(self):
         '''Constructs the full model network'''
         h = self.input_layer
         for idx, dim in enumerate(self.architecture):
@@ -54,14 +57,18 @@ class Encoder(Model):
             if self.dropout_rate > 0.0:
                 h = Dropout(self.dropout_rate)(h)
 
-        latent = Dense(
-            self.latent_dim, name = 'encoder_final',
+        inputs, outputs = self._build_final(h)
+        return inputs, outputs
+
+    def _build_final(self, inputs):
+        '''Final layer of the model'''
+        h = Dense(
+            self.latent_dim, name = 'encoder_build_final',
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
-        )(h)
-
-        model = Model(inputs=self.input_layer, outputs=latent, name='encoder')
-        return model
+        )(inputs)
+        outputs = Activation('linear', name='reconstruction_output')(h)
+        return self.input_layer, outputs
 
     def call(self, inputs):
         return self.model(inputs)
@@ -92,9 +99,10 @@ class Decoder(Model):
         self.initializer = keras.initializers.glorot_normal()
 
         self.input_layer = Input(shape=(self.latent_dim, ), name='latent')
-        self.model = self._model()
+        inputs, outputs = self._build_model()
+        self.model = Model(inputs=inputs, outputs=outputs, name='encoder')
 
-    def _model(self):
+    def _build_model(self):
         '''Constructs the full model network'''
         h = self.input_layer
         for idx, dim in enumerate(self.architecture):
@@ -113,78 +121,63 @@ class Decoder(Model):
             if self.dropout_rate > 0.0:
                 h = Dropout(self.dropout_rate)(h)
 
-        return h
+        inputs, outputs = self._build_final(h)
+        return inputs, outputs
 
-    def _final(self):
+    def _build_final(self, inputs):
+        '''Final layer of the model'''
         h = Dense(
-            self.x_dim, name = 'decoder_final',
+            self.x_dim, name = 'decoder_build_final',
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
-        )(h)
-        reconstructed = Activation('linear', name='reconstruction_output')(h)
-        model = Model(inputs=self.input_layer, outputs=reconstructed, name='decoder')
+        )(inputs)
+        outputs = Activation('linear', name='reconstruction_output')(h)
+        return self.input_layer, outputs
 
     def call(self, inputs):
         return self.model(inputs)
 
 
-class CountDecoder(Model):
+class CountDecoder(Decoder):
     '''
     Count decoder model.
-    Rough reimplementation of the Deep Count Autoencoder by Erslan et al. 2019
+    Rough reimplementation of the basic Deep Count Autoencoder by Erslan et al. 2019
     '''
 
-    def __init__(
-        self,
-        x_dim,
-        latent_dim = 50,
-        dropout_rate = 0.1,
-        batchnorm = True,
-        l1 = 0.0,
-        l2 = 0.0,
-        architecture = [128, 128],
-        **kwargs
-    ):
+    def __init__(self, **kwargs):
+        self.sf_layer = Input(shape=(1, ), name='size_factors')
         super().__init__(**kwargs)
-        self.x_dim = x_dim
-        self.latent_dim = latent_dim
-        self.dropout_rate = dropout_rate
-        self.batchnorm =  batchnorm
-        self.l1 = l1
-        self.l2 = l2
-        self.architecture =  architecture
-        self.initializer = keras.initializers.glorot_normal()
 
-        self.input_layer = Input(shape=(self.latent_dim, ), name='latent')
-        self.model = self._model()
-
-    def _model(self):
-        '''Constructs the full model network'''
-        h = self.input_layer
-        for idx, dim in enumerate(self.architecture):
-            layer_name = f'decoder_{idx}'
-            h = Dense(
-                dim, name = layer_name,
-                kernel_initializer = self.initializer,
-                kernel_regularizer = l1_l2(self.l1, self.l2)
-            )(h)
-
-            if self.batchnorm:
-                h = BatchNormalization(center=True, scale=False)(h)
-
-            h = LeakyReLU()(h)
-
-            if self.dropout_rate > 0.0:
-                h = Dropout(self.dropout_rate)(h)
-
-        h = Dense(
-            self.x_dim, name = 'decoder_final',
+    def _build_final(self, inputs):
+        '''Final layer of the model'''
+        mean = Dense(
+            self.x_dim, name='mean',
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
-        )(h)
-        reconstructed = Activation('linear', name='reconstruction_output')(h)
-        model = Model(inputs=self.input_layer, outputs=reconstructed, name='decoder')
-        return model
+        )(inputs)
+        outputs = ColwiseMult([mean, self.sf_layer])
 
-    def call(self, inputs):
-        return self.model(inputs)
+        return [self.input_layer, self.sf_layer], outputs
+
+
+class PoissonDecoder(Decoder):
+    '''
+    Poisson decoder model.
+    Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019
+    '''
+
+    def __init__(self, **kwargs):
+        self.sf_layer = Input(shape=(1, ), name='size_factors')
+        super().__init__(**kwargs)
+
+    def _build_final(self, inputs):
+        '''Final layer of the model'''
+        h = Dense(
+            self.x_dim, name='mean',
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )(inputs)
+        mean = Activation(clipped_exp, name='clipped_exp')(h)
+        outputs = ColwiseMult([mean, self.sf_layer])
+
+        return [self.input_layer, self.sf_layer], outputs

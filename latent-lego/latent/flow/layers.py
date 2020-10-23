@@ -1,7 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Lambda, Layer
-from tensorflow.keras.engine import Layer
 
 
 class Slice(Layer):
@@ -11,7 +10,6 @@ class Slice(Layer):
         self.index = index
 
     def call(self, inputs, **kwargs):
-        assert isinstance(inputs, list), 'SliceLayer input is not a list'
         return inputs[self.index]
 
 
@@ -21,7 +19,6 @@ class ColwiseMult(Layer):
         super().__init__(**kwargs)
 
     def call(self, inputs):
-        assert isinstance(inputs, list), 'ColwiseMultLayer input is not a list'
         return inputs[0] * K.reshape(inputs[1], (-1, 1))
 
 
