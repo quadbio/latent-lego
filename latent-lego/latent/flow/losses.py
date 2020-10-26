@@ -6,20 +6,20 @@ from .utils import nelem, nan2zero, nan2inf, reduce_mean
 
 
 class NegativeBinomial(Loss):
-    def __init__(self, eps=1e-8, **kwargs):
+    def __init__(self, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
         self.eps = eps
+        self.theta = theta
 
     def call(self, y_true, y_pred):
         '''Negative binomial loss (negative log likelihood)'''
         x = y_true
-        mu = y_pred[0]
-        theta = y_pred[1]
+        mu = y_pred
 
-        r1 = tf.lgamma(theta) + tf.lgamma(x + 1) - tf.lgamma(x + theta)
-        log_theta_mu_eps = tf.log(theta + mu + self.eps)
+        r1 = tf.lgamma(self.theta) + tf.lgamma(x + 1) - tf.lgamma(x + self.theta)
+        log_theta_mu_eps = tf.log(self.theta + mu + self.eps)
         r2 = (
-            theta * (tf.log(theta + self.eps) - log_theta_mu_eps)
+            self.theta * (tf.log(self.theta + self.eps) - log_theta_mu_eps)
             + x * (tf.log(mu + self.eps) - log_theta_mu_eps)
         )
 
