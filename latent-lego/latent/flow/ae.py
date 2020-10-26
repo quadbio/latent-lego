@@ -3,8 +3,7 @@
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
-from tensorflow.keras import losses
-
+from tensorflow.keras.losses import MeanSquaredError, Poisson
 
 from .modules import Encoder, Decoder, CountDecoder, PoissonDecoder
 from .losses import negbinom, zinb
@@ -71,7 +70,7 @@ class Autoencoder(Model):
         return self.input_layer, outputs
 
     def _loss(self):
-        return mse()
+        return MeanSquaredError()
 
     def call(self, inputs):
         return self.model(inputs)
@@ -140,3 +139,6 @@ class PoissonAutoencoder(CountAutoencoder):
             architecture = self.architecture[::-1]
         )
         return decoder
+
+    def _loss(self):
+        return Poisson()
