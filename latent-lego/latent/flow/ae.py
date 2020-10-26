@@ -6,7 +6,7 @@ from tensorflow.keras import Input, Model
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
 from .modules import Encoder, Decoder, CountDecoder, PoissonDecoder
-from .losses import negbinom, zinb
+from .losses import NegativeBinomial
 
 class Autoencoder(Model):
     def __init__(
@@ -142,3 +142,23 @@ class PoissonAutoencoder(CountAutoencoder):
 
     def _loss(self):
         return Poisson()
+
+
+class NegativeBinomialAutoencoder(CountAutoencoder):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _decoder(self):
+        decoder = NegativeBinomialDecoder(
+            x_dim = self.x_dim,
+            latent_dim = self.latent_dim,
+            dropout_rate = self.dropout_rate,
+            batchnorm = self.batchnorm,
+            l1 = self.l1,
+            l2 = self.l2,
+            architecture = self.architecture[::-1]
+        )
+        return decoder
+
+    def _loss(self):
+        return NegativeBinomial()
