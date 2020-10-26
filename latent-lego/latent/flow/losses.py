@@ -1,14 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
-from tensorflow.keras import losses
 
 from .utils import nelem, nan2zero, nan2inf, reduce_mean
-
-
-def mse():
-   def loss(y_true, y_pred):
-      return losses.mean_squared_error(y_true, y_pred)
-   return loss
 
 
 # NB and ZINB loss from https://github.com/theislab/dca
