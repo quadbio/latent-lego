@@ -8,7 +8,7 @@ import scanpy as sc
 from keras.losses import mean_squared_error
 from keras.utils import plot_model
 
-from latent.flow.ae import Autoencoder, CountAutoencoder
+from latent.flow.ae import Autoencoder, CountAutoencoder, PoissonAutoencoder
 
 # FUNC
 def interface():
@@ -55,11 +55,10 @@ if __name__ == '__main__':
     batch_num = int(n // args.batch_size)
     m = batch_num * args.batch_size
 
-    autoencoder = CountAutoencoder(
+    autoencoder = PoissonAutoencoder(
         x_dim = X_use.shape[1],
         latent_dim = 20
     )
-    autoencoder.compile(loss=mean_squared_error, optimizer='adam')
     autoencoder.fit(
         [X_use, size_factors],
         batch_size = args.batch_size,
