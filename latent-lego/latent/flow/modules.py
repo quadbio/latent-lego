@@ -167,7 +167,6 @@ class PoissonDecoder(CountDecoder):
     '''
 
     def __init__(self, **kwargs):
-        self.sf_layer = Input(shape=(1, ), name='size_factors')
         super().__init__(**kwargs)
 
     def _build_final(self, inputs):
@@ -190,7 +189,6 @@ class NegativeBinomialDecoder(CountDecoder):
     '''
 
     def __init__(self, **kwargs):
-        self.sf_layer = Input(shape=(1, ), name='size_factors')
         super().__init__(**kwargs)
 
     def _build_final(self, inputs):
