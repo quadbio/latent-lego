@@ -208,6 +208,5 @@ class NegativeBinomialDecoder(CountDecoder):
         disp = Activation(clipped_softplus, name='clipped_softplus')(disp)
 
         mean_norm = ColwiseMult()([mean, self.sf_layer])
-        outputs = [mean_norm, disp]
 
-        return [self.input_layer, self.sf_layer], outputs
+        return [self.input_layer, self.sf_layer], [mean_norm, disp]
