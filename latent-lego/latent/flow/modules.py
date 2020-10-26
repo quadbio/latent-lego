@@ -172,12 +172,44 @@ class PoissonDecoder(CountDecoder):
 
     def _build_final(self, inputs):
         '''Final layer of the model'''
-        h = Dense(
+        mean = Dense(
             self.x_dim, name='mean',
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )(inputs)
-        mean = Activation(clipped_exp, name='clipped_exp')(h)
+        mean = Activation(clipped_exp, name='clipped_exp')(mean)
         outputs = ColwiseMult()([mean, self.sf_layer])
+
+        return [self.input_layer, self.sf_layer], outputs
+
+
+class NegativeBinomialDecoder(CountDecoder):
+    '''
+    Poisson decoder model.
+    Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019
+    '''
+
+    def __init__(self, **kwargs):
+        self.sf_layer = Input(shape=(1, ), name='size_factors')
+        super().__init__(**kwargs)
+
+    def _build_final(self, inputs):
+        '''Final layer of the model'''
+        mean = Dense(
+            self.x_dim, name='mean',
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )(inputs)
+        mean = Activation(clipped_exp, name='clipped_exp')(mean)
+
+        disp = Dense(
+            self.x_dim, name='dispersion',
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )(inputs)
+        disp = Activation(clipped_softplus, name='clipped_softplus')(disp)
+
+        mean_norm = ColwiseMult()([mean, self.sf_layer])
+        outputs = [mean_norm, disp]
 
         return [self.input_layer, self.sf_layer], outputs
