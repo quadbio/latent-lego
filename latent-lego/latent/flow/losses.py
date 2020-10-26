@@ -1,7 +1,29 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
+from tensorflow.keras.losses import Loss
 
 from .utils import nelem, nan2zero, nan2inf, reduce_mean
+
+
+class NegativeBinomial(Loss):
+    def __init__(self, eps=1e-8, **kwargs):
+        super().__init__(**kwargs)
+        self.eps = eps
+
+    def call(self, y_true, y_pred):
+        '''Negative binomial loss (negative log likelihood)'''
+        x = y_true
+        mu = y_pred[0]
+        theta = y_pred[1]
+
+        r1 = tf.lgamma(theta) + tf.lgamma(x + 1) - tf.lgamma(x + theta)
+        log_theta_mu_eps = tf.log(theta + mu + self.eps)
+        r2 = (
+            theta * (tf.log(theta + self.eps) - log_theta_mu_eps)
+            + x * (tf.log(mu + self.eps) - log_theta_mu_eps)
+        )
+
+        return r1 - r2
 
 
 # NB and ZINB loss from https://github.com/theislab/dca
