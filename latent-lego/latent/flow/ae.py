@@ -3,8 +3,11 @@
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
+from tensorflow.keras import losses
+
 
 from .modules import Encoder, Decoder, CountDecoder, PoissonDecoder
+from .losses import negbinom, zinb
 
 class Autoencoder(Model):
     def __init__(
@@ -16,6 +19,7 @@ class Autoencoder(Model):
         l1 = 0.0,
         l2 = 0.0,
         architecture = [128, 128],
+        compile_model = True,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -32,6 +36,9 @@ class Autoencoder(Model):
         self.decoder = self._decoder()
         inputs, outputs = self._build_model()
         self.model = Model(inputs=inputs, outputs=outputs, name='autoencoder')
+
+        if compile_model:
+            self.compile()
 
     def _encoder(self):
         encoder = Encoder(
@@ -63,8 +70,16 @@ class Autoencoder(Model):
         outputs = self.decoder(latent)
         return self.input_layer, outputs
 
+    def _loss(self):
+        return mse()
+
     def call(self, inputs):
         return self.model(inputs)
+
+    def compile(self, optimizer='adam', loss=None, **kwargs):
+        if not loss:
+            loss = self._loss()
+        return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):
         if y:
@@ -100,11 +115,14 @@ class CountAutoencoder(Autoencoder):
         outputs = self.decoder([latent, self.sf_layer])
         return [self.input_layer, self.sf_layer], outputs
 
+    def _loss(self):
+        return mse()
+
     def fit(self, x, y=None, **kwargs):
         if y:
-            return super().fit(x, y, **kwargs)
+            return super(Autoencoder, self).fit(x, y, **kwargs)
         else:
-            return super().fit(x, x[0], **kwargs)
+            return super(Autoencoder, self).fit(x, x[0], **kwargs)
 
 
 class PoissonAutoencoder(CountAutoencoder):
@@ -122,9 +140,3 @@ class PoissonAutoencoder(CountAutoencoder):
             architecture = self.architecture[::-1]
         )
         return decoder
-
-    def fit(self, x, y=None, **kwargs):
-        if y:
-            return super().fit(x, y, **kwargs)
-        else:
-            return super().fit(x, x[0], **kwargs)
