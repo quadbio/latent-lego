@@ -11,6 +11,7 @@ from keras.utils import plot_model
 
 from latent.flow.ae import Autoencoder, CountAutoencoder, PoissonAutoencoder
 from latent.flow.ae import NegativeBinomialAutoencoder as NBAE
+from latent.flow.ae import ZINBAutoencoder as ZINBAE
 
 # FUNC
 def interface():
@@ -54,14 +55,11 @@ if __name__ == '__main__':
     n_umis = X_use.sum(1)
     size_factors = n_umis / np.median(n_umis)
 
-    n = X_use.shape[0]
-    batch_num = int(n // args.batch_size)
-    m = batch_num * args.batch_size
-
-    autoencoder = NBAE(
+    autoencoder = ZINBAE(
         x_dim = X_use.shape[1],
         latent_dim = 20
     )
+
     autoencoder.fit(
         [X_use, size_factors],
         batch_size = args.batch_size,
@@ -69,6 +67,19 @@ if __name__ == '__main__':
         use_multiprocessing = True,
         workers = args.cpus
     )
+
+    # autoencoder = Autoencoder(
+    #     x_dim = X_use.shape[1],
+    #     latent_dim = 20
+    # )
+    #
+    # autoencoder.fit(
+    #     X_use,
+    #     batch_size = args.batch_size,
+    #     epochs = args.epochs,
+    #     use_multiprocessing = True,
+    #     workers = args.cpus
+    # )
 
     latent = autoencoder.transform(X_use)
     adata.obsm['X_ae'] = latent
