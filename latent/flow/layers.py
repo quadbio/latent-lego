@@ -3,16 +3,6 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Lambda, Layer
 
 
-class Slice(Layer):
-    '''Slices inputs by index.'''
-    def __init__(self, index=0, **kwargs):
-        super().__init__(**kwargs)
-        self.index = index
-
-    def call(self, inputs):
-        return inputs[self.index]
-
-
 class ColwiseMult(Layer):
     '''Performs column-wise multiplication between input vectors.'''
     def __init__(self, **kwargs):
