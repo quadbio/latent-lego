@@ -67,7 +67,7 @@ class Encoder(Model):
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )(inputs)
-        outputs = Activation('linear', name='reconstruction_output')(h)
+        outputs = Activation('linear', name='latent')(h)
         return self.input_layer, outputs
 
     def call(self, inputs):
@@ -207,6 +207,16 @@ class NegativeBinomialDecoder(CountDecoder):
         )(inputs)
         disp = Activation(clipped_softplus, name='clipped_softplus')(disp)
 
-        mean_norm = ColwiseMult()([mean, self.sf_layer])
+        # Define dispersion model
+        self.disp_model = Model(
+            inputs = [self.input_layer, self.sf_layer],
+            outputs = disp,
+            name = 'dispersion_decoder'
+        )
 
-        return [self.input_layer, self.sf_layer], [mean_norm, disp]
+        # This is necessary to include disp as an intermediate layer
+        # without requiring it to be an output of the model
+        outputs = Slice(0)([mean, disp])
+        outputs = ColwiseMult()([mean, self.sf_layer])
+
+        return [self.input_layer, self.sf_layer], outputs

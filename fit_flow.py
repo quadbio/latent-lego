@@ -5,10 +5,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
 import scanpy as sc
 
+from tensorflow.keras import backend as K
 from keras.losses import mean_squared_error
 from keras.utils import plot_model
 
 from latent.flow.ae import Autoencoder, CountAutoencoder, PoissonAutoencoder
+from latent.flow.ae import NegativeBinomialAutoencoder as NBAE
 
 # FUNC
 def interface():
@@ -44,6 +46,7 @@ def interface():
     return args
 
 if __name__ == '__main__':
+    K.clear_session()
     args = interface()
 
     adata = sc.datasets.paul15()
@@ -55,7 +58,7 @@ if __name__ == '__main__':
     batch_num = int(n // args.batch_size)
     m = batch_num * args.batch_size
 
-    autoencoder = PoissonAutoencoder(
+    autoencoder = NBAE(
         x_dim = X_use.shape[1],
         latent_dim = 20
     )

@@ -1,12 +1,15 @@
 '''Tensorflow Autoencoder Model'''
 
+import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
-from .modules import Encoder, Decoder, CountDecoder, PoissonDecoder
+from .modules import Encoder
+from .modules import Decoder, CountDecoder, PoissonDecoder, NegativeBinomialDecoder
 from .losses import NegativeBinomial
+from .layers import ColwiseMult, Slice
 
 class Autoencoder(Model):
     def __init__(
@@ -115,7 +118,7 @@ class CountAutoencoder(Autoencoder):
         return [self.input_layer, self.sf_layer], outputs
 
     def _loss(self):
-        return mse()
+        return MeanSquaredError()
 
     def fit(self, x, y=None, **kwargs):
         if y:
@@ -160,5 +163,13 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
         )
         return decoder
 
+    def _build_model(self):
+        '''Constructs the full model network'''
+        latent = self.encoder(self.input_layer)
+        outputs = self.decoder([latent, self.sf_layer])
+        self.dispersion = self.decoder.disp_model([latent, self.sf_layer])
+        outputs = Slice(0)([outputs, self.dispersion])
+        return self.input_layer, outputs
+
     def _loss(self):
-        return NegativeBinomial()
+        return NegativeBinomial(theta=tf.reduce_mean(self.dispersion))
