@@ -90,11 +90,10 @@ class Autoencoder(Model):
 
 class CountAutoencoder(Autoencoder):
     def __init__(self, **kwargs):
-        self.sf_layer = Input(shape=(1, ), name='size_factors')
         super().__init__(**kwargs)
 
     def _decoder(self):
-        decoder = CountDecoder(
+        self.decoder = CountDecoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -103,16 +102,17 @@ class CountAutoencoder(Autoencoder):
             l2 = self.l2,
             architecture = self.architecture[::-1]
         )
-        return decoder
-
-    def _build_model(self):
-        '''Constructs the full model network'''
-        latent = self.encoder(self.input_layer)
-        outputs = self.decoder([latent, self.sf_layer])
-        return [self.input_layer, self.sf_layer], outputs
 
     def _loss(self):
         return MeanSquaredError()
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        x = inputs[0]
+        sf = inputs[1]
+        latent = self.encoder(x)
+        outputs = self.decoder([latent, sf])
+        return outputs
 
     def fit(self, x, y=None, **kwargs):
         if y:
