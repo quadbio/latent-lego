@@ -166,7 +166,7 @@ class CountDecoder(Decoder):
         outputs = self.norm_layer([mean, sf])
         return outputs
 
-    def _final(self, inputs):
+    def _final(self):
         '''Final layer of the model'''
         self.mean_layer = Dense(
             self.x_dim, name='mean',

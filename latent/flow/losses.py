@@ -8,8 +8,8 @@ from .utils import nelem, nan2zero, nan2inf, reduce_mean
 class NegativeBinomial(Loss):
     def __init__(self, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
-        self.eps = eps
-        self.theta = theta
+        self.eps = tf.cast(eps, tf.float32)
+        self.theta = tf.cast(theta, tf.float32)
 
     def call(self, y_true, y_pred):
         '''Negative binomial loss (negative log likelihood)'''

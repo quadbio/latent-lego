@@ -9,7 +9,7 @@ class Slice(Layer):
         super().__init__(**kwargs)
         self.index = index
 
-    def call(self, inputs, **kwargs):
+    def call(self, inputs):
         return inputs[self.index]
 
 

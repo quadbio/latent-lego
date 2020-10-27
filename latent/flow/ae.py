@@ -145,7 +145,7 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
         super().__init__(**kwargs)
 
     def _decoder(self):
-        decoder = NegativeBinomialDecoder(
+        self.decoder = NegativeBinomialDecoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -154,15 +154,16 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
             l2 = self.l2,
             architecture = self.architecture[::-1]
         )
-        return decoder
-
-    def _build_model(self):
-        '''Constructs the full model network'''
-        latent = self.encoder(self.input_layer)
-        outputs = self.decoder([latent, self.sf_layer])
-        self.dispersion = self.decoder.disp_model([latent, self.sf_layer])
-        outputs = Slice(0)([outputs, self.dispersion])
-        return self.input_layer, outputs
 
     def _loss(self):
-        return NegativeBinomial(theta=tf.reduce_mean(self.dispersion))
+        return None
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        x = inputs[0]
+        sf = inputs[1]
+        latent = self.encoder(x)
+        outputs, disp = self.decoder([latent, sf])
+        nb_loss = NegativeBinomial(theta=disp)
+        self.add_loss(nb_loss(x, outputs))
+        return outputs
