@@ -7,13 +7,14 @@ from .utils import nelem, nan2zero, nan2inf, reduce_mean
 
 
 class NegativeBinomial(Loss):
+    '''Negative binomial loss'''
     def __init__(self, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
         self.eps = tf.cast(eps, tf.float32)
         self.theta = tf.cast(theta, tf.float32)
 
     def call(self, y_true, y_pred):
-        '''Negative binomial loss (negative log likelihood)'''
+        '''Calculates negative log likelihood of the NB distribution'''
         x = tf.cast(y_true, tf.float32)
         mu = tf.cast(y_pred, tf.float32)
 
@@ -32,11 +33,13 @@ class NegativeBinomial(Loss):
 
 
 class ZINB(NegativeBinomial):
+    '''Zero-inflated negative binomial loss'''
     def __init__(self, pi, **kwargs):
         super().__init__(**kwargs)
         self.pi = tf.cast(pi, tf.float32)
 
     def call(self, y_true, y_pred):
+        '''Calculates negative log likelihood of the ZINB distribution'''
         x = tf.cast(y_true, tf.float32)
         mu = tf.cast(y_pred, tf.float32)
         nb_loss = NegativeBinomial(self.theta, reduction=NONE)
