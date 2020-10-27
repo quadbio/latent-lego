@@ -204,15 +204,13 @@ class PoissonDecoder(CountDecoder):
 
     def _final(self, inputs):
         '''Final layer of the model'''
-        mean = Dense(
+        self.mean_layer = Dense(
             self.x_dim, name='mean',
+            activation = clipped_exp,
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
-        )(inputs)
-        mean = Activation(clipped_exp, name='clipped_exp')(mean)
-        outputs = ColwiseMult()([mean, self.sf_layer])
-
-        return [self.input_layer, self.sf_layer], outputs
+        )
+        self.norm_layer = ColwiseMult(name='reconstruction_output')
 
 
 class NegativeBinomialDecoder(CountDecoder):
