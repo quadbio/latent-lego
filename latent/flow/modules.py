@@ -22,7 +22,6 @@ class Encoder(Model):
         l1 = 0.0,
         l2 = 0.0,
         architecture = [128, 128],
-        build_model = False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -37,9 +36,6 @@ class Encoder(Model):
 
         self._core()
         self._final()
-
-        if build_model:
-            self._build()
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -82,9 +78,6 @@ class Encoder(Model):
         )
         self.final_act = Activation('linear', name='encoder_final_activation')
 
-    def _build(self):
-        self.build(input_shape=(self.x_dim, ))
-
 
 class Decoder(Model):
     '''Classical encoder model'''
@@ -97,7 +90,6 @@ class Decoder(Model):
         l1 = 0.0,
         l2 = 0.0,
         architecture = [128, 128],
-        build_model = False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -112,9 +104,6 @@ class Decoder(Model):
 
         self._core()
         self._final()
-
-        if build_model:
-            self._build()
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -157,9 +146,6 @@ class Decoder(Model):
         )
         self.final_act = Activation('linear', name='reconstruction_output')
 
-    def _build(self):
-        self.build(input_shape=(self.latent_dim, ))
-
 
 class CountDecoder(Decoder):
     '''
@@ -188,9 +174,6 @@ class CountDecoder(Decoder):
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
         self.norm_layer = ColwiseMult(name='reconstruction_output')
-
-    def _build(self):
-        self.build(input_shape=[(self.latent_dim, ), (1, )])
 
 
 class PoissonDecoder(CountDecoder):
