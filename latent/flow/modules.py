@@ -168,7 +168,6 @@ class CountDecoder(Decoder):
     '''
 
     def __init__(self, **kwargs):
-        self.sf_layer = Input(shape=(1, ), name='size_factors')
         super().__init__(**kwargs)
 
     def call(self, inputs):
@@ -189,6 +188,9 @@ class CountDecoder(Decoder):
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
         self.norm_layer = ColwiseMult(name='reconstruction_output')
+
+    def _build(self):
+        self.build(input_shape=[(self.latent_dim, ), (1, )])
 
 
 class PoissonDecoder(CountDecoder):
