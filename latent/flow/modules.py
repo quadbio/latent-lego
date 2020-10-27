@@ -176,8 +176,8 @@ class CountDecoder(Decoder):
         sf = inputs[1]
         for layer in self.core_stack:
             h = layer(h)
-        h = self.mean_layer(h)
-        outputs = self.norm_layer([h, sf])
+        mean = self.mean_layer(h)
+        outputs = self.norm_layer([mean, sf])
         return outputs
 
     def _final(self, inputs):
@@ -202,7 +202,7 @@ class PoissonDecoder(CountDecoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _final(self, inputs):
+    def _final(self):
         '''Final layer of the model'''
         self.mean_layer = Dense(
             self.x_dim, name='mean',
@@ -215,39 +215,36 @@ class PoissonDecoder(CountDecoder):
 
 class NegativeBinomialDecoder(CountDecoder):
     '''
-    Poisson decoder model.
-    Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019
+    Negative Binomial decoder model.
+    Rough reimplementation of the NB Deep Count Autoencoder by Erslan et al. 2019
     '''
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _final(self, inputs):
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h = inputs[0]
+        sf = inputs[1]
+        for layer in self.core_stack:
+            h = layer(h)
+        mean = self.mean_layer(h)
+        mean = self.norm_layer([mean, sf])
+        disp = self.dispersion_layer(h)
+        return [mean, disp]
+
+    def _final(self):
         '''Final layer of the model'''
-        mean = Dense(
+        self.mean_layer = Dense(
             self.x_dim, name='mean',
+            activation = clipped_exp,
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
-        )(inputs)
-        mean = Activation(clipped_exp, name='clipped_exp')(mean)
-
-        disp = Dense(
-            self.x_dim, name='dispersion',
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
-        )(inputs)
-        disp = Activation(clipped_softplus, name='clipped_softplus')(disp)
-
-        # Define dispersion model
-        self.disp_model = Model(
-            inputs = [self.input_layer, self.sf_layer],
-            outputs = disp,
-            name = 'dispersion_decoder'
         )
-
-        # This is necessary to include disp as an intermediate layer
-        # without requiring it to be an output of the model
-        outputs = Slice(0)([mean, disp])
-        outputs = ColwiseMult()([mean, self.sf_layer])
-
-        return [self.input_layer, self.sf_layer], outputs
+        self.dispersion_layer = Dense(
+            self.x_dim, name='dispersion',
+            activation = clipped_softplus,
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )
+        self.norm_layer = ColwiseMult()
