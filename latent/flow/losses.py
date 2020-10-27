@@ -16,11 +16,15 @@ class NegativeBinomial(Loss):
         x = y_true
         mu = y_pred
 
-        r1 = tf.lgamma(self.theta) + tf.lgamma(x + 1) - tf.lgamma(x + self.theta)
-        log_theta_mu_eps = tf.log(self.theta + mu + self.eps)
+        r1 = (
+            tf.math.lgamma(self.theta)
+            + tf.math.lgamma(x + 1)
+            - tf.math.lgamma(x + self.theta)
+        )
+        log_theta_mu_eps = tf.math.log(self.theta + mu + self.eps)
         r2 = (
-            self.theta * (tf.log(self.theta + self.eps) - log_theta_mu_eps)
-            + x * (tf.log(mu + self.eps) - log_theta_mu_eps)
+            self.theta * (tf.math.log(self.theta + self.eps) - log_theta_mu_eps)
+            + x * (tf.math.log(mu + self.eps) - log_theta_mu_eps)
         )
 
         return r1 - r2
