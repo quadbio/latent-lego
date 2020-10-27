@@ -8,8 +8,9 @@ from tensorflow.keras.losses import MeanSquaredError, Poisson
 
 from .modules import Encoder
 from .modules import Decoder, CountDecoder, PoissonDecoder, NegativeBinomialDecoder
-from .losses import NegativeBinomial
-from .layers import ColwiseMult, Slice
+from .modules import ZINBDecoder
+from .losses import NegativeBinomial, ZINB
+
 
 class Autoencoder(Model):
     def __init__(
@@ -156,6 +157,7 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
         )
 
     def _loss(self):
+        # Loss is added in call()
         return None
 
     def call(self, inputs):
@@ -164,6 +166,38 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
         sf = inputs[1]
         latent = self.encoder(x)
         outputs, disp = self.decoder([latent, sf])
+        # Add loss here so it can be parameterized by theta
         nb_loss = NegativeBinomial(theta=disp)
+        self.add_loss(nb_loss(x, outputs))
+        return outputs
+
+
+class ZINBAutoencoder(CountAutoencoder):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _decoder(self):
+        self.decoder = ZINBDecoder(
+            x_dim = self.x_dim,
+            latent_dim = self.latent_dim,
+            dropout_rate = self.dropout_rate,
+            batchnorm = self.batchnorm,
+            l1 = self.l1,
+            l2 = self.l2,
+            architecture = self.architecture[::-1]
+        )
+
+    def _loss(self):
+        # Loss is added in call()
+        return None
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        x = inputs[0]
+        sf = inputs[1]
+        latent = self.encoder(x)
+        outputs, disp, pi = self.decoder([latent, sf])
+        # Add loss here so it can be parameterized by theta and pi
+        nb_loss = ZINB(theta=disp, pi=pi)
         self.add_loss(nb_loss(x, outputs))
         return outputs
