@@ -7,13 +7,16 @@ from tensorflow.keras.regularizers import l1_l2
 from tensorflow.keras.layers import Activation, Lambda, Dropout, LeakyReLU
 from tensorflow.keras.layers import BatchNormalization, Dense
 
+import tensorflow_probability as tfp
+from tensorflow_probability.layers import MultivariateNormalTriL
+from tensorflow_probability.losses import KLDivergenceRegularizer
+
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult
 
 
 class Encoder(Model):
     '''Classical encoder model'''
-
     def __init__(
         self,
         x_dim,
@@ -78,3 +81,26 @@ class Encoder(Model):
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
         self.final_act = Activation('linear', name='encoder_final_activation')
+
+
+class VariationalEncoder(Encoder):
+    '''Variational encoder'''
+    def __init__(self, **kwargs):
+        self.prior = tfd.Independent(
+            tfd.Normal(loc=tf.zeros(latent_dim), scale=1),
+            reinterpreted_batch_ndims = 1
+        )
+        super().__init__(**kwargs)
+
+    def _final(self):
+        '''Final layer of the model'''
+        self.mu_sigma = Dense(
+            MultivariateNormalTriL.params_size(self.latent_dim),
+            name = 'encoder_mu_sigma',
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )
+        self.sampling = MultivariateNormalTriL(
+            self.latent_dim,
+            activity_regularizer = tfpl.KLDivergenceRegularizer(self.prior)
+        )
