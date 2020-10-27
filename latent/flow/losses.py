@@ -1,9 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.losses import Loss
-from tensorflow.keras.losses.Reduction import NONE
-
-from .utils import nelem, nan2zero, nan2inf, reduce_mean
 
 
 class NegativeBinomial(Loss):
@@ -42,7 +39,7 @@ class ZINB(NegativeBinomial):
         '''Calculates negative log likelihood of the ZINB distribution'''
         x = tf.cast(y_true, tf.float32)
         mu = tf.cast(y_pred, tf.float32)
-        nb_loss = NegativeBinomial(self.theta, reduction=NONE)
+        nb_loss = NegativeBinomial(self.theta, reduction='none')
 
         case_nonzero = nb_loss(x, mu) - tf.math.log(1.0 - self.pi + self.eps)
         nb_zero = tf.math.pow(self.theta / (self.theta + mu), self.theta)
