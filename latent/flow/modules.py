@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Activation, Lambda, Dropout, LeakyReLU
 from tensorflow.keras.layers import BatchNormalization, Dense
 
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, Slice
+from .layers import ColwiseMult
 
 class Encoder(Model):
     '''Classical encoder model'''
@@ -227,6 +227,50 @@ class NegativeBinomialDecoder(CountDecoder):
         self.dispersion_layer = Dense(
             self.x_dim, name='dispersion',
             activation = clipped_softplus,
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )
+        self.norm_layer = ColwiseMult()
+
+
+class ZINBDecoder(CountDecoder):
+    '''
+    ZINB decoder model.
+    Rough reimplementation of the ZINB Deep Count Autoencoder by Erslan et al. 2019
+    '''
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h = inputs[0]
+        sf = inputs[1]
+        for layer in self.core_stack:
+            h = layer(h)
+        mean = self.mean_layer(h)
+        mean = self.norm_layer([mean, sf])
+        disp = self.dispersion_layer(h)
+        pi = self.pi_layer(h)
+        return [mean, disp, pi]
+
+    def _final(self):
+        '''Final layer of the model'''
+        self.mean_layer = Dense(
+            self.x_dim, name='mean',
+            activation = clipped_exp,
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )
+        self.dispersion_layer = Dense(
+            self.x_dim, name='dispersion',
+            activation = clipped_softplus,
+            kernel_initializer = self.initializer,
+            kernel_regularizer = l1_l2(self.l1, self.l2)
+        )
+        self.pi_layer = Dense(
+            self.x_dim, name='dispersion',
+            activation = 'sigmoid',
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
