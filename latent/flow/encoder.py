@@ -92,6 +92,15 @@ class VariationalEncoder(Encoder):
         )
         super().__init__(**kwargs)
 
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h = inputs
+        for layer in self.core_stack:
+            h = layer(h)
+        h = self.mu_sigma(h)
+        outputs = self.sampling(h)
+        return outputs
+
     def _final(self):
         '''Final layer of the model'''
         self.mu_sigma = Dense(
