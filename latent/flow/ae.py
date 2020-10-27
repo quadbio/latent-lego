@@ -126,7 +126,7 @@ class PoissonAutoencoder(CountAutoencoder):
         super().__init__(**kwargs)
 
     def _decoder(self):
-        decoder = PoissonDecoder(
+        self.decoder = PoissonDecoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -135,7 +135,6 @@ class PoissonAutoencoder(CountAutoencoder):
             l2 = self.l2,
             architecture = self.architecture[::-1]
         )
-        return decoder
 
     def _loss(self):
         return Poisson()
