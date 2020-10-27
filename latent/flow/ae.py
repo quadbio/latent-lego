@@ -33,17 +33,14 @@ class Autoencoder(Model):
         self.l2 = l2
         self.architecture =  architecture
 
-        self.input_layer = Input(shape=(self.x_dim, ), name='data')
-        self.encoder = self._encoder()
-        self.decoder = self._decoder()
-        inputs, outputs = self._build_model()
-        self.model = Model(inputs=inputs, outputs=outputs, name='autoencoder')
+        self._encoder()
+        self._decoder()
 
         if compile_model:
             self.compile()
 
     def _encoder(self):
-        encoder = Encoder(
+        self.encoder = Encoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -52,10 +49,9 @@ class Autoencoder(Model):
             l2 = self.l2,
             architecture = self.architecture
         )
-        return encoder
 
     def _decoder(self):
-        decoder = Decoder(
+        self.decoder = Decoder(
             x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -64,21 +60,18 @@ class Autoencoder(Model):
             l2 = self.l2,
             architecture = self.architecture[::-1]
         )
-        return decoder
-
-    def _build_model(self):
-        '''Constructs the full model network'''
-        latent = self.encoder(self.input_layer)
-        outputs = self.decoder(latent)
-        return self.input_layer, outputs
 
     def _loss(self):
         return MeanSquaredError()
 
     def call(self, inputs):
-        return self.model(inputs)
+        '''Full forward pass through model'''
+        latent = self.encoder(inputs)
+        outputs = self.decoder(latent)
+        return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
+        '''Compile model with default loss and omptimizer'''
         if not loss:
             loss = self._loss()
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
@@ -90,6 +83,7 @@ class Autoencoder(Model):
             return super().fit(x, x, **kwargs)
 
     def transform(self, inputs):
+        '''Map data (x) to latent space (z)'''
         return self.encoder.predict(inputs)
 
 
