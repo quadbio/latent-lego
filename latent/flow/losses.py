@@ -44,6 +44,6 @@ class ZINB(NegativeBinomial):
         case_nonzero = nb_loss(x, mu) - tf.math.log(1.0 - self.pi + self.eps)
         nb_zero = tf.math.pow(self.theta / (self.theta + mu), self.theta)
         case_zero = - tf.math.log(self.pi + ((1.0 - self.pi) * nb_zero) + self.eps)
-        res = tf.where(tf.meth.less(mu, self.eps), case_zero, case_nonzero)
+        res = tf.where(tf.math.less(mu, self.eps), case_zero, case_nonzero)
 
         return res
