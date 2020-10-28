@@ -1,4 +1,4 @@
-'''Tensorflow Autoencoder Model'''
+'''Tensorflow Autoencoder Models'''
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -13,6 +13,7 @@ from .losses import NegativeBinomial, ZINB
 
 
 class Autoencoder(Model):
+    '''Classical autoencoder'''
     def __init__(
         self,
         x_dim,
@@ -26,7 +27,7 @@ class Autoencoder(Model):
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.latent_dim = latent_dim
+        self.latent_dim = int(latent_dim)
         self.x_dim = int(x_dim)
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
@@ -42,7 +43,6 @@ class Autoencoder(Model):
 
     def _encoder(self):
         self.encoder = Encoder(
-            x_dim = self.x_dim,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
@@ -54,7 +54,6 @@ class Autoencoder(Model):
     def _decoder(self):
         self.decoder = Decoder(
             x_dim = self.x_dim,
-            latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
             l1 = self.l1,
@@ -90,13 +89,13 @@ class Autoencoder(Model):
 
 
 class CountAutoencoder(Autoencoder):
+    '''Normalizing autoencoder for count data'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def _decoder(self):
         self.decoder = CountDecoder(
             x_dim = self.x_dim,
-            latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
             l1 = self.l1,
@@ -123,13 +122,13 @@ class CountAutoencoder(Autoencoder):
 
 
 class PoissonAutoencoder(CountAutoencoder):
+    '''Autoencoder with poisson loss for count data'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def _decoder(self):
         self.decoder = PoissonDecoder(
             x_dim = self.x_dim,
-            latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
             l1 = self.l1,
@@ -142,13 +141,13 @@ class PoissonAutoencoder(CountAutoencoder):
 
 
 class NegativeBinomialAutoencoder(CountAutoencoder):
+    '''Autoencoder with negative binomial loss for count data'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def _decoder(self):
         self.decoder = NegativeBinomialDecoder(
             x_dim = self.x_dim,
-            latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
             l1 = self.l1,
@@ -173,13 +172,13 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
 
 
 class ZINBAutoencoder(CountAutoencoder):
+    '''Autoencoder with ZINB loss for count data'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def _decoder(self):
         self.decoder = ZINBDecoder(
             x_dim = self.x_dim,
-            latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
             l1 = self.l1,

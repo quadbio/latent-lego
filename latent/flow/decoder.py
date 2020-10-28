@@ -16,7 +16,6 @@ class Decoder(Model):
     def __init__(
         self,
         x_dim,
-        latent_dim = 50,
         dropout_rate = 0.1,
         batchnorm = True,
         l1 = 0.0,
@@ -26,7 +25,6 @@ class Decoder(Model):
     ):
         super().__init__(**kwargs)
         self.x_dim = x_dim
-        self.latent_dim = latent_dim
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
         self.l1 = l1
@@ -84,14 +82,12 @@ class CountDecoder(Decoder):
     Count decoder model.
     Rough reimplementation of the basic Deep Count Autoencoder by Erslan et al. 2019
     '''
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def call(self, inputs):
         '''Full forward pass through model'''
-        h = inputs[0]
-        sf = inputs[1]
+        h, sf = inputs
         for layer in self.core_stack:
             h = layer(h)
         mean = self.mean_layer(h)
@@ -113,7 +109,6 @@ class PoissonDecoder(CountDecoder):
     Poisson decoder model.
     Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019
     '''
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -133,14 +128,12 @@ class NegativeBinomialDecoder(CountDecoder):
     Negative Binomial decoder model.
     Rough reimplementation of the NB Deep Count Autoencoder by Erslan et al. 2019
     '''
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def call(self, inputs):
         '''Full forward pass through model'''
-        h = inputs[0]
-        sf = inputs[1]
+        h, sf = inputs
         for layer in self.core_stack:
             h = layer(h)
         mean = self.mean_layer(h)
@@ -170,14 +163,12 @@ class ZINBDecoder(CountDecoder):
     ZINB decoder model.
     Rough reimplementation of the ZINB Deep Count Autoencoder by Erslan et al. 2019
     '''
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def call(self, inputs):
         '''Full forward pass through model'''
-        h = inputs[0]
-        sf = inputs[1]
+        h, sf = inputs
         for layer in self.core_stack:
             h = layer(h)
         mean = self.mean_layer(h)

@@ -1,5 +1,6 @@
 '''Tensorflow implementations of encoder models'''
 
+import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
@@ -8,8 +9,8 @@ from tensorflow.keras.layers import Activation, Lambda, Dropout, LeakyReLU
 from tensorflow.keras.layers import BatchNormalization, Dense
 
 import tensorflow_probability as tfp
-from tensorflow_probability.layers import MultivariateNormalTriL
-from tensorflow_probability.losses import KLDivergenceRegularizer
+tfpl = tfp.layers
+tfd = tfp.distributions
 
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult
@@ -19,7 +20,6 @@ class Encoder(Model):
     '''Classical encoder model'''
     def __init__(
         self,
-        x_dim,
         latent_dim = 50,
         dropout_rate = 0.1,
         batchnorm = True,
@@ -29,7 +29,6 @@ class Encoder(Model):
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.x_dim = x_dim
         self.latent_dim = latent_dim
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
@@ -85,11 +84,8 @@ class Encoder(Model):
 
 class VariationalEncoder(Encoder):
     '''Variational encoder'''
-    def __init__(self, **kwargs):
-        self.prior = tfd.Independent(
-            tfd.Normal(loc=tf.zeros(latent_dim), scale=1),
-            reinterpreted_batch_ndims = 1
-        )
+    def __init__(self, beta=0.1, **kwargs):
+        self.beta = beta
         super().__init__(**kwargs)
 
     def call(self, inputs):
@@ -104,12 +100,21 @@ class VariationalEncoder(Encoder):
     def _final(self):
         '''Final layer of the model'''
         self.mu_sigma = Dense(
-            MultivariateNormalTriL.params_size(self.latent_dim),
+            tfpl.MultivariateNormalTriL.params_size(self.latent_dim),
             name = 'encoder_mu_sigma',
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
-        self.sampling = MultivariateNormalTriL(
+        # Make priors more flexible in the future
+        # Independent() reinterprets each latent_dim as an independent distribution
+        self.prior = tfd.Independent(
+            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1),
+            reinterpreted_batch_ndims = 1
+        )
+        self.sampling = tfpl.MultivariateNormalTriL(
             self.latent_dim,
-            activity_regularizer = tfpl.KLDivergenceRegularizer(self.prior)
+            activity_regularizer = tfpl.KLDivergenceRegularizer(
+                self.prior,
+                weight = self.beta
+            )
         )
