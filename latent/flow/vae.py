@@ -12,7 +12,7 @@ from .encoder import VariationalEncoder
 
 
 class VariationalAutoencoder(Autoencoder):
-    def __init__(self, beta=0.1, **kwargs):
+    def __init__(self, beta=1e-5, **kwargs):
         self.beta = beta
         super().__init__(**kwargs)
 
@@ -24,6 +24,7 @@ class VariationalAutoencoder(Autoencoder):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             architecture = self.architecture
         )
 

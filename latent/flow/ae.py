@@ -6,9 +6,9 @@ from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
-from .modules import Encoder
-from .modules import Decoder, CountDecoder, PoissonDecoder, NegativeBinomialDecoder
-from .modules import ZINBDecoder
+from .encoder import Encoder
+from .decoder import Decoder, CountDecoder, PoissonDecoder, NegativeBinomialDecoder
+from .decoder import ZINBDecoder
 from .losses import NegativeBinomial, ZINB
 
 
@@ -24,6 +24,7 @@ class Autoencoder(Model):
         l2 = 0.0,
         architecture = [128, 128],
         compile_model = True,
+        activation = 'prelu',
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -33,7 +34,8 @@ class Autoencoder(Model):
         self.batchnorm =  batchnorm
         self.l1 = l1
         self.l2 = l2
-        self.architecture =  architecture
+        self.activation = activation
+        self.architecture = architecture
 
         self._encoder()
         self._decoder()
@@ -48,6 +50,7 @@ class Autoencoder(Model):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             architecture = self.architecture
         )
 
@@ -58,6 +61,7 @@ class Autoencoder(Model):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             architecture = self.architecture[::-1]
         )
 
@@ -100,6 +104,7 @@ class CountAutoencoder(Autoencoder):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             architecture = self.architecture[::-1]
         )
 
@@ -133,6 +138,7 @@ class PoissonAutoencoder(CountAutoencoder):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             architecture = self.architecture[::-1]
         )
 
@@ -152,6 +158,7 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             architecture = self.architecture[::-1]
         )
 
@@ -183,6 +190,7 @@ class ZINBAutoencoder(CountAutoencoder):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             architecture = self.architecture[::-1]
         )
 
