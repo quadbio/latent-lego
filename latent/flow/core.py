@@ -62,15 +62,15 @@ class DenseStack(Layer):
         batchnorm = True,
         l1 = 0.0,
         l2 = 0.0,
-        architecture = [128, 128],
+        hidden_units = [128, 128],
         activation = 'leaky_relu',
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
-        self.architecture =  architecture
+        self.hidden_units =  hidden_units
 
         self.layer_stack = []
-        for idx, dim in enumerate(self.architecture):
+        for idx, dim in enumerate(self.hidden_units):
             layer_name = f'd{self.name}_{idx}'
             layer = DenseBlock(
                 name = layer_name,
