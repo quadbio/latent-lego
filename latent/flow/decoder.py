@@ -32,6 +32,7 @@ class Decoder(Model):
         self.batchnorm =  batchnorm
         self.l1 = l1
         self.l2 = l2
+        self.activation = activation
         self.hidden_units =  hidden_units
         self.initializer = keras.initializers.get(initializer)
 
@@ -42,6 +43,7 @@ class Decoder(Model):
             batchnorm = self.batchnorm,
             l1 = self.l1,
             l2 = self.l2,
+            activation = self.activation,
             initializer = self.initializer,
             hidden_units = self.hidden_units
         )
