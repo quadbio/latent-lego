@@ -5,34 +5,50 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 from tensorflow.keras.layers import Dense, Activation
 
-from .core import CoreNetwork
+from .core import DenseStack
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult
 
 
-class Decoder(CoreNetwork):
+class Decoder(Model):
     '''Classical encoder model'''
-    def __init__(self, x_dim, name='decoder', **kwargs):
+    def __init__(
+        self,
+        x_dim,
+        name='decoder',
+        dropout_rate = 0.1,
+        batchnorm = True,
+        l1 = 0.0,
+        l2 = 0.0,
+        hidden_units = [128, 128],
+        activation = 'leaky_relu',
+        **kwargs,
+
+    ):
         super().__init__(name=name, **kwargs)
         self.x_dim = x_dim
-        self._final()
 
-    def call(self, inputs):
-        '''Full forward pass through model'''
-        h = inputs
-        for layer in self.core_stack:
-            h = layer(h)
-        h = self.final_layer(h)
-        outputs = self.final_act(h)
-        return outputs
-
-    def _final(self):
-        '''Final layer of the model'''
+        # Define components
+        self.dense_stack = DenseStack(
+            name = layer_name,
+            dropout_rate = dropout_rate,
+            batchnorm = batchnorm,
+            l1 = l1,
+            l2 = l2,
+            hidden_units = hidden_units
+        )
         self.final_layer = Dense(
             self.x_dim, name = 'decoder_final',
             kernel_initializer = self.initializer
         )
         self.final_act = Activation('linear', name='reconstruction_output')
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h = self.dense_stack(inputs)
+        h = self.final_layer(h)
+        outputs = self.final_act(h)
+        return outputs
 
 
 class CountDecoder(Decoder):
