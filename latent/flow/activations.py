@@ -15,6 +15,7 @@ ACTIVATIONS = {
     'prelu': PReLU(),
     'relu': ReLU(),
     'leaky_relu': LeakyReLU(),
+    'selu': Activation('selu'),
     'linear': Activation('linear'),
     'sigmoid': Activation('sigmoid'),
     'clipped_exp': Activation(clipped_exp),

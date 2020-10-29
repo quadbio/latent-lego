@@ -43,7 +43,7 @@ class Encoder(CoreNetwork):
 
 class VariationalEncoder(Encoder):
     '''Variational encoder'''
-    def __init__(self, beta=0.1, **kwargs):
+    def __init__(self, beta=1e-5, **kwargs):
         self.beta = beta
         super().__init__(**kwargs)
 
