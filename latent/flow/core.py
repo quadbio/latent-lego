@@ -54,7 +54,7 @@ class DenseBlock(Layer):
 
 
 class DenseStack(Layer):
-    '''Core layer stack of encoders and decoders'''
+    '''Core dense layer stack of encoders and decoders'''
     def __init__(
         self,
         name = 'dense_stack',
