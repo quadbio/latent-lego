@@ -30,8 +30,7 @@ class Decoder(CoreNetwork):
         '''Final layer of the model'''
         self.final_layer = Dense(
             self.x_dim, name = 'decoder_final',
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.final_act = Activation('linear', name='reconstruction_output')
 
@@ -57,8 +56,7 @@ class CountDecoder(Decoder):
         '''Final layer of the model'''
         self.mean_layer = Dense(
             self.x_dim, name='mean',
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.norm_layer = ColwiseMult(name='reconstruction_output')
 
@@ -76,8 +74,7 @@ class PoissonDecoder(CountDecoder):
         self.mean_layer = Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.norm_layer = ColwiseMult(name='reconstruction_output')
 
@@ -105,14 +102,12 @@ class NegativeBinomialDecoder(CountDecoder):
         self.mean_layer = Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.dispersion_layer = Dense(
             self.x_dim, name='dispersion',
             activation = clipped_softplus,
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.norm_layer = ColwiseMult()
 
@@ -141,19 +136,16 @@ class ZINBDecoder(CountDecoder):
         self.mean_layer = Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.dispersion_layer = Dense(
             self.x_dim, name='dispersion',
             activation = clipped_softplus,
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.pi_layer = Dense(
             self.x_dim, name='dispersion',
             activation = 'sigmoid',
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer = self.initializer
         )
         self.norm_layer = ColwiseMult()
