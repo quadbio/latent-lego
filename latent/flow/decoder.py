@@ -1,6 +1,7 @@
 '''Tensorflow implementations of decoder models'''
 
 import tensorflow.keras as keras
+from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 from tensorflow.keras.layers import Dense, Activation
@@ -15,27 +16,34 @@ class Decoder(Model):
     def __init__(
         self,
         x_dim,
-        name='decoder',
+        name = 'decoder',
         dropout_rate = 0.1,
         batchnorm = True,
         l1 = 0.0,
         l2 = 0.0,
         hidden_units = [128, 128],
         activation = 'leaky_relu',
-        **kwargs,
-
+        initializer = 'glorot_normal',
+        **kwargs
     ):
         super().__init__(name=name, **kwargs)
         self.x_dim = x_dim
+        self.dropout_rate = dropout_rate
+        self.batchnorm =  batchnorm
+        self.l1 = l1
+        self.l2 = l2
+        self.hidden_units =  hidden_units
+        self.initializer = keras.initializers.get(initializer)
 
         # Define components
         self.dense_stack = DenseStack(
-            name = layer_name,
-            dropout_rate = dropout_rate,
-            batchnorm = batchnorm,
-            l1 = l1,
-            l2 = l2,
-            hidden_units = hidden_units
+            name = self.name,
+            dropout_rate = self.dropout_rate,
+            batchnorm = self.batchnorm,
+            l1 = self.l1,
+            l2 = self.l2,
+            initializer = self.initializer,
+            hidden_units = self.hidden_units
         )
         self.final_layer = Dense(
             self.x_dim, name = 'decoder_final',
@@ -58,23 +66,20 @@ class CountDecoder(Decoder):
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def call(self, inputs):
-        '''Full forward pass through model'''
-        h, sf = inputs
-        for layer in self.core_stack:
-            h = layer(h)
-        mean = self.mean_layer(h)
-        outputs = self.norm_layer([mean, sf])
-        return outputs
-
-    def _final(self):
-        '''Final layer of the model'''
+        # Define new components
         self.mean_layer = Dense(
             self.x_dim, name='mean',
             kernel_initializer = self.initializer
         )
         self.norm_layer = ColwiseMult(name='reconstruction_output')
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h, sf = inputs
+        h = self.dense_stack(h)
+        mean = self.mean_layer(h)
+        outputs = self.norm_layer([mean, sf])
+        return outputs
 
 
 class PoissonDecoder(CountDecoder):
@@ -84,9 +89,7 @@ class PoissonDecoder(CountDecoder):
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def _final(self):
-        '''Final layer of the model'''
+        # Define new components
         self.mean_layer = Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
@@ -102,19 +105,6 @@ class NegativeBinomialDecoder(CountDecoder):
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def call(self, inputs):
-        '''Full forward pass through model'''
-        h, sf = inputs
-        for layer in self.core_stack:
-            h = layer(h)
-        mean = self.mean_layer(h)
-        mean = self.norm_layer([mean, sf])
-        disp = self.dispersion_layer(h)
-        return [mean, disp]
-
-    def _final(self):
-        '''Final layer of the model'''
         self.mean_layer = Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
@@ -127,6 +117,15 @@ class NegativeBinomialDecoder(CountDecoder):
         )
         self.norm_layer = ColwiseMult()
 
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h, sf = inputs
+        h = self.dense_stack(h)
+        mean = self.mean_layer(h)
+        mean = self.norm_layer([mean, sf])
+        disp = self.dispersion_layer(h)
+        return [mean, disp]
+
 
 class ZINBDecoder(CountDecoder):
     '''
@@ -135,20 +134,6 @@ class ZINBDecoder(CountDecoder):
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def call(self, inputs):
-        '''Full forward pass through model'''
-        h, sf = inputs
-        for layer in self.core_stack:
-            h = layer(h)
-        mean = self.mean_layer(h)
-        mean = self.norm_layer([mean, sf])
-        disp = self.dispersion_layer(h)
-        pi = self.pi_layer(h)
-        return [mean, disp, pi]
-
-    def _final(self):
-        '''Final layer of the model'''
         self.mean_layer = Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
@@ -165,3 +150,13 @@ class ZINBDecoder(CountDecoder):
             kernel_initializer = self.initializer
         )
         self.norm_layer = ColwiseMult()
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h, sf = inputs
+        h = self.dense_stack(h)
+        mean = self.mean_layer(h)
+        mean = self.norm_layer([mean, sf])
+        disp = self.dispersion_layer(h)
+        pi = self.pi_layer(h)
+        return [mean, disp, pi]

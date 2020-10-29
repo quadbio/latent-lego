@@ -22,9 +22,10 @@ class Autoencoder(Model):
         batchnorm = True,
         l1 = 0.0,
         l2 = 0.0,
-        architecture = [128, 128],
+        hidden_units = [128, 128],
         compile_model = True,
         activation = 'prelu',
+        initializer = 'glorot_normal',
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -35,15 +36,10 @@ class Autoencoder(Model):
         self.l1 = l1
         self.l2 = l2
         self.activation = activation
-        self.architecture = architecture
+        self.hidden_units = hidden_units
+        self.initializer = keras.initializers.get(initializer)
 
-        self._encoder()
-        self._decoder()
-
-        if compile_model:
-            self.compile()
-
-    def _encoder(self):
+        # Define components
         self.encoder = Encoder(
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
@@ -51,10 +47,10 @@ class Autoencoder(Model):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
-            architecture = self.architecture
+            initializer = self.initializer,
+            hidden_units = self.hidden_units
         )
 
-    def _decoder(self):
         self.decoder = Decoder(
             x_dim = self.x_dim,
             dropout_rate = self.dropout_rate,
@@ -62,11 +58,11 @@ class Autoencoder(Model):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
-            architecture = self.architecture[::-1]
+            initializer = self.initializer,
+            hidden_units = self.hidden_units[::-1]
         )
 
-    def _loss(self):
-        return MeanSquaredError()
+        self.rec_loss = MeanSquaredError()
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -77,7 +73,7 @@ class Autoencoder(Model):
     def compile(self, optimizer='adam', loss=None, **kwargs):
         '''Compile model with default loss and omptimizer'''
         if not loss:
-            loss = self._loss()
+            loss = self.rec_loss
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):
@@ -97,7 +93,6 @@ class CountAutoencoder(Autoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _decoder(self):
         self.decoder = CountDecoder(
             x_dim = self.x_dim,
             dropout_rate = self.dropout_rate,
@@ -105,16 +100,13 @@ class CountAutoencoder(Autoencoder):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
-            architecture = self.architecture[::-1]
+            initializer = self.initializer,
+            hidden_units = self.hidden_units[::-1]
         )
-
-    def _loss(self):
-        return MeanSquaredError()
 
     def call(self, inputs):
         '''Full forward pass through model'''
-        x = inputs[0]
-        sf = inputs[1]
+        x, sf = inputs
         latent = self.encoder(x)
         outputs = self.decoder([latent, sf])
         return outputs
@@ -131,7 +123,6 @@ class PoissonAutoencoder(CountAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _decoder(self):
         self.decoder = PoissonDecoder(
             x_dim = self.x_dim,
             dropout_rate = self.dropout_rate,
@@ -139,11 +130,11 @@ class PoissonAutoencoder(CountAutoencoder):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
-            architecture = self.architecture[::-1]
+            initializer = self.initializer,
+            hidden_units = self.hidden_units[::-1]
         )
 
-    def _loss(self):
-        return Poisson()
+        self.rec_loss = Poisson()
 
 
 class NegativeBinomialAutoencoder(CountAutoencoder):
@@ -151,7 +142,6 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _decoder(self):
         self.decoder = NegativeBinomialDecoder(
             x_dim = self.x_dim,
             dropout_rate = self.dropout_rate,
@@ -159,22 +149,21 @@ class NegativeBinomialAutoencoder(CountAutoencoder):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
-            architecture = self.architecture[::-1]
+            initializer = self.initializer,
+            hidden_units = self.hidden_units[::-1]
         )
 
-    def _loss(self):
         # Loss is added in call()
-        return None
+        self.rec_loss = None
 
     def call(self, inputs):
         '''Full forward pass through model'''
-        x = inputs[0]
-        sf = inputs[1]
+        x, sf = inputs
         latent = self.encoder(x)
         outputs, disp = self.decoder([latent, sf])
         # Add loss here so it can be parameterized by theta
-        nb_loss = NegativeBinomial(theta=disp)
-        self.add_loss(nb_loss(x, outputs))
+        rec_loss = NegativeBinomial(theta=disp)
+        self.add_loss(rec_loss(x, outputs))
         return outputs
 
 
@@ -183,7 +172,6 @@ class ZINBAutoencoder(CountAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _decoder(self):
         self.decoder = ZINBDecoder(
             x_dim = self.x_dim,
             dropout_rate = self.dropout_rate,
@@ -191,17 +179,16 @@ class ZINBAutoencoder(CountAutoencoder):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
-            architecture = self.architecture[::-1]
+            initializer = self.initializer,
+            hidden_units = self.hidden_units[::-1]
         )
 
-    def _loss(self):
         # Loss is added in call()
-        return None
+        self.rec_loss = None
 
     def call(self, inputs):
         '''Full forward pass through model'''
-        x = inputs[0]
-        sf = inputs[1]
+        x, sf = inputs
         latent = self.encoder(x)
         outputs, disp, pi = self.decoder([latent, sf])
         # Add loss here so it can be parameterized by theta and pi

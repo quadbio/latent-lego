@@ -13,10 +13,9 @@ from .encoder import VariationalEncoder
 
 class VariationalAutoencoder(Autoencoder):
     def __init__(self, beta=1e-5, **kwargs):
-        self.beta = beta
         super().__init__(**kwargs)
+        self.beta = beta
 
-    def _encoder(self):
         self.encoder = VariationalEncoder(
             beta = self.beta,
             latent_dim = self.latent_dim,
@@ -25,7 +24,7 @@ class VariationalAutoencoder(Autoencoder):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
-            architecture = self.architecture
+            hidden_units = self.hidden_units
         )
 
 

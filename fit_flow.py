@@ -65,7 +65,7 @@ if __name__ == '__main__':
         latent_dim = 20,
         beta = 1e-7
     )
-
+    autoencoder.compile()
     autoencoder.fit(
         [X_use, size_factors],
         batch_size = args.batch_size,
@@ -74,12 +74,11 @@ if __name__ == '__main__':
         workers = args.cpus
     )
 
-    # autoencoder = VariationalAutoencoder(
+    # autoencoder = Autoencoder(
     #     x_dim = X_use.shape[1],
-    #     latent_dim = 20,
-    #     beta = 0
+    #     latent_dim = 20
     # )
-    #
+    # autoencoder.compile()
     # autoencoder.fit(
     #     X_use,
     #     batch_size = args.batch_size,
