@@ -28,11 +28,6 @@ class VariationalAutoencoder(Autoencoder):
         )
 
 
-class CountVAE(CountAutoencoder, VariationalAutoencoder):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
 class PoissonVAE(PoissonAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

@@ -64,7 +64,7 @@ class Decoder(Model):
 class CountDecoder(Decoder):
     '''
     Count decoder model.
-    Rough reimplementation of the basic Deep Count Autoencoder by Erslan et al. 2019
+    Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -84,21 +84,6 @@ class CountDecoder(Decoder):
         outputs = self.norm_layer([mean, sf])
         return outputs
 
-
-class PoissonDecoder(CountDecoder):
-    '''
-    Poisson decoder model.
-    Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019
-    '''
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Define new components
-        self.mean_layer = Dense(
-            self.x_dim, name='mean',
-            activation = clipped_exp,
-            kernel_initializer = self.initializer
-        )
-        self.norm_layer = ColwiseMult(name='reconstruction_output')
 
 
 class NegativeBinomialDecoder(CountDecoder):

@@ -88,7 +88,7 @@ class Autoencoder(Model):
 
 
 
-class CountAutoencoder(Autoencoder):
+class PoissonAutoencoder(Autoencoder):
     '''Normalizing autoencoder for count data'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -104,6 +104,8 @@ class CountAutoencoder(Autoencoder):
             hidden_units = self.hidden_units[::-1]
         )
 
+        self.rec_loss = Poisson()
+
     def call(self, inputs):
         '''Full forward pass through model'''
         x, sf = inputs
@@ -116,25 +118,6 @@ class CountAutoencoder(Autoencoder):
             return super(Autoencoder, self).fit(x, y, **kwargs)
         else:
             return super(Autoencoder, self).fit(x, x[0], **kwargs)
-
-
-class PoissonAutoencoder(CountAutoencoder):
-    '''Autoencoder with poisson loss for count data'''
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.decoder = PoissonDecoder(
-            x_dim = self.x_dim,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units[::-1]
-        )
-
-        self.rec_loss = Poisson()
 
 
 class NegativeBinomialAutoencoder(CountAutoencoder):
