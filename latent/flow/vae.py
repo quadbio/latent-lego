@@ -6,7 +6,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
-from .ae import Autoencoder, CountAutoencoder, PoissonAutoencoder
+from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 from .encoder import VariationalEncoder
 
