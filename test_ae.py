@@ -71,7 +71,7 @@ if __name__ == '__main__':
     autoencoder = NBAE(
         x_dim = X_use.shape[1],
         # beta = 1e-3,
-        activation = 'sigmoid',
+        activation = 'prelu',
         latent_dim = 10,
         hidden_units = [256, 128]
     )

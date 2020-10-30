@@ -71,6 +71,7 @@ class CountDecoder(Decoder):
         # Define new components
         self.mean_layer = Dense(
             self.x_dim, name='mean',
+            activation = clipped_exp,
             kernel_initializer = self.initializer
         )
         self.norm_layer = ColwiseMult(name='reconstruction_output')
