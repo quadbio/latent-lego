@@ -15,11 +15,11 @@ from tensorflow.keras import backend as K
 from keras.losses import mean_squared_error
 from keras.utils import plot_model
 
-from latent.flow.ae import Autoencoder, CountAutoencoder, PoissonAutoencoder
+from latent.flow.ae import Autoencoder, PoissonAutoencoder
 from latent.flow.ae import NegativeBinomialAutoencoder as NBAE
 from latent.flow.ae import ZINBAutoencoder as ZINBAE
 
-from latent.flow.vae import VariationalAutoencoder, CountVAE, ZINBVAE
+from latent.flow.vae import VariationalAutoencoder, ZINBVAE
 from latent.flow.vae import NegativeBinomialVAE as NBVAE
 
 # FUNC
