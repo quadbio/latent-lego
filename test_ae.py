@@ -68,10 +68,10 @@ if __name__ == '__main__':
     n_umis = X_use.sum(1)
     size_factors = n_umis / np.median(n_umis)
 
-    autoencoder = NBAE(
+    autoencoder = PoissonAutoencoder(
         x_dim = X_use.shape[1],
         # beta = 1e-3,
-        activation = 'prelu',
+        activation = 'leaky_relu',
         latent_dim = 10,
         hidden_units = [256, 128]
     )

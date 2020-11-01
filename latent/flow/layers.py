@@ -35,7 +35,7 @@ class GradReversal(Layer):
         return self.grad_reverse(inputs)
 
     @tf.custom_gradient
-    def grad_reverse(x):
+    def grad_reverse(self, x):
         y = tf.identity(x)
         def grad(dy):
             return -dy * self.weight

@@ -24,6 +24,7 @@ class VariationalAutoencoder(Autoencoder):
             l1 = self.l1,
             l2 = self.l2,
             activation = self.activation,
+            initializer = self.initializer,
             hidden_units = self.hidden_units
         )
 
