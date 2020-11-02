@@ -4,9 +4,9 @@ from keras import backend as K
 
 # Kernel functions slightly modified from https://github.com/theislab/scarches
 def rbf_kernel(x, y):
-    dim = K.cast(K.shape(x)[1], tf.float32)
+    dim = tf.cast(tf.shape(x)[1], tf.float32)
     dist = squared_distance(x, y)
-    return K.exp(-dist / dim)
+    return tf.math.exp(-dist / dim)
 
 
 def ms_rbf_kernel(x, y):
@@ -16,18 +16,19 @@ def ms_rbf_kernel(x, y):
         1e3, 1e4, 1e5, 1e6
     ]
 
-    beta = 1. / (2. * (K.expand_dims(sigmas, 1)))
+    beta = 1. / (2. * (tf.expand_dims(sigmas, 1)))
     dist = squared_distance(x, y)
-    s = K.dot(beta, K.reshape(dist, (1, -1)))
-    return K.reshape(tf.reduce_sum(tf.exp(-s), 0), K.shape(dist)) / len(sigmas)
+    s = K.dot(beta, tf.reshape(dist, (1, -1)))
+    return tf.reshape(tf.math.reduce_sum(tf.exp(-s), 0), tf.shape(dist)) / len(sigmas)
 
 
 def raphy_kernel(x, y, scales=[]):
-    dist = K.expand_dims(squared_distance(x, y), 0)
-    scales = K.expand_dims(K.expand_dims(scales, -1), -1)
-    weights = K.eval(K.shape(scales)[0])
-    weights = K.expand_dims(K.expand_dims(weights, -1), -1)
-    return K.sum(weights * K.exp(-dist / (K.pow(scales, 2))), 0)
+    dist = tf.expand_dims(squared_distance(x, y), 0)
+    scales = tf.expand_dims(tf.expand_dims(scales, -1), -1)
+    weights = tf.eval(tf.shape(scales)[0])
+    weights = tf.expand_dims(tf.expand_dims(weights, -1), -1)
+    kernel = weights * tf.math.exp(-dist / (tf.math.pow(scales, 2)))
+    return tf.math.reduce_sum(kernel, 0)
 
 
 KERNELS = {
