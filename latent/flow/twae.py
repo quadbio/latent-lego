@@ -7,7 +7,7 @@ from tensorflow.keras import Input, Model
 import tensorflow.keras.layers as layers
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
-from .base import DenseBlock
+from .core import DenseBlock
 from .losses import MaximumMeanDiscrepancy
 from .encoder import VariationalEncoder
 from .ae import Autoencoder, PoissonAutoencoder
@@ -19,11 +19,8 @@ class TwinAutoencoder(Model):
         super().__init__(**kwargs)
 
         # Define components
-        self.ae1 = models[0]
-        self.ae2 = models[1]
-
-        self.loss1 = losses[0]
-        self.loss2 = losses[1]
+        self.ae1, self.ae2 = models
+        self.loss1, self.loss2 = losses
 
     def call(self, inputs):
         in1, in2 = inputs
@@ -74,9 +71,10 @@ class MMDTwinAutoencoder(TwinAutoencoder):
             # Layer after which MMD loss is applied
             # -> Joins latent spaces
             self.mmd_layer = DenseBlock(
+                20,
                 dropout_rate = 0
             )
-            self.mms_loss = MaximumMeanDiscrepancy(
+            self.mmd_loss = MaximumMeanDiscrepancy(
                 n_conditions = 2,
                 weight = self.mmd_weight
             )
@@ -87,17 +85,24 @@ class MMDTwinAutoencoder(TwinAutoencoder):
             latent2 = self.ae2.encoder(in2)
             # Concatenate along samples
             shared_latent = layers.concatenate([latent1, latent2], axis=0)
-            labels = K.concatenate(
-                K.zeros(K.shape(latent1)[0]),
-                K.ones(K.shape(latent2)[0])
+            labels = tf.concat(
+                [tf.zeros(tf.shape(latent1)[0]), tf.ones(tf.shape(latent2)[0])],
+                axis = 0
             )
-            mmd_latent = mmd_layer(shared_latent)
+            labels = tf.cast(labels, tf.int32)
+            mmd_latent = self.mmd_layer(shared_latent)
             # MMD loss to enforce shared latent space after MMD layer
-            self.add_loss(mmd_loss((,labels), mmd_latent))
-            latent1, latent2 = tf.dynamic_partition(shared_latent, labels, 2)
+            mmd_loss = self.mmd_loss((None, labels), mmd_latent)
+            self.add_loss(mmd_loss)
+            self.add_metric(mmd_loss, name='mmd_loss')
+            latent1, latent2 = tf.dynamic_partition(mmd_latent, labels, 2)
             out1 = self.ae1.decoder(latent1)
             out2 = self.ae2.decoder(latent2)
             # Losses have to be added here because they are separate for each input
-            self.add_loss(self.loss1(in1, out1))
-            self.add_loss(self.loss2(in2, out2))
+            recon_loss_1 = tf.reduce_mean(self.loss1(in1, out1))
+            recon_loss_2 = tf.reduce_mean(self.loss1(in2, out2))
+            self.add_loss(recon_loss_1)
+            self.add_metric(recon_loss_1, name='recon_loss_1')
+            self.add_loss(recon_loss_2)
+            self.add_metric(recon_loss_2, name='recon_loss_2')
             return out1, out2
