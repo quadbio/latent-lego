@@ -22,14 +22,19 @@ def ms_rbf_kernel(x, y):
     return K.reshape(tf.reduce_sum(tf.exp(-s), 0), K.shape(dist)) / len(sigmas)
 
 
-def raphy_kernel(x, y, scales):
-    scales = K.variable(value=np.asarray(scales))
+def raphy_kernel(x, y, scales=[]):
     dist = K.expand_dims(squared_distance(x, y), 0)
     scales = K.expand_dims(K.expand_dims(scales, -1), -1)
     weights = K.eval(K.shape(scales)[0])
-    weights = K.variable(value=np.asarray(weights))
     weights = K.expand_dims(K.expand_dims(weights, -1), -1)
     return K.sum(weights * K.exp(-dist / (K.pow(scales, 2))), 0)
+
+
+KERNELS = {
+    'multiscale_rbf': ms_rbf_kernel,
+    'rbf': rbf_kernel,
+    'raphy': raphy_kernel
+}
 
 
 def squared_distance(x, y):
