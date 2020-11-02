@@ -4,7 +4,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
-from tensorflow.keras.losses import MeanSquaredError, Poisson
+import tensorflow.keras.losses as losses
 
 from .encoder import Encoder
 from .decoder import Decoder, CountDecoder, NegativeBinomialDecoder
@@ -62,7 +62,7 @@ class Autoencoder(Model):
             hidden_units = self.hidden_units[::-1]
         )
 
-        self.rec_loss = MeanSquaredError()
+        self.rec_loss = losses.MeanSquaredError()
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -104,7 +104,7 @@ class PoissonAutoencoder(Autoencoder):
             hidden_units = self.hidden_units[::-1]
         )
 
-        self.rec_loss = Poisson()
+        self.rec_loss = losses.Poisson()
 
     def call(self, inputs):
         '''Full forward pass through model'''
