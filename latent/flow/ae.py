@@ -64,11 +64,11 @@ class Autoencoder(Model):
 
         self.rec_loss = losses.MeanSquaredError()
 
-    def encode(inputs):
-        self.encoder(inputs)
+    def encode(self, x):
+        return self.encoder(x)
 
-    def decode(latent):
-        self.decoder(latent)
+    def decode(self, latent):
+        return self.decoder(latent)
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -112,14 +112,14 @@ class PoissonAutoencoder(Autoencoder):
 
         self.rec_loss = losses.Poisson()
 
-    def decode(latent, size_factors):
-        self.decoder(latent)
+    def decode(self, latent, size_factors):
+        return self.decoder([latent, size_factors])
 
     def call(self, inputs):
         '''Full forward pass through model'''
         x, sf = inputs
         latent = self.encode(x)
-        outputs = self.decode([latent, sf])
+        outputs = self.decode(x, latent, sf)
         return outputs
 
     def fit(self, x, y=None, **kwargs):
@@ -148,11 +148,8 @@ class NegativeBinomialAutoencoder(PoissonAutoencoder):
         # Loss is added in call()
         self.rec_loss = None
 
-    def call(self, inputs):
-        '''Full forward pass through model'''
-        x, sf = inputs
-        latent = self.encoder(x)
-        outputs, disp = self.decoder([latent, sf])
+    def decode(self, x, latent, size_factors):
+        outputs, disp = self.decoder([latent, size_factors])
         # Add loss here so it can be parameterized by theta
         rec_loss = NegativeBinomial(theta=disp)
         self.add_loss(rec_loss(x, outputs))
@@ -178,11 +175,8 @@ class ZINBAutoencoder(PoissonAutoencoder):
         # Loss is added in call()
         self.rec_loss = None
 
-    def call(self, inputs):
-        '''Full forward pass through model'''
-        x, sf = inputs
-        latent = self.encoder(x)
-        outputs, disp, pi = self.decoder([latent, sf])
+    def decode(self, x, latent, size_factors):
+        outputs, disp, pi = self.decoder([latent, size_factors])
         # Add loss here so it can be parameterized by theta and pi
         nb_loss = ZINB(theta=disp, pi=pi)
         self.add_loss(nb_loss(x, outputs))

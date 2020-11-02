@@ -74,7 +74,7 @@ class DenseStack(Layer):
         # Define stack
         self.dense_stack = []
         for idx, dim in enumerate(self.hidden_units):
-            layer_name = f'd{self.name}_{idx}'
+            layer_name = f'{self.name}_{idx}'
             layer = DenseBlock(
                 dim,
                 name = layer_name,

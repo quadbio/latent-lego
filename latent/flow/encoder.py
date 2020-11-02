@@ -21,7 +21,7 @@ class Encoder(Model):
     def __init__(
         self,
         latent_dim = 50,
-        name='decoder',
+        name='encoder',
         dropout_rate = 0.1,
         batchnorm = True,
         l1 = 0.0,
