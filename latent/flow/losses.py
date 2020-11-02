@@ -2,19 +2,21 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.losses import Loss
 
-from .utils import ms_rbf_kernel, rbf_kernel, raphy_kernel
+from .utils import ms_rbf_kernel, rbf_kernel, raphy_kernel, nan2zero
 from .utils import KERNELS
 
 
-def maximum_mean_discrepancy(self, x, y, kernel_method='multiscale_rbf'):
+def maximum_mean_discrepancy(x, y, kernel_method='multiscale_rbf'):
     if isinstance(kernel_method, str):
-        self.kernel = KERNELS.get(kernel_method, ms_rbf_kernel)
+        kernel = KERNELS.get(kernel_method, ms_rbf_kernel)
     else:
-        self.kernel = kernel_method
-    x_kernel = kernel(x, x)
-    y_kernel = kernel(y, y)
-    xy_kernel = kernel(x, y)
-    return K.mean(x_kernel) + K.mean(y_kernel) - 2 * K.mean(xy_kernel)
+        kernel = kernel_method
+    x = tf.cast(x, tf.float32)
+    y = tf.cast(y, tf.float32)
+    x_kernel = tf.math.reduce_mean(kernel(x, x))
+    y_kernel = tf.math.reduce_mean(kernel(y, y))
+    xy_kernel = tf.math.reduce_mean(kernel(x, y))
+    return x_kernel + y_kernel - 2 * xy_kernel
 
 
 class MaximumMeanDiscrepancy(Loss):
@@ -26,9 +28,9 @@ class MaximumMeanDiscrepancy(Loss):
         weight = 1,
         **kwargs
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.n_conditions = n_conditions
-        self.weight = weight
+        self.weight = tf.cast(weight, tf.float32)
         if isinstance(kernel_method, str):
             self.kernel = KERNELS.get(kernel_method, ms_rbf_kernel)
         else:
@@ -36,23 +38,25 @@ class MaximumMeanDiscrepancy(Loss):
 
     def call(self, y_true, y_pred):
         '''Calculated MMD between labels in y_pred space'''
+
+        if self.n_conditions == 1:
+            return 0
+
         _, labels = y_true
-        labels = K.reshape(K.cast(labels, 'int32'), (-1,))
+        labels = tf.reshape(tf.cast(labels, tf.int32), (-1,))
         conditions = tf.dynamic_partition(
             y_pred, labels,
             num_partitions = self.n_conditions
         )
-        loss = []
+        result = []
         for i in range(len(conditions)):
             for j in range(i):
-                loss += maximum_mean_discrepancy(
+                res = maximum_mean_discrepancy(
                     conditions[i], conditions[j],
                     kernel_method = self.kernel
                 )
-        if n_conditions == 1:
-            loss = 0
-        loss = K.reshape(loss, (self.n_conditions, self.n_conditions))
-        return self.weight * loss
+                result.append(res)
+        return self.weight * tf.math.reduce_sum(result)
 
 
 class NegativeBinomial(Loss):

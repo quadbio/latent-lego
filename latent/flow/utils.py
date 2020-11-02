@@ -38,18 +38,18 @@ KERNELS = {
 
 
 def squared_distance(x, y):
-    r = K.expand_dims(x, axis=1)
-    return K.sum(K.square(r - y), axis=-1)
+    r = tf.expand_dims(x, axis=1)
+    return tf.math.reduce_sum(tf.math.square(r - y), axis=-1)
 
 
 def nan2zero(x):
-    return tf.where(tf.is_nan(x), tf.zeros_like(x), x)
+    return tf.where(tf.math.is_nan(x), tf.zeros_like(x), x)
 
 
 def nan2inf(x):
-    return tf.where(tf.is_nan(x), tf.zeros_like(x) + np.inf, x)
+    return tf.where(tf.math.is_nan(x), tf.zeros_like(x) + np.inf, x)
 
 
 def nelem(x):
-    nelem = tf.reduce_sum(tf.cast(~tf.is_nan(x), tf.float32))
-    return tf.cast(tf.where(tf.equal(nelem, 0.), 1., nelem), x.dtype)
+    nelem = tf.math.reduce_sum(tf.cast(~tf.math.is_nan(x), tf.float32))
+    return tf.cast(tf.where(tf.math.equal(nelem, 0.), 1., nelem), x.dtype)
