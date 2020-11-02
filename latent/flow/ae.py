@@ -64,10 +64,16 @@ class Autoencoder(Model):
 
         self.rec_loss = losses.MeanSquaredError()
 
+    def encode(inputs):
+        self.encoder(inputs)
+
+    def decode(latent):
+        self.decoder(latent)
+
     def call(self, inputs):
         '''Full forward pass through model'''
-        latent = self.encoder(inputs)
-        outputs = self.decoder(latent)
+        latent = self.encode(inputs)
+        outputs = self.decode(latent)
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
@@ -106,11 +112,14 @@ class PoissonAutoencoder(Autoencoder):
 
         self.rec_loss = losses.Poisson()
 
+    def decode(latent, size_factors):
+        self.decoder(latent)
+
     def call(self, inputs):
         '''Full forward pass through model'''
         x, sf = inputs
-        latent = self.encoder(x)
-        outputs = self.decoder([latent, sf])
+        latent = self.encode(x)
+        outputs = self.decode([latent, sf])
         return outputs
 
     def fit(self, x, y=None, **kwargs):
