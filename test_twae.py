@@ -73,17 +73,21 @@ if __name__ == '__main__':
     n_counts = atac_use.sum(1)
     atac_sf = n_counts / np.median(n_counts)
 
-    rna_ae = NBAE(
+    rna_ae = NBVAE(
         x_dim = rna_use.shape[1],
         activation = 'leaky_relu',
-        latent_dim = 20
+        latent_dim = 10
     )
-    atac_ae = NBAE(
+    atac_ae = NBVAE(
         x_dim = atac_use.shape[1],
         activation = 'leaky_relu',
-        latent_dim = 20
+        latent_dim = 10
     )
-    twae = TwinAutoencoder([rna_ae, atac_ae])
+    twae = TwinAutoencoder(
+        [rna_ae, atac_ae],
+        kernel_method = 'raphy',
+        mmd_weight = 2
+    )
     twae.compile()
     history = twae.fit(
         [[rna_use, rna_sf], [atac_use, atac_sf]],
@@ -96,14 +100,32 @@ if __name__ == '__main__':
     latent, labels = twae.transform([rna_use, atac_use])
 
     latad = ad.AnnData(X=latent)
-    latad.obs.tech = labels
+    latad.obs['tech'] = labels
     latad.obsm['X_X'] = latent
 
     sc.pp.neighbors(latad, use_rep='X', n_neighbors=30)
     sc.tl.umap(latad, min_dist=0.1, spread=0.5)
 
     p = sc.pl.scatter(latad, show=False, basis='X', color='tech')
-    p.figure.savefig('latent_twae.png')
+    p.figure.savefig('twae_latent.png')
 
     p = sc.pl.scatter(latad, show=False, basis='umap', color='tech')
-    p.figure.savefig('umap_twae.png')
+    p.figure.savefig('twae_umap.png')
+
+    rna_lat = latad[labels==0, :]
+    rna_lat.obs['celltype'] = rna.obs['celltype'].values[:5000]
+
+    p = sc.pl.scatter(rna_lat, show=False, basis='X', color='celltype')
+    p.figure.savefig('twae_rna_latent.png')
+
+    p = sc.pl.scatter(rna_lat, show=False, basis='umap', color='celltype')
+    p.figure.savefig('twae_rna_umap.png')
+
+    atac_lat = latad[labels==1, :]
+    atac_lat.obs['celltype'] = atac.obs['celltype'].values[:5000]
+
+    p = sc.pl.scatter(atac_lat, show=False, basis='X', color='celltype')
+    p.figure.savefig('twae_atac_latent.png')
+
+    p = sc.pl.scatter(atac_lat, show=False, basis='umap', color='celltype')
+    p.figure.savefig('twae_atac_umap.png')
