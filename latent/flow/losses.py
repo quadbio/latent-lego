@@ -29,7 +29,6 @@ class MaximumMeanDiscrepancy(Loss):
     ):
         super().__init__()
         self.n_conditions = n_conditions
-        self.weight = tf.cast(weight, tf.float32)
         if isinstance(kernel_method, str):
             self.kernel = KERNELS.get(kernel_method, ms_rbf_kernel)
         else:
@@ -38,9 +37,12 @@ class MaximumMeanDiscrepancy(Loss):
     def call(self, y_true, y_pred):
         '''Calculated MMD between labels in y_pred space'''
 
+        # No different conditions, no loss
         if self.n_conditions == 1:
-            return 0
+            return tf.zeros(1)
 
+        # Check if tuple or single tensor
+        # This makes it more convenient to use in different contexts
         if isinstance(y_true, (list, tuple)):
             _, labels = y_true
         else:
