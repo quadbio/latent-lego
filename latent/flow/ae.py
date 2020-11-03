@@ -26,6 +26,7 @@ class Autoencoder(Model):
         compile_model = True,
         activation = 'prelu',
         initializer = 'glorot_normal',
+        reconstruction_loss = None,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -62,13 +63,19 @@ class Autoencoder(Model):
             hidden_units = self.hidden_units[::-1]
         )
 
-        self.rec_loss = losses.MeanSquaredError()
+        self.rec_loss = reconstruction_loss
 
     def encode(self, x):
         return self.encoder(x)
 
-    def decode(self, latent):
-        return self.decoder(latent)
+    def decode(self, x, latent):
+        outputs = self.decoder(latent)
+        # Rec loss is added in the decoder to make twin autoencoders possible
+        if self.rec_loss:
+            rec_loss = self.rec_loss(x, outputs)
+            self.add_loss(rec_loss)
+            self.add_metric(rec_loss, name='reconstruction_loss')
+        return outputs
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -78,8 +85,6 @@ class Autoencoder(Model):
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
         '''Compile model with default loss and omptimizer'''
-        if not loss:
-            loss = self.rec_loss
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):
@@ -110,10 +115,16 @@ class PoissonAutoencoder(Autoencoder):
             hidden_units = self.hidden_units[::-1]
         )
 
-        self.rec_loss = losses.Poisson()
+        # Loss is added in call()
+        self.rec_loss = None
 
-    def decode(self, latent, size_factors):
-        return self.decoder([latent, size_factors])
+    def decode(self, x, latent, size_factors):
+        outputs = self.decoder([latent, size_factors])
+        poisson_loss = losses.Poisson()
+        rec_loss = poisson_loss(x, outputs)
+        self.add_loss(rec_loss)
+        self.add_metric(rec_loss, name='poisson_loss')
+        return outputs
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -153,6 +164,7 @@ class NegativeBinomialAutoencoder(PoissonAutoencoder):
         # Add loss here so it can be parameterized by theta
         rec_loss = NegativeBinomial(theta=disp)
         self.add_loss(rec_loss(x, outputs))
+        self.add_metric(rec_loss(x, outputs), name='nb_loss')
         return outputs
 
 
@@ -178,6 +190,7 @@ class ZINBAutoencoder(PoissonAutoencoder):
     def decode(self, x, latent, size_factors):
         outputs, disp, pi = self.decoder([latent, size_factors])
         # Add loss here so it can be parameterized by theta and pi
-        nb_loss = ZINB(theta=disp, pi=pi)
-        self.add_loss(nb_loss(x, outputs))
+        rec_loss = ZINB(theta=disp, pi=pi)
+        self.add_loss(rec_loss(x, outputs))
+        self.add_metric(rec_loss(x, outputs), name='zinb_loss')
         return outputs
