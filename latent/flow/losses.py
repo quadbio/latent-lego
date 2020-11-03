@@ -25,7 +25,6 @@ class MaximumMeanDiscrepancy(Loss):
         self,
         n_conditions = 2,
         kernel_method = 'multiscale_rbf',
-        weight = 1,
         **kwargs
     ):
         super().__init__()
@@ -42,7 +41,11 @@ class MaximumMeanDiscrepancy(Loss):
         if self.n_conditions == 1:
             return 0
 
-        _, labels = y_true
+        if isinstance(y_true, (list, tuple)):
+            _, labels = y_true
+        else:
+            labels = y_true
+
         labels = tf.reshape(tf.cast(labels, tf.int32), (-1,))
         conditions = tf.dynamic_partition(
             y_pred, labels,
@@ -56,7 +59,7 @@ class MaximumMeanDiscrepancy(Loss):
                     kernel_method = self.kernel
                 )
                 result.append(res)
-        return self.weight * tf.math.reduce_sum(result)
+        return tf.cast(result, tf.float32)
 
 
 class NegativeBinomial(Loss):
