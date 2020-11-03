@@ -7,102 +7,80 @@ from tensorflow.keras import Input, Model
 import tensorflow.keras.layers as layers
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
-from .core import DenseBlock
+from .layers import DenseBlock, MMDCritic
 from .losses import MaximumMeanDiscrepancy
 from .encoder import VariationalEncoder
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 
+
 class TwinAutoencoder(Model):
-    '''Twin autoencoder that joins two autoencoders in a shared latent space'''
-    def __init__(self, models, losses, **kwargs):
-        super().__init__(**kwargs)
-
-        # Define components
-        self.ae1, self.ae2 = models
-        self.loss1, self.loss2 = losses
-
-    def call(self, inputs):
-        in1, in2 = inputs
-        latent1 = self.ae1.encoder(in1)
-        latent2 = self.ae2.encoder(in2)
-        # Concatenate along samples
-        shared_latent = layers.concatenate([latent1, latent2], axis=0)
-        labels = K.concatenate(
-            K.zeros(K.shape(latent1)[0]),
-            K.ones(K.shape(latent2)[0])
-        )
-        # Here we split again right away, but actually we need some loss that
-        # enforces a joint latent space
-        latent1, latent2 = tf.dynamic_partition(shared_latent, labels, 2)
-        out1 = self.ae1.decoder(latent1)
-        out2 = self.ae2.decoder(latent2)
-        # Losses have to be added here because they are separate for each input
-        self.add_loss(self.loss1(in1, out1))
-        self.add_loss(self.loss2(in2, out2))
-        return out1, out2
-
-    def transform(self, inputs):
-        '''Map data (x) to shared latent space (z)'''
-        in1, in2 = inputs
-        latent1 = self.ae1.encoder.predict(in1)
-        latent2 = self.ae2.encoder.predict(in2)
-        # Concatenate along samples
-        shared_latent = layers.concatenate([latent1, latent2], axis=0)
-        return shared_latent
-
-    def compile(self, optimizer='adam', loss=None, **kwargs):
-        '''Compile model with default loss and omptimizer'''
-        return super().compile(loss=loss, optimizer=optimizer, **kwargs)
-
-
-class MMDTwinAutoencoder(TwinAutoencoder):
         '''Twin autoencoder that joins two autoencoders in a shared latent space'''
         def __init__(
             self,
+            models,
             kernel_method = 'multiscale_rbf',
-            mmd_weight = 1,
+            mmd_weight = 1.0,
             **kwargs
         ):
-            super().__init__(**kwargs)
+            super().__init__()
             self.mmd_weight = mmd_weight
+            self.kernel_method = kernel_method
 
             # Define components
-            # Layer after which MMD loss is applied
-            # -> Joins latent spaces
-            self.mmd_layer = DenseBlock(
-                20,
-                dropout_rate = 0
-            )
-            self.mmd_loss = MaximumMeanDiscrepancy(
+            self.ae1, self.ae2 = models
+            self.critic_layer = MMDCritic(
+                self.ae1.latent_dim,
+                weight = self.mmd_weight,
                 n_conditions = 2,
-                weight = self.mmd_weight
+                kernel_method = self.kernel_method,
+                **kwargs
             )
 
-        def call(self, inputs):
+        def encode(self, inputs):
             in1, in2 = inputs
-            latent1 = self.ae1.encoder(in1)
-            latent2 = self.ae2.encoder(in2)
-            # Concatenate along samples
+            x1, sf1 = in1
+            x2, sf2 = in2
+            latent1 = self.ae1.encoder(x1)
+            latent2 = self.ae2.encoder(x2)
+
+
+        def critic(self, latent1, latent2, split_output=True):
+            # Join latent spaces and assign labels
             shared_latent = layers.concatenate([latent1, latent2], axis=0)
             labels = tf.concat(
                 [tf.zeros(tf.shape(latent1)[0]), tf.ones(tf.shape(latent2)[0])],
                 axis = 0
             )
             labels = tf.cast(labels, tf.int32)
-            mmd_latent = self.mmd_layer(shared_latent)
-            # MMD loss to enforce shared latent space after MMD layer
-            mmd_loss = self.mmd_loss((None, labels), mmd_latent)
-            self.add_loss(mmd_loss)
-            self.add_metric(mmd_loss, name='mmd_loss')
-            latent1, latent2 = tf.dynamic_partition(mmd_latent, labels, 2)
-            out1 = self.ae1.decoder(latent1)
-            out2 = self.ae2.decoder(latent2)
-            # Losses have to be added here because they are separate for each input
-            recon_loss_1 = tf.reduce_mean(self.loss1(in1, out1))
-            recon_loss_2 = tf.reduce_mean(self.loss1(in2, out2))
-            self.add_loss(recon_loss_1)
-            self.add_metric(recon_loss_1, name='recon_loss_1')
-            self.add_loss(recon_loss_2)
-            self.add_metric(recon_loss_2, name='recon_loss_2')
+            # Apply critic
+            shared_latent = self.critic_layer([shared_latent, labels])
+            if split_output:
+                # Split latent space again
+                latent1, latent2 = tf.dynamic_partition(shared_latent, labels, 2)
+                return latent1, latent2
+            else:
+                return shared_latent, labels
+
+        def call(self, inputs):
+            in1, in2 = inputs
+            x1, sf1 = in1
+            x2, sf2 = in2
+            # Map to latent
+            latent1 = self.ae1.encoder(x1)
+            latent2 = self.ae2.encoder(x2)
+            # Critic joins, adds loss, and splits
+            latent1, latent2 = self.critic(latent1, latent2)
+            # Reconstruction loss should be added by the decoders
+            out1 = self.ae1.decoder(x1, latent1, sf1)
+            out2 = self.ae2.decoder(x2, latent2, sf2)
             return out1, out2
+
+        def transform(self, inputs, split_output=False):
+            x1, x2 = inputs
+            # Map to latent
+            latent1 = self.ae1.encoder(x1)
+            latent2 = self.ae2.encoder(x2)
+            # Critic joins, adds loss, and splits
+            latent1, latent2 = self.critic(latent1, latent2, split_output=split_output)
+            return latent1, latent1
