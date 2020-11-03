@@ -92,18 +92,18 @@ if __name__ == '__main__':
         use_multiprocessing = True,
         workers = args.cpus
     )
-    history.history
 
     latent, labels = twae.transform([rna_use, atac_use])
 
     latad = ad.AnnData(X=latent)
     latad.tech = labels
+    adata.obsm['X_X'] = latent
 
-    sc.pp.neighbors(adata, use_rep='X', n_neighbors=30)
-    sc.tl.umap(adata, min_dist=0.1, spread=0.5)
+    sc.pp.neighbors(latad, use_rep='X', n_neighbors=30)
+    sc.tl.umap(latad, min_dist=0.1, spread=0.5)
 
-    p = sc.pl.scatter(adata, show=False, basis='X', color='tech')
-    p.figure.savefig('latent_final.png')
+    p = sc.pl.scatter(latad, show=False, basis='X', color='tech')
+    p.figure.savefig('latent_twae.png')
 
-    p = sc.pl.scatter(adata, show=False, basis='umap', color='tech')
-    p.figure.savefig('umap_final.png')
+    p = sc.pl.scatter(latad, show=False, basis='umap', color='tech')
+    p.figure.savefig('umap_twae.png')
