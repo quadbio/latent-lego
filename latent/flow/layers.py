@@ -6,6 +6,7 @@ from tensorflow.keras.layers import Lambda, Layer, LeakyReLU
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
 
 from .activations import ACTIVATIONS
+from .losses import MaximumMeanDiscrepancy
 
 
 ### Core layers
@@ -136,3 +137,37 @@ class GradReversal(Layer):
 
 
 ### Critic layers
+class MMDCritic(Layer):
+    '''Adds MMD loss between conditions.'''
+    def __init__(
+        self,
+        units,
+        weight = 1.0,
+        n_conditions = 2,
+        kernel_method = 'rbf',
+        **kwargs
+    ):
+        super().__init__()
+        self.units = units
+        self.weight = weight
+        self.n_conditions = n_conditions
+        self.kernel_method = kernel_method
+
+        # Define components
+        self.mmd_layer = DenseBlock(
+            units,
+            dropout_rate = 0,
+            **kwargs
+        )
+
+    def call(self, inputs):
+        x, labels = inputs
+        outputs = self.mmd_layer(x)
+        mmd_loss = MaximumMeanDiscrepancy(
+            n_conditions = self.n_conditions,
+            kernel_method = self.kernel_method
+        )
+        crit_loss = self.weight * mmd_loss(labels, outputs)
+        self.add_loss(crit_loss)
+        self.add_metric(crit_loss, name='mmd_loss')
+        return outputs
