@@ -96,7 +96,7 @@ if __name__ == '__main__':
     latent, labels = twae.transform([rna_use, atac_use])
 
     latad = ad.AnnData(X=latent)
-    latad.tech = labels
+    latad.obs.tech = labels
     latad.obsm['X_X'] = latent
 
     sc.pp.neighbors(latad, use_rep='X', n_neighbors=30)
