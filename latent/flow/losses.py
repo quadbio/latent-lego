@@ -90,17 +90,19 @@ class NegativeBinomial(Loss):
         return res
 
 
-class ZINB(NegativeBinomial):
+class ZINB(Loss):
     '''Zero-inflated negative binomial loss'''
-    def __init__(self, pi, **kwargs):
+    def __init__(self, pi, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
+        self.eps = tf.cast(eps, tf.float32)
+        self.theta = tf.cast(theta, tf.float32)
         self.pi = tf.cast(pi, tf.float32)
 
     def call(self, y_true, y_pred):
         '''Calculates negative log likelihood of the ZINB distribution'''
         x = tf.cast(y_true, tf.float32)
         mu = tf.cast(y_pred, tf.float32)
-        nb_loss = NegativeBinomial(self.theta, reduction='none')
+        nb_loss = NegativeBinomial(self.theta, eps=self.eps, reduction='none')
 
         case_nonzero = nb_loss(x, mu) - tf.math.log(1.0 - self.pi + self.eps)
         nb_zero = tf.math.pow(self.theta / (self.theta + mu), self.theta)
