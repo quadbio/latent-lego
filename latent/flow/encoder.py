@@ -11,9 +11,8 @@ import tensorflow_probability as tfp
 tfpl = tfp.layers
 tfd = tfp.distributions
 
-from .core import DenseStack
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult
+from .layers import ColwiseMult, DenseStack
 
 
 class Encoder(Model):

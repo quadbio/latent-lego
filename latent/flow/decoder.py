@@ -7,9 +7,8 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 from tensorflow.keras.layers import Dense, Activation
 
-from .core import DenseStack
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult
+from .layers import ColwiseMult, DenseStack
 
 
 class Decoder(Model):
