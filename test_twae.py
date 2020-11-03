@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     latad = ad.AnnData(X=latent)
     latad.tech = labels
-    adata.obsm['X_X'] = latent
+    latad.obsm['X_X'] = latent
 
     sc.pp.neighbors(latad, use_rep='X', n_neighbors=30)
     sc.tl.umap(latad, min_dist=0.1, spread=0.5)
