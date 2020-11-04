@@ -141,12 +141,13 @@ class MMDCritic(layers.Layer):
     def __init__(
         self,
         units,
+        name = 'mmd_critic',
         weight = 1.0,
         n_conditions = 2,
         kernel_method = 'rbf',
         **kwargs
     ):
-        super().__init__()
+        super().__init__(name=name)
         self.units = units
         self.weight = weight
         self.n_conditions = n_conditions
@@ -168,5 +169,37 @@ class MMDCritic(layers.Layer):
         )
         crit_loss = self.weight * mmd_loss(labels, outputs)
         self.add_loss(crit_loss)
-        self.add_metric(crit_loss, name='mmd_loss')
+        self.add_metric(crit_loss, name=self.name)
         return outputs
+
+
+
+class PairingCritic(layers.Layer):
+    '''Matches paired points in latent space by forcing them to the same location.'''
+    def __init__(
+        self,
+        units,
+        name = 'pairing_critic',
+        weight = 1.0,
+        n_conditions = 2,
+        kernel_method = 'rbf',
+        **kwargs
+    ):
+        super().__init__(name=name, **kwargs)
+        self.units = units
+        self.weight = weight
+
+    def call(self, inputs):
+        x1, x2  = inputs
+        # Element-wise difference
+        dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
+        crit_loss = self.weight * tf.math.reduce_sum(dist)
+        self.add_loss(crit_loss)
+        self.add_metric(crit_loss, name=self.name)
+        return outputs
+
+
+CRITICS = {
+    'pairing': PairingCritic,
+    'mmd': MMDCritic
+}
