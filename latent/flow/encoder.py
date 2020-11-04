@@ -2,7 +2,6 @@
 
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 import tensorflow.keras.layers as layers
@@ -16,7 +15,7 @@ from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack
 
 
-class Encoder(Model):
+class Encoder(keras.Model):
     '''Classical encoder model'''
     def __init__(
         self,

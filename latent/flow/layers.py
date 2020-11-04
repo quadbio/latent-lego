@@ -9,7 +9,7 @@ from .losses import MaximumMeanDiscrepancy
 
 
 ### Core layers
-class DenseBlock(Layer):
+class DenseBlock(layers.Layer):
     '''Basic dense layer block'''
     def __init__(
         self,
@@ -54,7 +54,7 @@ class DenseBlock(Layer):
         return outputs
 
 
-class DenseStack(Layer):
+class DenseStack(layers.Layer):
     '''Core dense layer stack of encoders and decoders'''
     def __init__(
         self,
@@ -96,7 +96,7 @@ class DenseStack(Layer):
 
 
 ### Utility layers
-class ColwiseMult(Layer):
+class ColwiseMult(layers.Layer):
     '''Performs column-wise multiplication between input vectors.'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -105,7 +105,7 @@ class ColwiseMult(Layer):
         return inputs[0] * K.reshape(inputs[1], (-1, 1))
 
 
-class Sampling(Layer):
+class Sampling(layers.Layer):
     '''Uses inputs (z_mean, z_log_var) to sample z.'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -118,7 +118,7 @@ class Sampling(Layer):
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 
-class GradReversal(Layer):
+class GradReversal(layers.Layer):
     '''Reverses gradient during backprop.'''
     def __init__(self, weight=1.0, **kwargs):
         super().__init__(**kwargs)
@@ -136,7 +136,7 @@ class GradReversal(Layer):
 
 
 ### Critic layers
-class MMDCritic(Layer):
+class MMDCritic(layers.Layer):
     '''Adds MMD loss between conditions.'''
     def __init__(
         self,

@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
-from tensorflow.keras.losses import Loss
+import tensorflow.keras.losses as losses
 
 from .utils import ms_rbf_kernel, rbf_kernel, nan2zero
 from .utils import KERNELS
@@ -19,7 +19,7 @@ def maximum_mean_discrepancy(x, y, kernel_method='multiscale_rbf'):
     return x_kernel + y_kernel - 2 * xy_kernel
 
 
-class MaximumMeanDiscrepancy(Loss):
+class MaximumMeanDiscrepancy(losses.Loss):
     '''MMD loss function between conditions'''
     def __init__(
         self,
@@ -64,7 +64,7 @@ class MaximumMeanDiscrepancy(Loss):
         return tf.cast(result, tf.float32)
 
 
-class NegativeBinomial(Loss):
+class NegativeBinomial(losses.Loss):
     '''Negative binomial loss'''
     def __init__(self, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
@@ -90,7 +90,7 @@ class NegativeBinomial(Loss):
         return res
 
 
-class ZINB(Loss):
+class ZINB(losses.Loss):
     '''Zero-inflated negative binomial loss'''
     def __init__(self, pi, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
