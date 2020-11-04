@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.losses import Loss
 
-from .utils import ms_rbf_kernel, rbf_kernel, raphy_kernel, nan2zero
+from .utils import ms_rbf_kernel, rbf_kernel, nan2zero
 from .utils import KERNELS
 
 
