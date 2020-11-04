@@ -5,7 +5,8 @@ import tensorflow.keras as keras
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
-from tensorflow.keras.layers import Dense, Activation
+import tensorflow.keras.layers as layers
+import tensorflow.keras.losses as losses
 
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack
@@ -47,11 +48,11 @@ class Decoder(Model):
             initializer = self.initializer,
             hidden_units = self.hidden_units
         )
-        self.final_layer = Dense(
+        self.final_layer = layers.Dense(
             self.x_dim, name = 'decoder_final',
             kernel_initializer = self.initializer
         )
-        self.final_act = Activation('linear', name='reconstruction_output')
+        self.final_act = layers.Activation('linear', name='reconstruction_output')
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -69,7 +70,7 @@ class CountDecoder(Decoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Define new components
-        self.mean_layer = Dense(
+        self.mean_layer = layers.Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
             kernel_initializer = self.initializer
@@ -98,7 +99,7 @@ class NegativeBinomialDecoder(CountDecoder):
             activation = clipped_exp,
             kernel_initializer = self.initializer
         )
-        self.dispersion_layer = Dense(
+        self.dispersion_layer = layers.Dense(
             self.x_dim, name='dispersion',
             activation = clipped_softplus,
             kernel_initializer = self.initializer
@@ -122,17 +123,17 @@ class ZINBDecoder(CountDecoder):
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.mean_layer = Dense(
+        self.mean_layer = layers.Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
             kernel_initializer = self.initializer
         )
-        self.dispersion_layer = Dense(
+        self.dispersion_layer = layers.Dense(
             self.x_dim, name='dispersion',
             activation = clipped_softplus,
             kernel_initializer = self.initializer
         )
-        self.pi_layer = Dense(
+        self.pi_layer = layers.Dense(
             self.x_dim, name='dispersion',
             activation = 'sigmoid',
             kernel_initializer = self.initializer

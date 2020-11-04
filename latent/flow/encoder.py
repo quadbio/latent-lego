@@ -5,7 +5,8 @@ import tensorflow.keras as keras
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
-from tensorflow.keras.layers import Dense, Activation
+import tensorflow.keras.layers as layers
+import tensorflow.keras.losses as losses
 
 import tensorflow_probability as tfp
 tfpl = tfp.layers
@@ -51,11 +52,11 @@ class Encoder(Model):
             initializer = self.initializer,
             hidden_units = self.hidden_units
         )
-        self.final_layer = Dense(
+        self.final_layer = layers.Dense(
             self.latent_dim, name = 'encoder_final',
             kernel_initializer = self.initializer
         )
-        self.final_act = Activation('linear', name='encoder_final_activation')
+        self.final_act = layers.Activation('linear', name='encoder_final_activation')
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -72,7 +73,7 @@ class VariationalEncoder(Encoder):
         self.beta = beta
 
         # Define components
-        self.mu_sigma = Dense(
+        self.mu_sigma = layers.Dense(
             tfpl.MultivariateNormalTriL.params_size(self.latent_dim),
             name = 'encoder_mu_sigma',
             kernel_initializer = self.initializer,

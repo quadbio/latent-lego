@@ -2,8 +2,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
-from tensorflow.keras.layers import Lambda, Layer, LeakyReLU
-from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
+import tensorflow.keras.layers as layers
 
 from .activations import ACTIVATIONS
 from .losses import MaximumMeanDiscrepancy
@@ -32,18 +31,18 @@ class DenseBlock(Layer):
         self.initializer = keras.initializers.get(initializer)
 
         # Define block components
-        self.dense = Dense(
+        self.dense = layers.Dense(
             units,
             name = self.name,
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
-        self.bn = BatchNormalization(center=True, scale=True)
+        self.bn = layers.BatchNormalization(center=True, scale=True)
         if isinstance(activation, str):
-            self.activation = ACTIVATIONS.get(activation, LeakyReLU())
+            self.activation = ACTIVATIONS.get(activation, layers.LeakyReLU())
         else:
             self.activation = activation
-        self.dropout = Dropout(self.dropout_rate)
+        self.dropout = layers.Dropout(self.dropout_rate)
 
 
     def call(self, inputs):
