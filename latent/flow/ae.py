@@ -3,7 +3,6 @@
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
-from tensorflow.keras import Input, Model
 import tensorflow.keras.losses as losses
 
 from .encoder import Encoder
@@ -12,7 +11,7 @@ from .decoder import ZINBDecoder
 from .losses import NegativeBinomial, ZINB
 
 
-class Autoencoder(Model):
+class Autoencoder(keras.Model):
     '''Classical autoencoder'''
     def __init__(
         self,
@@ -68,13 +67,13 @@ class Autoencoder(Model):
     def encode(self, x):
         return self.encoder(x)
 
-    def decode(self, x, latent):
+    def decode(self, x, latent, loss_name='rec_loss'):
         outputs = self.decoder(latent)
         # Rec loss is added in the decoder to make twin autoencoders possible
         if self.rec_loss:
             rec_loss = self.rec_loss(x, outputs)
             self.add_loss(rec_loss)
-            self.add_metric(rec_loss, name='reconstruction_loss')
+            self.add_metric(rec_loss, name=loss_name)
         return outputs
 
     def call(self, inputs):
@@ -98,7 +97,6 @@ class Autoencoder(Model):
         return self.encoder.predict(inputs)
 
 
-
 class PoissonAutoencoder(Autoencoder):
     '''Normalizing autoencoder for count data'''
     def __init__(self, **kwargs):
@@ -118,12 +116,12 @@ class PoissonAutoencoder(Autoencoder):
         # Loss is added in call()
         self.rec_loss = None
 
-    def decode(self, x, latent, size_factors):
+    def decode(self, x, latent, size_factors, loss_name='poisson_loss'):
         outputs = self.decoder([latent, size_factors])
         poisson_loss = losses.Poisson()
         rec_loss = poisson_loss(x, outputs)
         self.add_loss(rec_loss)
-        self.add_metric(rec_loss, name='poisson_loss')
+        self.add_metric(rec_loss, name=loss_name)
         return outputs
 
     def call(self, inputs):
@@ -159,12 +157,12 @@ class NegativeBinomialAutoencoder(PoissonAutoencoder):
         # Loss is added in call()
         self.rec_loss = None
 
-    def decode(self, x, latent, size_factors):
+    def decode(self, x, latent, size_factors, loss_name='nb_loss'):
         outputs, disp = self.decoder([latent, size_factors])
         # Add loss here so it can be parameterized by theta
         rec_loss = NegativeBinomial(theta=disp)
         self.add_loss(rec_loss(x, outputs))
-        self.add_metric(rec_loss(x, outputs), name='nb_loss')
+        self.add_metric(rec_loss(x, outputs), name=loss_name)
         return outputs
 
 
@@ -187,10 +185,10 @@ class ZINBAutoencoder(PoissonAutoencoder):
         # Loss is added in call()
         self.rec_loss = None
 
-    def decode(self, x, latent, size_factors):
+    def decode(self, x, latent, size_factors, loss_name='zinb_loss'):
         outputs, disp, pi = self.decoder([latent, size_factors])
         # Add loss here so it can be parameterized by theta and pi
         rec_loss = ZINB(theta=disp, pi=pi)
         self.add_loss(rec_loss(x, outputs))
-        self.add_metric(rec_loss(x, outputs), name='zinb_loss')
+        self.add_metric(rec_loss(x, outputs), name=loss_name)
         return outputs
