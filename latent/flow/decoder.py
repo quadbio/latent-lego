@@ -93,7 +93,7 @@ class NegativeBinomialDecoder(CountDecoder):
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.mean_layer = Dense(
+        self.mean_layer = layers.Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
             kernel_initializer = self.initializer
