@@ -3,47 +3,41 @@
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
-from tensorflow.keras import Input, Model
 import tensorflow.keras.layers as layers
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
-from .layers import DenseBlock, MMDCritic
+from .layers import DenseBlock, MMDCritic, CRITICS
 from .losses import MaximumMeanDiscrepancy
 from .encoder import VariationalEncoder
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 
 
-class TwinAutoencoder(Model):
+class TwinAutoencoder(keras.Model):
     '''Twin autoencoder that joins two autoencoders in a shared latent space'''
     def __init__(
         self,
         models,
+        critic = 'mmd',
         kernel_method = 'multiscale_rbf',
-        mmd_weight = 1.0,
+        critic_weight = 1.0,
         **kwargs
     ):
         super().__init__()
-        self.mmd_weight = mmd_weight
+        self.critic_weight = critic_weight
         self.kernel_method = kernel_method
 
         # Define components
         self.ae1, self.ae2 = models
-        self.critic_layer = MMDCritic(
+
+        if isinstance(critic, str):
+            critic = CRITICS.get(critic, MMDCritic)
+
+        self.critic_layer = critic(
             self.ae1.latent_dim,
-            weight = self.mmd_weight,
-            n_conditions = 2,
-            kernel_method = self.kernel_method,
+            weight = self.critic_weight,
             **kwargs
         )
-
-    def encode(self, inputs):
-        in1, in2 = inputs
-        x1, sf1 = in1
-        x2, sf2 = in2
-        latent1 = self.ae1.encoder(x1)
-        latent2 = self.ae2.encoder(x2)
-
 
     def critic(self, latent1, latent2, split_output=True):
         # Join latent spaces and assign labels
@@ -67,13 +61,13 @@ class TwinAutoencoder(Model):
         x1, sf1 = in1
         x2, sf2 = in2
         # Map to latent
-        latent1 = self.ae1.encoder(x1)
-        latent2 = self.ae2.encoder(x2)
+        latent1 = self.ae1.encode(x1)
+        latent2 = self.ae2.encode(x2)
         # Critic joins, adds loss, and splits
         latent1, latent2 = self.critic(latent1, latent2)
         # Reconstruction loss should be added by the decoders
-        out1 = self.ae1.decoder(x1, latent1, sf1)
-        out2 = self.ae2.decoder(x2, latent2, sf2)
+        out1 = self.ae1.decode(x1, latent1, sf1, loss_name='rec_loss_1')
+        out2 = self.ae2.decode(x2, latent2, sf2, loss_name='rec_loss_2')
         return out1, out2
 
     def transform(self, inputs, split_output=False):
@@ -82,8 +76,8 @@ class TwinAutoencoder(Model):
         latent1 = self.ae1.encoder(x1)
         latent2 = self.ae2.encoder(x2)
         # Critic joins, adds loss, and splits
-        latent1, latent2 = self.critic(latent1, latent2, split_output=split_output)
-        return latent1, latent1
+        outputs = self.critic(latent1, latent2, split_output=split_output)
+        return [out.numpy() for out in outputs]
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
         '''Compile model with default loss and omptimizer'''

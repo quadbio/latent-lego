@@ -174,7 +174,7 @@ class MMDCritic(layers.Layer):
 
 
 
-class PairingCritic(layers.Layer):
+class PairwiseNormCritic(layers.Layer):
     '''Matches paired points in latent space by forcing them to the same location.'''
     def __init__(
         self,
@@ -185,21 +185,22 @@ class PairingCritic(layers.Layer):
         kernel_method = 'rbf',
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        super().__init__(name=name)
         self.units = units
         self.weight = weight
 
     def call(self, inputs):
-        x1, x2  = inputs
+        x, labels = inputs
+        x1, x2 = tf.dynamic_partition(x, labels, 2)
         # Element-wise difference
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
-        crit_loss = self.weight * tf.math.reduce_sum(dist)
+        crit_loss = self.weight * tf.math.reduce_mean(dist)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=self.name)
-        return outputs
+        return x
 
 
 CRITICS = {
-    'pairing': PairingCritic,
+    'pairing': PairwiseNormCritic,
     'mmd': MMDCritic
 }
