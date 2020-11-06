@@ -84,5 +84,5 @@ class TwinAutoencoder(keras.Model):
         return [out.numpy() for out in outputs]
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
-        '''Compile model with default loss and omptimizer'''
+        '''Compile model with default loss and optimizer'''
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
