@@ -36,10 +36,9 @@ class TwinAutoencoder(keras.Model):
             critic = CRITICS.get(critic, MMDCritic)
 
         self.critic_layer = critic(
-            self.ae1.latent_dim,
             weight = self.critic_weight,
             kernel_method = self.kernel_method,
-            critic_units = self.critic_units,
+            hidden_units = self.critic_units,
             **kwargs
         )
 

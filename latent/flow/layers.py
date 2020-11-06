@@ -142,10 +142,10 @@ class MMDCritic(layers.Layer):
     '''Adds MMD loss between conditions.'''
     def __init__(
         self,
-        hidden_units = None,
         name = 'mmd_critic',
         weight = 1.0,
         n_conditions = 2,
+        hidden_units = None,
         kernel_method = 'rbf',
         **kwargs
     ):
@@ -156,9 +156,8 @@ class MMDCritic(layers.Layer):
         self.kernel_method = kernel_method
 
         # Define components
-        if hidden_units:
+        if self.hidden_units:
             self.mmd_layer = DenseStack(
-                name = self.name,
                 hidden_units = self.hidden_units,
                 dropout_rate = 0,
                 **kwargs
@@ -166,7 +165,7 @@ class MMDCritic(layers.Layer):
 
     def call(self, inputs):
         outputs, labels = inputs
-        if hidden_units:
+        if self.hidden_units:
             outputs = self.mmd_layer(outputs)
         mmd_loss = MaximumMeanDiscrepancy(
             n_conditions = self.n_conditions,
@@ -174,19 +173,18 @@ class MMDCritic(layers.Layer):
         )
         crit_loss = self.weight * mmd_loss(labels, outputs)
         self.add_loss(crit_loss)
-        self.add_metric(crit_loss, name=self.name)
+        self.add_metric(crit_loss, name=f'{self.name}_loss')
         return outputs
-
 
 
 class PairwiseNormCritic(layers.Layer):
     '''Matches paired points in latent space by forcing them to the same location.'''
     def __init__(
         self,
-        units,
         name = 'pairing_critic',
         weight = 1.0,
         n_conditions = 2,
+        hidden_units = None,
         kernel_method = 'rbf',
         **kwargs
     ):
@@ -196,9 +194,8 @@ class PairwiseNormCritic(layers.Layer):
         self.weight = weight
 
         # Define components
-        if hidden_units:
+        if self.hidden_units:
             self.mmd_layer = DenseStack(
-                name = self.name,
                 hidden_units = self.hidden_units,
                 dropout_rate = 0,
                 **kwargs
@@ -206,14 +203,14 @@ class PairwiseNormCritic(layers.Layer):
 
     def call(self, inputs):
         outputs, labels = inputs
-        if hidden_units:
+        if self.hidden_units:
             outputs = self.mmd_layer(outputs)
         x1, x2 = tf.dynamic_partition(outputs, labels, 2)
         # Element-wise difference
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
         crit_loss = self.weight * tf.math.reduce_mean(dist)
         self.add_loss(crit_loss)
-        self.add_metric(crit_loss, name=self.name)
+        self.add_metric(crit_loss, name=f'{self.name}_loss')
         return outputs
 
 
