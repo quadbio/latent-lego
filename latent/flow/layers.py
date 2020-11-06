@@ -159,7 +159,7 @@ class MMDCritic(layers.Layer):
         if hidden_units:
             self.mmd_layer = DenseStack(
                 name = self.name,
-                hidden_units = hidden_units,
+                hidden_units = self.hidden_units,
                 dropout_rate = 0,
                 **kwargs
             )
@@ -191,18 +191,30 @@ class PairwiseNormCritic(layers.Layer):
         **kwargs
     ):
         super().__init__(name=name)
+        self.hidden_units = hidden_units
         self.units = units
         self.weight = weight
 
+        # Define components
+        if hidden_units:
+            self.mmd_layer = DenseStack(
+                name = self.name,
+                hidden_units = self.hidden_units,
+                dropout_rate = 0,
+                **kwargs
+            )
+
     def call(self, inputs):
-        x, labels = inputs
-        x1, x2 = tf.dynamic_partition(x, labels, 2)
+        outputs, labels = inputs
+        if hidden_units:
+            outputs = self.mmd_layer(outputs)
+        x1, x2 = tf.dynamic_partition(outputs, labels, 2)
         # Element-wise difference
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
         crit_loss = self.weight * tf.math.reduce_mean(dist)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=self.name)
-        return x
+        return outputs
 
 
 CRITICS = {

@@ -21,11 +21,13 @@ class TwinAutoencoder(keras.Model):
         critic = 'mmd',
         kernel_method = 'multiscale_rbf',
         critic_weight = 1.0,
+        critic_units = None,
         **kwargs
     ):
         super().__init__()
         self.critic_weight = critic_weight
         self.kernel_method = kernel_method
+        self.critic_units = critic_units
 
         # Define components
         self.ae1, self.ae2 = models
@@ -36,6 +38,8 @@ class TwinAutoencoder(keras.Model):
         self.critic_layer = critic(
             self.ae1.latent_dim,
             weight = self.critic_weight,
+            kernel_method = self.kernel_method,
+            critic_units = self.critic_units,
             **kwargs
         )
 
