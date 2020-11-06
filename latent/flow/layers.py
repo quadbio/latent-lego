@@ -4,6 +4,8 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 import tensorflow.keras.layers as layers
 
+from collections.abc import Iterable
+
 from .activations import ACTIVATIONS
 from .losses import MaximumMeanDiscrepancy
 
@@ -140,7 +142,7 @@ class MMDCritic(layers.Layer):
     '''Adds MMD loss between conditions.'''
     def __init__(
         self,
-        units,
+        hidden_units = None,
         name = 'mmd_critic',
         weight = 1.0,
         n_conditions = 2,
@@ -148,21 +150,24 @@ class MMDCritic(layers.Layer):
         **kwargs
     ):
         super().__init__(name=name)
-        self.units = units
+        self.hidden_units = hidden_units
         self.weight = weight
         self.n_conditions = n_conditions
         self.kernel_method = kernel_method
 
         # Define components
-        self.mmd_layer = DenseBlock(
-            units,
-            dropout_rate = 0,
-            **kwargs
-        )
+        if hidden_units:
+            self.mmd_layer = DenseStack(
+                name = self.name,
+                hidden_units = hidden_units,
+                dropout_rate = 0,
+                **kwargs
+            )
 
     def call(self, inputs):
-        x, labels = inputs
-        outputs = self.mmd_layer(x)
+        outputs, labels = inputs
+        if hidden_units:
+            outputs = self.mmd_layer(outputs)
         mmd_loss = MaximumMeanDiscrepancy(
             n_conditions = self.n_conditions,
             kernel_method = self.kernel_method
