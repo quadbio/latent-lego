@@ -86,13 +86,14 @@ class CountDecoder(Decoder):
 
 
 
-class NegativeBinomialDecoder(CountDecoder):
+class NegativeBinomialDecoder(Decoder):
     '''
     Negative Binomial decoder model.
     Rough reimplementation of the NB Deep Count Autoencoder by Erslan et al. 2019
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # Define new components
         self.mean_layer = layers.Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
@@ -115,13 +116,14 @@ class NegativeBinomialDecoder(CountDecoder):
         return [mean, disp]
 
 
-class ZINBDecoder(CountDecoder):
+class ZINBDecoder(Decoder):
     '''
     ZINB decoder model.
     Rough reimplementation of the ZINB Deep Count Autoencoder by Erslan et al. 2019
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # Define new components
         self.mean_layer = layers.Dense(
             self.x_dim, name='mean',
             activation = clipped_exp,
