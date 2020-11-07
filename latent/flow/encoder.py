@@ -10,7 +10,7 @@ import tensorflow.keras.losses as losses
 import tensorflow_probability as tfp
 tfpl = tfp.layers
 tfd = tfp.distributions
-tfd = tfp.bijectors
+tfb = tfp.bijectors
 
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack
