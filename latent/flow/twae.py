@@ -20,7 +20,7 @@ class TwinAutoencoder(keras.Model):
         models,
         critic = 'mmd',
         kernel_method = 'multiscale_rbf',
-        critic_weight = 1.0,
+        critic_weight = 1.,
         critic_units = None,
         **kwargs
     ):

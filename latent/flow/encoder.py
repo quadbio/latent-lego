@@ -23,8 +23,8 @@ class Encoder(keras.Model):
         name='encoder',
         dropout_rate = 0.1,
         batchnorm = True,
-        l1 = 0.0,
-        l2 = 0.0,
+        l1 = 0.,
+        l2 = 0.,
         hidden_units = [128, 128],
         activation = 'leaky_relu',
         initializer = 'glorot_normal',
@@ -67,9 +67,17 @@ class Encoder(keras.Model):
 
 class VariationalEncoder(Encoder):
     '''Variational encoder'''
-    def __init__(self, beta=1e-5, **kwargs):
+    def __init__(
+        self,
+        beta = 1e-5,
+        prior = 'normal',
+        iaf_units = [128, 128],
+        **kwargs
+    ):
         super().__init__(**kwargs)
         self.beta = beta
+        self.prior = prior
+        self.iaf_units = iaf_units
 
         # Define components
         self.mu_sigma = layers.Dense(
@@ -78,16 +86,26 @@ class VariationalEncoder(Encoder):
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
-        # Make priors more flexible in the future
-        # Independent() reinterprets each latent_dim as an independent distribution
-        self.prior = tfd.Independent(
-            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1),
-            reinterpreted_batch_ndims = 1
-        )
+
+        if self.prior == 'normal':
+            # Independent() reinterprets each latent_dim as an independent distribution
+            self.prior_dist = tfd.Independent(
+                tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+                reinterpreted_batch_ndims = 1
+            )
+        elif self.prior == 'iaf':
+            self.prior_dist = tfd.TransformedDistribution(
+                distribution = tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+                bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
+                    shift_and_log_scale_fn=tfb.AutoregressiveNetwork(
+                        params=2, hidden_units=self.iaf_units))),
+                event_shape = self.latent_dim
+            )
+
         self.sampling = tfpl.MultivariateNormalTriL(
             self.latent_dim,
             activity_regularizer = tfpl.KLDivergenceRegularizer(
-                self.prior,
+                self.prior_dist,
                 weight = self.beta
             )
         )

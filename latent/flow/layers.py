@@ -19,8 +19,8 @@ class DenseBlock(layers.Layer):
         name = 'dense_block',
         dropout_rate = 0.1,
         batchnorm = True,
-        l1 = 0.0,
-        l2 = 0.0,
+        l1 = 0.,
+        l2 = 0.,
         activation = 'leaky_relu',
         initializer = 'glorot_normal',
         **kwargs
@@ -63,8 +63,8 @@ class DenseStack(layers.Layer):
         name = 'dense_stack',
         dropout_rate = 0.1,
         batchnorm = True,
-        l1 = 0.0,
-        l2 = 0.0,
+        l1 = 0.,
+        l2 = 0.,
         hidden_units = [128, 128],
         activation = 'leaky_relu',
         initializer = 'glorot_normal',
@@ -122,7 +122,7 @@ class Sampling(layers.Layer):
 
 class GradReversal(layers.Layer):
     '''Reverses gradient during backprop.'''
-    def __init__(self, weight=1.0, **kwargs):
+    def __init__(self, weight=1., **kwargs):
         super().__init__(**kwargs)
         self.weight = weight
 
@@ -143,7 +143,7 @@ class MMDCritic(layers.Layer):
     def __init__(
         self,
         name = 'mmd_critic',
-        weight = 1.0,
+        weight = 1.,
         n_conditions = 2,
         hidden_units = None,
         kernel_method = 'rbf',
@@ -159,7 +159,7 @@ class MMDCritic(layers.Layer):
         if self.hidden_units:
             self.mmd_layer = DenseStack(
                 hidden_units = self.hidden_units,
-                dropout_rate = 0,
+                dropout_rate = 0.,
                 **kwargs
             )
 
@@ -182,7 +182,7 @@ class PairwiseNormCritic(layers.Layer):
     def __init__(
         self,
         name = 'pairing_critic',
-        weight = 1.0,
+        weight = 1.,
         n_conditions = 2,
         hidden_units = None,
         kernel_method = 'rbf',
@@ -197,7 +197,7 @@ class PairwiseNormCritic(layers.Layer):
         if self.hidden_units:
             self.mmd_layer = DenseStack(
                 hidden_units = self.hidden_units,
-                dropout_rate = 0,
+                dropout_rate = 0.,
                 **kwargs
             )
 
