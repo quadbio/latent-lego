@@ -21,7 +21,7 @@ class Autoencoder(keras.Model):
         batchnorm = True,
         l1 = 0.,
         l2 = 0.,
-        hidden_units = [128, 128],
+        hidden_units = [128, 64],
         compile_model = True,
         activation = 'prelu',
         initializer = 'glorot_normal',

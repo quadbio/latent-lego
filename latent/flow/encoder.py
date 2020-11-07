@@ -72,7 +72,7 @@ class VariationalEncoder(Encoder):
         self,
         kld_weight = 1e-5,
         prior = 'normal',
-        iaf_units = [128, 128],
+        iaf_units = [256, 256],
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -88,19 +88,18 @@ class VariationalEncoder(Encoder):
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
 
-        if self.prior == 'normal':
-            # Independent() reinterprets each latent_dim as an independent distribution
-            self.prior_dist = tfd.Independent(
-                tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
-                reinterpreted_batch_ndims = 1
-            )
-        elif self.prior == 'iaf':
+        # Independent() reinterprets each latent_dim as an independent distribution
+        self.prior_dist = tfd.Independent(
+            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+            reinterpreted_batch_ndims = 1
+        )
+
+        if self.prior == 'iaf':
             self.prior_dist = tfd.TransformedDistribution(
-                distribution = tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+                distribution = self.prior_dist,
                 bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
                     shift_and_log_scale_fn=tfb.AutoregressiveNetwork(
-                        params=2, hidden_units=self.iaf_units))),
-                event_shape = self.latent_dim
+                        params=2, hidden_units=self.iaf_units)))
             )
 
         self.sampling = tfpl.MultivariateNormalTriL(
