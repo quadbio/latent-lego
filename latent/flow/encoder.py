@@ -69,13 +69,13 @@ class VariationalEncoder(Encoder):
     '''Variational encoder'''
     def __init__(
         self,
-        beta = 1e-5,
+        kld_weight = 1e-5,
         prior = 'normal',
         iaf_units = [128, 128],
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.beta = beta
+        self.kld_weight = kld_weight
         self.prior = prior
         self.iaf_units = iaf_units
 
@@ -106,7 +106,7 @@ class VariationalEncoder(Encoder):
             self.latent_dim,
             activity_regularizer = tfpl.KLDivergenceRegularizer(
                 self.prior_dist,
-                weight = self.beta
+                weight = self.kld_weight
             )
         )
 

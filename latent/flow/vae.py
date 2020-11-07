@@ -14,18 +14,18 @@ class VariationalAutoencoder(Autoencoder):
     '''Variational Autoencoder'''
     def __init__(
         self,
-        beta = 1e-5,
+        kld_weight = 1e-5,
         prior = 'normal',
         iaf_units = [128, 128],
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.beta = beta
+        self.kld_weight = kld_weight
         self.prior = prior
         self.iaf_units = iaf_units
 
         self.encoder = VariationalEncoder(
-            beta = self.beta,
+            kld_weight = self.kld_weight,
             prior = self.prior,
             iaf_units = self.iaf_units,
             latent_dim = self.latent_dim,
