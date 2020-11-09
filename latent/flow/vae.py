@@ -20,7 +20,7 @@ class VariationalAutoencoder(Autoencoder):
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.kld_weight = kld_weight
+        self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
 

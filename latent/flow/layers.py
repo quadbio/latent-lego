@@ -177,7 +177,7 @@ class MMDCritic(layers.Layer):
         return outputs
 
 
-class PairwiseNormCritic(layers.Layer):
+class PairwiseDistCritic(layers.Layer):
     '''Matches paired points in latent space by forcing them to the same location.'''
     def __init__(
         self,
@@ -190,7 +190,6 @@ class PairwiseNormCritic(layers.Layer):
     ):
         super().__init__(name=name)
         self.hidden_units = hidden_units
-        self.units = units
         self.weight = weight
 
         # Define components
@@ -215,6 +214,6 @@ class PairwiseNormCritic(layers.Layer):
 
 
 CRITICS = {
-    'pairing': PairwiseNormCritic,
+    'pairing': PairwiseDistCritic,
     'mmd': MMDCritic
 }

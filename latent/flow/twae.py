@@ -25,7 +25,7 @@ class TwinAutoencoder(keras.Model):
         **kwargs
     ):
         super().__init__()
-        self.critic_weight = critic_weight
+        self.critic_weight = tf.Variable(critic_weight, trainable=False)
         self.kernel_method = kernel_method
         self.critic_units = critic_units
 
