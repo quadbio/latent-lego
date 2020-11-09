@@ -8,7 +8,7 @@ import tensorflow.keras.callbacks as callbacks
 
 
 class IncreaseKLDOnEpoch(callbacks.Callback):
-    '''Increase VAE KLD loss linearly during training'''
+    '''Increase VAE KLD loss during training'''
     def __init__(
         self,
         factor = 1.5,
