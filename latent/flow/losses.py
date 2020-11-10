@@ -64,6 +64,7 @@ class MaximumMeanDiscrepancy(losses.Loss):
         return tf.cast(result, tf.float32)
 
 
+# Implementation adapted from https://github.com/theislab/dca
 class NegativeBinomial(losses.Loss):
     '''Negative binomial loss'''
     def __init__(self, theta, eps=1e-8, **kwargs):
@@ -90,6 +91,7 @@ class NegativeBinomial(losses.Loss):
         return res
 
 
+# Implementation adapted from https://github.com/theislab/dca
 class ZINB(losses.Loss):
     '''Zero-inflated negative binomial loss'''
     def __init__(self, pi, theta, eps=1e-8, **kwargs):
