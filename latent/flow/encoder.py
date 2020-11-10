@@ -13,7 +13,7 @@ tfd = tfp.distributions
 tfb = tfp.bijectors
 
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, KLDivergenceAddLoss
+from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling
 
 
 class Encoder(keras.Model):
@@ -98,7 +98,6 @@ class VariationalEncoder(Encoder):
             kernel_initializer = self.initializer
         )
         self.sampling = Sampling()
-        self.kld_layer = KLDivergenceAddLoss(weight=kld_weight)
 
         # # Independent() reinterprets each latent_dim as an independent distribution
         # self.prior_dist = tfd.Independent(
@@ -133,8 +132,21 @@ class VariationalEncoder(Encoder):
         h = self.dense_stack(inputs)
         mean = self.mean(h)
         log_var = self.log_var(h)
-        mean, log_var = self.kld_layer([mean, log_var])
         outputs = self.sampling([mean, log_var])
+
+        def log_normal_diag(x, mean, log_var, axis=None):
+            import numpy as np
+            log2pi = np.log(2 * np.pi)
+            log_normal = -0.5 * (log_var + tf.math.square(x - mean) / tf.math.exp(log_var) + log2pi)
+            return tf.math.reduce_mean(log_normal, axis=axis)
+
+        estimate = log_normal_diag(outputs, mean, log_var, axis=-1)
+        prior = log_normal_diag(outputs, 0., 1., axis=-1)
+        kld_loss = tf.math.reduce_sum(estimate - prior)
+
+        self.add_loss(kld_loss)
+        self.add_metric(kld_loss, name='kld_loss')
+
         # mean_logvar = self.mean_logvar(h)
         # outputs = self.sampling(mean_logvar)
         return outputs
