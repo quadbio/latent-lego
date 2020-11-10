@@ -181,9 +181,8 @@ class KLDivergenceAddLoss(layers.Layer):
     def call(self, inputs):
         mean, log_var = inputs
         kl_loss = - 0.5 * tf.math.reduce_sum(
-            1 + log_var - tf.math.square(mean) - tf.math.exp(log_var), axis=-1
+            1 + log_var - tf.math.square(mean) - tf.math.exp(log_var)
         )
-        kl_loss = tf.math.reduce_sum(kl_loss)
         self.add_loss(self.weight * kl_loss)
         self.add_metric(self.weight * kl_loss, name=f'{self.name}_loss')
         return inputs

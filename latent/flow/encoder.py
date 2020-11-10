@@ -13,7 +13,7 @@ tfd = tfp.distributions
 tfb = tfp.bijectors
 
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, DenseStack
+from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, KLDivergenceAddLoss
 
 
 class Encoder(keras.Model):
@@ -73,6 +73,7 @@ class VariationalEncoder(Encoder):
         kld_weight = 1e-5,
         prior = 'normal',
         iaf_units = [256, 256],
+        vamp_pseudoinputs = 200,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -81,38 +82,59 @@ class VariationalEncoder(Encoder):
         self.iaf_units = iaf_units
 
         # Define components
-        self.mu_sigma = layers.Dense(
-            tfpl.MultivariateNormalTriL.params_size(self.latent_dim),
-            name = 'encoder_mu_sigma',
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
-        )
-
-        # Independent() reinterprets each latent_dim as an independent distribution
-        self.prior_dist = tfd.Independent(
-            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
-            reinterpreted_batch_ndims = 1
-        )
-
-        if self.prior == 'iaf':
-            self.prior_dist = tfd.TransformedDistribution(
-                distribution = self.prior_dist,
-                bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
-                    shift_and_log_scale_fn=tfb.AutoregressiveNetwork(
-                        params=2, hidden_units=self.iaf_units)))
-            )
-
-        self.sampling = tfpl.MultivariateNormalTriL(
+        # self.mean_logvar = layers.Dense(
+        #     tfpl.MultivariateNormalTriL.params_size(self.latent_dim),
+        #     name = 'encoder_mean_logvar',
+        #     kernel_initializer = self.initializer
+        # )
+        self.mean = layers.Dense(
             self.latent_dim,
-            activity_regularizer = tfpl.KLDivergenceRegularizer(
-                self.prior_dist,
-                weight = self.kld_weight
-            )
+            name = 'encoder_mean',
+            kernel_initializer = self.initializer
         )
+        self.log_var = layers.Dense(
+            self.latent_dim,
+            name = 'encoder_log_var',
+            kernel_initializer = self.initializer
+        )
+        self.sampling = Sampling()
+        self.kld_layer = KLDivergenceAddLoss(weight=kld_weight)
+
+        # # Independent() reinterprets each latent_dim as an independent distribution
+        # self.prior_dist = tfd.Independent(
+        #     tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+        #     reinterpreted_batch_ndims = 1
+        # )
+        #
+        # if self.prior == 'iaf':
+        #     made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
+        #     self.prior_dist = tfd.TransformedDistribution(
+        #         distribution = self.prior_dist,
+        #         bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
+        #             shift_and_log_scale_fn=made))
+        #     )
+        #
+        # self.sampling = tfpl.MultivariateNormalTriL(
+        #     self.latent_dim,
+        #     activity_regularizer = tfpl.KLDivergenceRegularizer(
+        #         self.prior_dist,
+        #         weight = self.kld_weight
+        #     )
+        # )
+        #
+        # if self.prior == 'vamp':
+        #     self.pseudo_inputs = PseudoInputs(n_inputs=vamp_pseudoinputs)
+        #     pass
+
+
 
     def call(self, inputs):
         '''Full forward pass through model'''
         h = self.dense_stack(inputs)
-        h = self.mu_sigma(h)
-        outputs = self.sampling(h)
+        mean = self.mean(h)
+        log_var = self.log_var(h)
+        mean, log_var = self.kld_layer([mean, log_var])
+        outputs = self.sampling([mean, log_var])
+        # mean_logvar = self.mean_logvar(h)
+        # outputs = self.sampling(mean_logvar)
         return outputs
