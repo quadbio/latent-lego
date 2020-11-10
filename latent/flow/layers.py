@@ -1,5 +1,7 @@
 import tensorflow as tf
 import tensorflow.keras as keras
+import tensorflow.keras.initializers as initializers
+import tensorflow.keras.activations as activations
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 import tensorflow.keras.layers as layers
@@ -10,7 +12,7 @@ from .activations import ACTIVATIONS
 from .losses import MaximumMeanDiscrepancy
 
 
-### Core layers
+### Core layers and stacks
 class DenseBlock(layers.Layer):
     '''Basic dense layer block'''
     def __init__(
@@ -108,16 +110,45 @@ class ColwiseMult(layers.Layer):
 
 
 class Sampling(layers.Layer):
-    '''Uses inputs (z_mean, z_log_var) to sample z.'''
+    '''Uses inputs (z_mean, log_var) to sample z.'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def call(self, inputs):
-        z_mean, z_log_var = inputs
-        batch = tf.shape(z_mean)[0]
-        dim = tf.shape(z_mean)[1]
-        epsilon = K.random_normal(shape=(batch, dim))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+        mean, log_var = inputs
+        epsilon = K.random_normal(shape=tf.shape(mean))
+        return mean + tf.exp(0.5 * log_var) * epsilon
+
+
+# Implementation adapted from https://github.com/theislab/sfaira/
+class PseudoInputs(layers.Layer):
+    '''Creates trainable pseudo inputs'''
+    def __init__(
+        self,
+        n_inputs,
+        activation = 'hard_sigmoid',
+        initializer = None,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.n_inputs = n_inputs
+        self.activation = activations.get(activation)
+        if initializer:
+            self.initializer = initializers.get(initializer)
+        else:
+            self.initializer = tf.random_normal_initializer(mean=-0.05, stddev=0.01)
+
+    def build(self, input_shape):
+        self.u = self.add_weight(
+            shape = (self.n_inputs, input_shape[-1]),
+            initializer = self.initializer,
+            dtype = tf.float32,
+            name = 'u'
+        )
+        super().build(input_shape)
+
+    def call(self, inputs):
+        return self.activation(self.u)
 
 
 class GradReversal(layers.Layer):
@@ -207,7 +238,7 @@ class PairwiseDistCritic(layers.Layer):
         x1, x2 = tf.dynamic_partition(outputs, labels, 2)
         # Element-wise difference
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
-        crit_loss = self.weight * tf.math.reduce_mean(dist)
+        crit_loss = self.weight * dist
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
         return outputs
