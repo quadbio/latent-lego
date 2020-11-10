@@ -116,8 +116,8 @@ class Sampling(layers.Layer):
 
     def call(self, inputs):
         mean, log_var = inputs
-        epsilon = K.random_normal(shape=tf.shape(mean))
-        return mean + tf.exp(0.5 * log_var) * epsilon
+        epsilon = tf.random.normal(shape=tf.shape(mean))
+        return mean + tf.math.exp(0.5 * log_var) * epsilon
 
 
 # Implementation adapted from https://github.com/theislab/sfaira/
@@ -166,6 +166,27 @@ class GradReversal(layers.Layer):
         def grad(dy):
             return -dy * self.weight
         return y, custom_grad
+
+
+class KLDivergenceAddLoss(layers.Layer):
+    '''
+    Identity transform layer that adds analytic KL divergence
+    (based on mean ans log_var) to the final model loss.
+    '''
+
+    def __init__(self, name='kld', weight=1., **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.weight = weight
+
+    def call(self, inputs):
+        mean, log_var = inputs
+        kl_loss = - 0.5 * tf.math.reduce_sum(
+            1 + log_var - tf.math.square(mean) - tf.math.exp(log_var), axis=-1
+        )
+        kl_loss = tf.math.reduce_sum(kl_loss)
+        self.add_loss(self.weight * kl_loss)
+        self.add_metric(self.weight * kl_loss, name=f'{self.name}_loss')
+        return inputs
 
 
 ### Critic layers
