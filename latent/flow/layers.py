@@ -285,14 +285,14 @@ class IndependentVonMisesFisher(tfpl.DistributionLambda):
         validate_args = False,
         **kwargs
     ):
-    super().__init__(
-        lambda t: VonMisesFisher.new(t, event_shape, validate_args),
-        convert_to_tensor_fn, **kwargs
-    )
+        super().__init__(
+            lambda t: VonMisesFisher.new(t, event_shape, validate_args),
+            convert_to_tensor_fn, **kwargs
+        )
 
-    self._event_shape = event_shape
-    self._convert_to_tensor_fn = convert_to_tensor_fn
-    self._validate_args = validate_args
+        self._event_shape = event_shape
+        self._convert_to_tensor_fn = convert_to_tensor_fn
+        self._validate_args = validate_args
 
     @staticmethod
     def new(params, event_shape=(), validate_args=False, name=None):
@@ -321,3 +321,10 @@ class IndependentVonMisesFisher(tfpl.DistributionLambda):
             return 2 * np.prod(event_shape_const)
         else:
             return 2 * tf.reduce_prod(event_shape)
+
+
+DISTRIBUTIONS = {
+    'independent_normal': tfpl.IndependentNormal,
+    'multivariate_normal': tfpl.MultivariateNormalTriL,
+    'independent_vmf': IndependentVonMisesFisher
+}
