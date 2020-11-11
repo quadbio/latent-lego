@@ -17,17 +17,20 @@ class VariationalAutoencoder(Autoencoder):
         kld_weight = 1e-5,
         prior = 'normal',
         iaf_units = [256, 256],
+        vamp_pseudoinputs = 500,
         **kwargs
     ):
         super().__init__(**kwargs)
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
+        self.vamp_pseudoinputs = vamp_pseudoinputs
 
         self.encoder = VariationalEncoder(
             kld_weight = self.kld_weight,
             prior = self.prior,
             iaf_units = self.iaf_units,
+            vamp_pseudoinputs = self.vamp_pseudoinputs,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,

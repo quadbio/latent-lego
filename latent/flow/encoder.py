@@ -124,15 +124,16 @@ class VariationalEncoder(Encoder):
         h = self.dense_stack(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
+
         if self.prior == 'vamp':
             # VAMP prior depends on input, do we have to add it here
             prior_dist = self._vamp_prior(inputs)
             # Original implementation performs additional logsumexp on prior log_prob
-            # this would require to compute KLDivergence manually, e.g.:
+            # this requires us to compute KLDivergence manually, roughly like:
             # z = outputs.sample()
-            # tf.math.reduce_mean(outputs.log_prob(z))
-            # - tf.math.reduce_logsumexp(prior.log_prob(z)))
-            # This would also solve the problem of dimension mismatch
+            # log_prob_1 = tf.math.reduce_mean(outputs.log_prob(z))
+            # log_prob_2 = tf.math.reduce_logsumexp(prior_dist.log_prob(z))
+            # kld_loss = log_prob_1 - log_prob_2
         else:
             prior_dist = self.prior_dist
         kld_regularizer = tfpl.KLDivergenceRegularizer(
@@ -154,3 +155,10 @@ class VariationalEncoder(Encoder):
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
         return outputs
+
+
+class HierarchicalVariationalEncoder(VariationalEncoder):
+    '''Hierarchical variational encoder (Tomczak & Welling 2018)'''
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        pass
