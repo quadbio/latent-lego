@@ -92,7 +92,6 @@ class VariationalEncoder(Encoder):
             name = 'encoder_mean_logvar',
             kernel_initializer = self.initializer
         )
-        self.sampling = self.latent_dist_layer(self.latent_dim)
 
         # Independent() reinterprets each latent_dim as an independent distribution
         unit_mvn = tfd.Independent(
@@ -115,19 +114,27 @@ class VariationalEncoder(Encoder):
             self.pseudo_inputs = PseudoInputs(n_inputs=vamp_pseudoinputs)
             pass
 
+        self.sampling = self.latent_dist_layer(
+            self.latent_dim,
+            activity_regularizer = tfpl.KLDivergenceRegularizer(
+                self.prior_dist,
+                weight = self.kld_weight
+            )
+        )
+
     def call(self, inputs):
         '''Full forward pass through model'''
         h = self.dense_stack(inputs)
         mean_logvar = self.mean_logvar(h)
         outputs = self.sampling(mean_logvar)
-        kld_regularizer = tfpl.KLDivergenceRegularizer(
-            self.prior_dist,
-            weight = self.kld_weight
-        )
-        kld_loss = kld_regularizer(outputs)
-        # Add losses manually to better monitor them
-        self.add_loss(kld_loss)
-        self.add_metric(kld_loss, name='kld_loss')
+        # kld_regularizer = tfpl.KLDivergenceRegularizer(
+        #     self.prior_dist,
+        #     weight = self.kld_weight
+        # )
+        # kld_loss = kld_regularizer(outputs)
+        # # Add losses manually to better monitor them
+        # self.add_loss(kld_loss)
+        # self.add_metric(kld_loss, name='kld_loss')
         return outputs
 
     def vamp_sampling(self, inputs):
