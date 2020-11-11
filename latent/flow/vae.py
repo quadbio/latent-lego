@@ -16,7 +16,7 @@ class VariationalAutoencoder(Autoencoder):
         self,
         kld_weight = 1e-5,
         prior = 'normal',
-        iaf_units = [128, 64],
+        iaf_units = [256, 256],
         **kwargs
     ):
         super().__init__(**kwargs)

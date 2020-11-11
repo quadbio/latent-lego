@@ -150,10 +150,11 @@ class PseudoInputs(layers.Layer):
             dtype = tf.float32,
             name = 'u'
         )
-        super().build(input_shape)
 
     def call(self, inputs):
-        return self.activation(self.u)
+        batch_size = tf.shape(inputs)[0]
+        # Prevent dimension mismatch
+        return self.activation(self.u)[:batch_size, :]
 
 
 class GradReversal(layers.Layer):
