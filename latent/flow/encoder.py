@@ -13,7 +13,7 @@ tfd = tfp.distributions
 tfb = tfp.bijectors
 
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling
+from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
 
 
 class Encoder(keras.Model):
@@ -72,6 +72,7 @@ class VariationalEncoder(Encoder):
         self,
         kld_weight = 1e-5,
         prior = 'normal',
+        latent_dist = 'independent_normal',
         iaf_units = [256, 256],
         vamp_pseudoinputs = 200,
         **kwargs
@@ -80,73 +81,58 @@ class VariationalEncoder(Encoder):
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
+        self.vamp_pseudoinputs = vamp_pseudoinputs
+        self.latent_dist = latent_dist
+
+        self.latent_dist_layer = DISTRIBUTIONS.get(latent_dist, tfpl.IndependentNormal)
 
         # Define components
-        # self.mean_logvar = layers.Dense(
-        #     tfpl.MultivariateNormalTriL.params_size(self.latent_dim),
-        #     name = 'encoder_mean_logvar',
-        #     kernel_initializer = self.initializer
-        # )
-        self.mean = layers.Dense(
-            self.latent_dim,
-            name = 'encoder_mean',
+        self.mean_logvar = layers.Dense(
+            self.latent_dist_layer.params_size(self.latent_dim),
+            name = 'encoder_mean_logvar',
             kernel_initializer = self.initializer
         )
-        self.log_var = layers.Dense(
-            self.latent_dim,
-            name = 'encoder_log_var',
-            kernel_initializer = self.initializer
+        self.sampling = self.latent_dist_layer(self.latent_dim)
+
+        # Independent() reinterprets each latent_dim as an independent distribution
+        unit_mvn = tfd.Independent(
+            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+            reinterpreted_batch_ndims = 1
         )
-        self.sampling = Sampling()
 
-        # # Independent() reinterprets each latent_dim as an independent distribution
-        # self.prior_dist = tfd.Independent(
-        #     tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
-        #     reinterpreted_batch_ndims = 1
-        # )
-        #
-        # if self.prior == 'iaf':
-        #     made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
-        #     self.prior_dist = tfd.TransformedDistribution(
-        #         distribution = self.prior_dist,
-        #         bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
-        #             shift_and_log_scale_fn=made))
-        #     )
-        #
-        # self.sampling = tfpl.MultivariateNormalTriL(
-        #     self.latent_dim,
-        #     activity_regularizer = tfpl.KLDivergenceRegularizer(
-        #         self.prior_dist,
-        #         weight = self.kld_weight
-        #     )
-        # )
-        #
-        # if self.prior == 'vamp':
-        #     self.pseudo_inputs = PseudoInputs(n_inputs=vamp_pseudoinputs)
-        #     pass
+        if self.prior == 'normal':
+            self.prior_dist = unit_mvn
 
+        elif self.prior == 'iaf':
+            made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
+            self.prior_dist = tfd.TransformedDistribution(
+                distribution = unit_mvn,
+                bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
+                    shift_and_log_scale_fn=made))
+            )
 
+        elif self.prior == 'vamp':
+            self.pseudo_inputs = PseudoInputs(n_inputs=vamp_pseudoinputs)
+            pass
 
     def call(self, inputs):
         '''Full forward pass through model'''
         h = self.dense_stack(inputs)
-        mean = self.mean(h)
-        log_var = self.log_var(h)
-        outputs = self.sampling([mean, log_var])
-
-        def log_normal_diag(x, mean, log_var, axis=None):
-            import numpy as np
-            log2pi = np.log(2 * np.pi)
-            log_normal = -0.5 * (log_var + tf.math.square(x - mean) / tf.math.exp(log_var) + log2pi)
-            return tf.math.reduce_mean(log_normal, axis=axis)
-
-        estimate = log_normal_diag(outputs, mean, log_var, axis=-1)
-        prior = log_normal_diag(outputs, 0., 1., axis=-1)
-        kld_loss = tf.math.reduce_sum(estimate - prior)
-
+        mean_logvar = self.mean_logvar(h)
+        outputs = self.sampling(mean_logvar)
+        kld_regularizer = tfpl.KLDivergenceRegularizer(
+            self.prior_dist,
+            weight = self.kld_weight
+        )
+        kld_loss = kld_regularizer(outputs)
+        # Add losses manually to better monitor them
         self.add_loss(kld_loss)
         self.add_metric(kld_loss, name='kld_loss')
+        return outputs
 
-        # mean_logvar = self.mean_logvar(h)
-        # outputs = self.sampling(mean_logvar)
+    def vamp_sampling(self, inputs):
+        h = self.pseudo_inputs(inputs)
+        h = self.dense_stack(h)
+        mean_logvar = self.mean_logvar(h)
+        outputs = self.sampling(mean_logvar)
         return outputs
