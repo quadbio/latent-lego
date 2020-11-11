@@ -304,17 +304,19 @@ class IndependentVonMisesFisher(tfpl.DistributionLambda):
             event_shape,
         ], axis=0)
         mean_dir_params, conc_params = tf.split(params, 2, axis=-1)
-        return tfd.Independent(
+        dist = tfd.Independent(
             tfd.VonMisesFisher(
                 mean_direction = tf.reshape(mean_dir_params, output_shape),
                 concentration = tf.math.softplus(tf.reshape(conc_params, output_shape)),
                 validate_args = validate_args),
             reinterpreted_batch_ndims = tf.size(event_shape),
-            validate_args = validate_args)
+            validate_args = validate_args
+        )
+        return dist
 
     @staticmethod
     def params_size(event_shape=()):
-        """The number of `params` needed to create a single distribution."""
+        '''The number of `params` needed to create a single distribution.'''
         event_shape = tf.convert_to_tensor(event_shape, dtype_hint=tf.int32)
         event_shape_const = tf.get_static_value(event_shape)
         if event_shape_const is not None:
