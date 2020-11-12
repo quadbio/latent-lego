@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.initializers as initializers
@@ -153,8 +154,7 @@ class PseudoInputs(layers.Layer):
 
     def call(self, inputs):
         batch_size = tf.shape(inputs)[0]
-        # Prevent dimension mismatch
-        return self.activation(self.u)[:batch_size, :]
+        return self.activation(self.u)
 
 
 class GradReversal(layers.Layer):
@@ -287,7 +287,7 @@ class IndependentVonMisesFisher(tfpl.DistributionLambda):
         **kwargs
     ):
         super().__init__(
-            lambda t: VonMisesFisher.new(t, event_shape, validate_args),
+            lambda t: IndependentVonMisesFisher.new(t, event_shape, validate_args),
             convert_to_tensor_fn, **kwargs
         )
 

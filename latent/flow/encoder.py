@@ -74,14 +74,14 @@ class VariationalEncoder(Encoder):
         prior = 'normal',
         latent_dist = 'independent_normal',
         iaf_units = [256, 256],
-        vamp_pseudoinputs = 200,
+        n_pseudoinputs = 200,
         **kwargs
     ):
         super().__init__(**kwargs)
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
-        self.vamp_pseudoinputs = vamp_pseudoinputs
+        self.n_pseudoinputs = n_pseudoinputs
         self.latent_dist = latent_dist
 
         # Define components
@@ -113,11 +113,14 @@ class VariationalEncoder(Encoder):
 
         elif self.prior == 'vamp':
             # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
-            self.pseudo_inputs = PseudoInputs(n_inputs=self.vamp_pseudoinputs)
+            self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
         elif self.prior == 'vmf':
             # Hyperspherical von Mises-Fisher prior (Davidson et al. 2018)
-            pass
+            self.prior_dist = tfd.Independent(
+                tfd.VonMisesFisher(
+                    mean_direction=tf.zeros(self.latent_dim), concentration=1.)
+            )
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -126,28 +129,24 @@ class VariationalEncoder(Encoder):
         outputs = self.sampling(dist_params)
 
         if self.prior == 'vamp':
-            # VAMP prior depends on input, do we have to add it here
+            # VAMP prior depends on input, so we have to add it here
             prior_dist = self._vamp_prior(inputs)
-            # Original implementation performs additional logsumexp on prior log_prob
-            # this requires us to compute KLDivergence manually, roughly like:
-            # z = outputs.sample()
-            # log_prob_1 = tf.math.reduce_mean(outputs.log_prob(z))
-            # log_prob_2 = tf.math.reduce_logsumexp(prior_dist.log_prob(z))
-            # kld_loss = log_prob_1 - log_prob_2
+            kld_loss = self.kld_weight * self._vamp_kld(outputs, prior_dist)
         else:
             prior_dist = self.prior_dist
-        kld_regularizer = tfpl.KLDivergenceRegularizer(
-            prior_dist,
-            weight = self.kld_weight,
-            test_points_reduce_axis = None
-        )
-        kld_loss = kld_regularizer(outputs)
+            kld_regularizer = tfpl.KLDivergenceRegularizer(
+                prior_dist,
+                weight = self.kld_weight,
+                test_points_reduce_axis = None
+            )
+            kld_loss = kld_regularizer(outputs)
         # Add losses manually to better monitor them
         self.add_loss(kld_loss)
         self.add_metric(kld_loss, name='kld_loss')
         return outputs
 
     def _vamp_prior(self, inputs):
+        '''Computes VAMP prior by feeding pseudoinputs through model'''
         # Inputs are needed to infer shape
         # and to ensure a connected graph
         h = self.pseudo_inputs(inputs)
@@ -155,6 +154,18 @@ class VariationalEncoder(Encoder):
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
         return outputs
+
+    # Adapted from original implementation https://github.com/jmtomczak/vae_vampprior
+    def _vamp_kld(self, xdist, pdist):
+        '''Computes KLD between x and VAMP prior'''
+        z = tf.convert_to_tensor(xdist)
+        n_pseudo = tf.cast(self.n_pseudoinputs, tf.float32)
+        x_log_prob = xdist.log_prob(z)
+        zx = tf.expand_dims(z, 1)
+        a = pdist.log_prob(zx) - tf.math.log(n_pseudo)
+        a_max = tf.math.reduce_max(a, axis=1)
+        p_log_prob = a_max + tf.math.reduce_logsumexp(a - tf.expand_dims(a_max, 1))
+        return tf.math.reduce_mean(x_log_prob - p_log_prob)
 
 
 class HierarchicalVariationalEncoder(VariationalEncoder):
