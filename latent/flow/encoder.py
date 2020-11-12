@@ -94,19 +94,16 @@ class VariationalEncoder(Encoder):
         self.sampling = self.latent_dist_layer(self.latent_dim)
 
         # Independent() reinterprets each latent_dim as an independent distribution
-        unit_mvn = tfd.Independent(
+        self.prior_dist = tfd.Independent(
             tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
             reinterpreted_batch_ndims = 1
         )
 
-        if self.prior == 'normal':
-            self.prior_dist = unit_mvn
-
-        elif self.prior == 'iaf':
+        if self.prior == 'iaf':
             # Inverse autoregressive flow (Kingma et al. 2016)
             made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
             self.prior_dist = tfd.TransformedDistribution(
-                distribution = unit_mvn,
+                distribution = self.prior_dist,
                 bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
                     shift_and_log_scale_fn=made))
             )
@@ -115,12 +112,12 @@ class VariationalEncoder(Encoder):
             # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
             self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
-        elif self.prior == 'vmf':
-            # Hyperspherical von Mises-Fisher prior (Davidson et al. 2018)
-            self.prior_dist = tfd.Independent(
-                tfd.VonMisesFisher(
-                    mean_direction=tf.zeros(self.latent_dim), concentration=1.)
-            )
+        # elif self.prior == 'vmf':
+        #     # Hyperspherical von Mises-Fisher prior (Davidson et al. 2018)
+        #     self.prior_dist = tfd.Independent(
+        #         tfd.VonMisesFisher(
+        #             mean_direction=tf.zeros(self.latent_dim), concentration=1.)
+        #     )
 
     def call(self, inputs):
         '''Full forward pass through model'''
