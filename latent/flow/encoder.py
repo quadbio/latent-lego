@@ -165,9 +165,9 @@ class VariationalEncoder(Encoder):
         a = pdist.log_prob(zx) - tf.math.log(n_pseudo)
         a_max = tf.math.reduce_max(a, axis=1)
         p_log_prob = a_max + tf.math.reduce_logsumexp(a - tf.expand_dims(a_max, 1))
-        kld = tf.math.reduce_mean(x_log_prob - p_log_prob)
         # This can become negative, so we make sure we
         # actually just take the absolute difference
+        kld = tf.math.reduce_mean(x_log_prob - p_log_prob)
         return tf.math.abs(kld)
 
 
