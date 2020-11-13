@@ -14,6 +14,7 @@ tfb = tfp.bijectors
 
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
+from .losses import TopologicalSignatureDistance
 
 
 class Encoder(keras.Model):
@@ -66,10 +67,32 @@ class Encoder(keras.Model):
         return outputs
 
 
+class TopologicalEncoder(Encoder):
+    '''Encoder model with topological loss on latent space'''
+    def __init__(
+        self,
+        name = 'topological_encoder',
+        **kwargs
+    ):
+        super().__init__(name=name, **kwargs)
+        self.topo_regularizer = TopologicalSignatureDistance()
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h = self.dense_stack(inputs)
+        h = self.final_layer(h)
+        outputs = self.final_act(h)
+        topo_loss = self.topo_regularizer(inputs, outputs)
+        self.add_loss(topo_loss)
+        self.add_metric(topo_loss, name='topo_loss')
+        return outputs
+
+
 class VariationalEncoder(Encoder):
     '''Variational encoder'''
     def __init__(
         self,
+        name = 'variational_encoder',
         kld_weight = 1e-5,
         prior = None,
         latent_dist = 'independent_normal',
@@ -77,7 +100,7 @@ class VariationalEncoder(Encoder):
         n_pseudoinputs = 200,
         **kwargs
     ):
-        super().__init__(**kwargs)
+        super().__init__(name=name, **kwargs)
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
@@ -117,9 +140,8 @@ class VariationalEncoder(Encoder):
         h = self.dense_stack(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
-
+        # VAMP prior depends on input, so we have to add it here
         if self.prior == 'vamp':
-            # VAMP prior depends on input, so we have to add it here
             prior_dist = self._vamp_prior(inputs)
             kld_loss = self.kld_weight * self._vamp_kld(outputs, prior_dist)
         else:
