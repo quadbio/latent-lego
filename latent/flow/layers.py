@@ -1,4 +1,4 @@
-'''Tensorflow implementations of losses for autoencoders'''
+'''Tensorflow implementations of useful layers and blocks'''
 
 import numpy as np
 import tensorflow as tf
@@ -45,7 +45,6 @@ class DenseBlock(layers.Layer):
         # Define block components
         self.dense = layers.Dense(
             units,
-            name = self.name,
             kernel_initializer = self.initializer,
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )

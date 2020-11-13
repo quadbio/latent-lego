@@ -123,12 +123,12 @@ def compute_persistent_homology(matrix):
             persistence_pairs.append((v, u))
 
     # Return empty cycles component
-    return np.array(persistence_pairs), np.array([])
+    return np.array(persistence_pairs, dtype=np.int64), np.array([], dtype=np.float32)
 
 
-@tf.function
 def persistent_homology(matrix):
-    return tf.numpy_function(compute_persistent_homology, [matrix], tf.float32)
+    return tf.numpy_function(
+        compute_persistent_homology, [matrix], [tf.int64, tf.float32])
 
 
 ### Other
@@ -148,3 +148,9 @@ def nan2inf(x):
 def nelem(x):
     nelem = tf.math.reduce_sum(tf.cast(~tf.math.is_nan(x), tf.float32))
     return tf.cast(tf.where(tf.math.equal(nelem, 0.), 1., nelem), x.dtype)
+
+
+def slice_matrix(matrix, row_idx, col_idx):
+    row_select = tf.gather(matrix, row_idx, axis=0)
+    col_select = tf.gather(matrix, col_idx, axis=1)
+    return col_select

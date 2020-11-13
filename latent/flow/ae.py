@@ -5,7 +5,7 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
-from .encoder import Encoder
+from .encoder import Encoder, TopologicalEncoder
 from .decoder import Decoder, CountDecoder, NegativeBinomialDecoder
 from .decoder import ZINBDecoder
 from .losses import NegativeBinomial, ZINB
@@ -79,7 +79,7 @@ class Autoencoder(keras.Model):
     def call(self, inputs):
         '''Full forward pass through model'''
         latent = self.encode(inputs)
-        outputs = self.decode(latent)
+        outputs = self.decode(inputs, latent)
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
@@ -192,3 +192,21 @@ class ZINBAutoencoder(PoissonAutoencoder):
         self.add_loss(rec_loss(x, outputs))
         self.add_metric(rec_loss(x, outputs), name=loss_name)
         return outputs
+
+
+class TopologicalAutoencoder(Autoencoder):
+    '''Autoencoder model with topological loss on latent space'''
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Define components
+        self.encoder = TopologicalEncoder(
+            latent_dim = self.latent_dim,
+            dropout_rate = self.dropout_rate,
+            batchnorm = self.batchnorm,
+            l1 = self.l1,
+            l2 = self.l2,
+            activation = self.activation,
+            initializer = self.initializer,
+            hidden_units = self.hidden_units
+        )

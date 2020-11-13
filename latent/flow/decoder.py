@@ -85,7 +85,6 @@ class CountDecoder(Decoder):
         return outputs
 
 
-
 class NegativeBinomialDecoder(Decoder):
     '''
     Negative Binomial decoder model.
