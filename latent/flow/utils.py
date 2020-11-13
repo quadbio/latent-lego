@@ -4,8 +4,8 @@ from keras import backend as K
 import tensorflow_probability as tfp
 kernels = tfp.math.psd_kernels
 
-### Kernels
 
+### Kernels
 # Multi-scale RBF kernel modified from https://github.com/theislab/scarches
 def ms_rbf_kernel(x, y):
     '''Multi-scale RBF kernel'''
@@ -88,7 +88,7 @@ class UnionFind:
                 yield vertex
 
 
-def persistent_homology(matrix):
+def compute_persistent_homology(matrix):
     '''Performs persistent homology calculation'''
     n_vertices = matrix.shape[0]
     uf = UnionFind(n_vertices)
@@ -101,8 +101,7 @@ def persistent_homology(matrix):
     # 2nd dimension: 'target' vertex index of edge
     persistence_pairs = []
 
-    for edge_index, edge_weight in \
-            zip(edge_indices, edge_weights[edge_indices]):
+    for edge_index, edge_weight in zip(edge_indices, edge_weights[edge_indices]):
 
         u = triu_indices[0][edge_index]
         v = triu_indices[1][edge_index]
@@ -127,8 +126,12 @@ def persistent_homology(matrix):
     return np.array(persistence_pairs), np.array([])
 
 
-### Other
+@tf.function
+def persistent_homology(matrix):
+    return tf.numpy_function(compute_persistent_homology, [matrix], tf.float32)
 
+
+### Other
 def squared_distance(x, y):
     r = tf.expand_dims(x, axis=1)
     return tf.math.reduce_sum(tf.math.square(r - y), axis=-1)
