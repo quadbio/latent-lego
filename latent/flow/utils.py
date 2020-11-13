@@ -43,7 +43,7 @@ KERNELS = {
 # Implementations adapted from https://github.com/BorgwardtLab/topological-autoencoders
 class UnionFind:
     '''
-    An implementation of a Union--Find class. The class performs path
+    An implementation of a UnionFind class. The class performs path
     compression by default. It uses integers for storing one disjoint
     set, assuming that vertices are zero-indexed.
     '''
@@ -88,44 +88,43 @@ class UnionFind:
                 yield vertex
 
 
-class PersistentHomologyCalculation:
-    def __call__(self, matrix):
+def persistent_homology(matrix):
+    '''Performs persistent homology calculation'''
+    n_vertices = matrix.shape[0]
+    uf = UnionFind(n_vertices)
 
-        n_vertices = matrix.shape[0]
-        uf = UnionFind(n_vertices)
+    triu_indices = np.triu_indices_from(matrix)
+    edge_weights = matrix[triu_indices]
+    edge_indices = np.argsort(edge_weights, kind='stable')
 
-        triu_indices = np.triu_indices_from(matrix)
-        edge_weights = matrix[triu_indices]
-        edge_indices = np.argsort(edge_weights, kind='stable')
+    # 1st dimension: 'source' vertex index of edge
+    # 2nd dimension: 'target' vertex index of edge
+    persistence_pairs = []
 
-        # 1st dimension: 'source' vertex index of edge
-        # 2nd dimension: 'target' vertex index of edge
-        persistence_pairs = []
+    for edge_index, edge_weight in \
+            zip(edge_indices, edge_weights[edge_indices]):
 
-        for edge_index, edge_weight in \
-                zip(edge_indices, edge_weights[edge_indices]):
+        u = triu_indices[0][edge_index]
+        v = triu_indices[1][edge_index]
 
-            u = triu_indices[0][edge_index]
-            v = triu_indices[1][edge_index]
+        younger_component = uf.find(u)
+        older_component = uf.find(v)
 
-            younger_component = uf.find(u)
-            older_component = uf.find(v)
+        # Not an edge of the MST, so skip it
+        if younger_component == older_component:
+            continue
+        elif younger_component > older_component:
+            uf.merge(v, u)
+        else:
+            uf.merge(u, v)
 
-            # Not an edge of the MST, so skip it
-            if younger_component == older_component:
-                continue
-            elif younger_component > older_component:
-                uf.merge(v, u)
-            else:
-                uf.merge(u, v)
+        if u < v:
+            persistence_pairs.append((u, v))
+        else:
+            persistence_pairs.append((v, u))
 
-            if u < v:
-                persistence_pairs.append((u, v))
-            else:
-                persistence_pairs.append((v, u))
-
-        # Return empty cycles component
-        return np.array(persistence_pairs), np.array([])
+    # Return empty cycles component
+    return np.array(persistence_pairs), np.array([])
 
 
 ### Other
