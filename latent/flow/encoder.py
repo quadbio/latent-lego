@@ -71,7 +71,7 @@ class VariationalEncoder(Encoder):
     def __init__(
         self,
         kld_weight = 1e-5,
-        prior = 'normal',
+        prior = None,
         latent_dist = 'independent_normal',
         iaf_units = [256, 256],
         n_pseudoinputs = 200,
@@ -112,12 +112,12 @@ class VariationalEncoder(Encoder):
             # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
             self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
-        # elif self.prior == 'vmf':
-        #     # Hyperspherical von Mises-Fisher prior (Davidson et al. 2018)
-        #     self.prior_dist = tfd.Independent(
-        #         tfd.VonMisesFisher(
-        #             mean_direction=tf.zeros(self.latent_dim), concentration=1.)
-        #     )
+        elif self.prior == 'vmf':
+            # Hyperspherical von Mises-Fisher prior (Davidson et al. 2018)
+            self.prior_dist = tfd.Independent(
+                tfd.VonMisesFisher(
+                    mean_direction=tf.zeros(self.latent_dim), concentration=1.)
+            )
 
     def call(self, inputs):
         '''Full forward pass through model'''
@@ -168,8 +168,9 @@ class VariationalEncoder(Encoder):
         return tf.math.abs(kld)
 
 
-class HierarchicalVariationalEncoder(VariationalEncoder):
-    '''Hierarchical variational encoder (Tomczak & Welling 2018)'''
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        pass
+#### TODO ###
+# class HierarchicalVariationalEncoder(VariationalEncoder):
+#     '''Hierarchical variational encoder (Tomczak & Welling 2018)'''
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
+#         pass
