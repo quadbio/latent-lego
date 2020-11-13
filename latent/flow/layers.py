@@ -277,57 +277,7 @@ CRITICS = {
 
 
 ### PROBABILISTIC LAYERS
-class IndependentVonMisesFisher(tfpl.DistributionLambda):
-    '''An independent VonMisesFisher distribution layer'''
-    def __init__(
-        self,
-        event_size,
-        convert_to_tensor_fn = tfd.Distribution.sample,
-        validate_args = False,
-        **kwargs
-    ):
-        super().__init__(
-            lambda t: IndependentVonMisesFisher.new(t, event_size, validate_args),
-            convert_to_tensor_fn, **kwargs
-        )
-
-        self._event_size = event_size
-        self._convert_to_tensor_fn = convert_to_tensor_fn
-        self._validate_args = validate_args
-
-    @staticmethod
-    def new(params, event_size, validate_args=False, name=None):
-        '''Create the distribution instance from a `params` vector.'''
-        params = tf.convert_to_tensor(params, name='params')
-        event_size = tf.convert_to_tensor(event_size, dtype_hint=tf.int32)
-        output_shape = tf.concat([
-            tf.shape(params)[:-1],
-            event_size,
-        ], axis=0)
-        mean_dir_params, conc_params = tf.split(params, 2, axis=-1)
-        dist = tfd.Independent(
-            tfd.VonMisesFisher(
-                mean_direction = tf.reshape(mean_dir_params, output_shape),
-                concentration = tf.math.softplus(tf.reshape(conc_params, output_shape)),
-                validate_args = validate_args),
-            reinterpreted_batch_ndims = tf.size(event_size),
-            validate_args = validate_args
-        )
-        return dist
-
-    @staticmethod
-    def params_size(event_size):
-        '''The number of `params` needed to create a single distribution.'''
-        event_size = tf.convert_to_tensor(event_size, dtype_hint=tf.int32)
-        event_size_const = tf.get_static_value(event_size)
-        if event_size_const is not None:
-            return 2 * np.prod(event_shape_const)
-        else:
-            return 2 * tf.reduce_prod(event_shape)
-
-
 DISTRIBUTIONS = {
     'independent_normal': tfpl.IndependentNormal,
-    'multivariate_normal': tfpl.MultivariateNormalTriL,
-    'independent_vmf': IndependentVonMisesFisher
+    'multivariate_normal': tfpl.MultivariateNormalTriL
 }

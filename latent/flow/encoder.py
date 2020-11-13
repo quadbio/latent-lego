@@ -112,13 +112,6 @@ class VariationalEncoder(Encoder):
             # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
             self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
-        elif self.prior == 'vmf':
-            # Hyperspherical von Mises-Fisher prior (Davidson et al. 2018)
-            self.prior_dist = tfd.Independent(
-                tfd.VonMisesFisher(
-                    mean_direction=tf.zeros(self.latent_dim), concentration=1.)
-            )
-
     def call(self, inputs):
         '''Full forward pass through model'''
         h = self.dense_stack(inputs)
