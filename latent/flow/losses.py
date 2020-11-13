@@ -1,3 +1,5 @@
+'''Tensorflow implementations of losses for autoencoders'''
+
 import tensorflow as tf
 from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
