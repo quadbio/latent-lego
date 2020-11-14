@@ -72,9 +72,11 @@ class TopologicalEncoder(Encoder):
     def __init__(
         self,
         name = 'topological_encoder',
+        topo_weight = 1.,
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
+        self.topo_weight = topo_weight
         self.topo_regularizer = TopologicalSignatureDistance()
 
     def call(self, inputs):
@@ -82,7 +84,7 @@ class TopologicalEncoder(Encoder):
         h = self.dense_stack(inputs)
         h = self.final_layer(h)
         outputs = self.final_act(h)
-        topo_loss = self.topo_regularizer(inputs, outputs)
+        topo_loss = self.topo_weight * self.topo_regularizer(inputs, outputs)
         self.add_loss(topo_loss)
         self.add_metric(topo_loss, name='topo_loss')
         return outputs

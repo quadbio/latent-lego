@@ -196,11 +196,13 @@ class ZINBAutoencoder(PoissonAutoencoder):
 
 class TopologicalAutoencoder(Autoencoder):
     '''Autoencoder model with topological loss on latent space'''
-    def __init__(self, **kwargs):
+    def __init__(self, topo_weight=1., **kwargs):
         super().__init__(**kwargs)
+        self.topo_weight = topo_weight
 
         # Define components
         self.encoder = TopologicalEncoder(
+            topo_weight = self.topo_weight,
             latent_dim = self.latent_dim,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,

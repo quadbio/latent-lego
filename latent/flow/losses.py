@@ -153,7 +153,7 @@ class TopologicalSignatureDistance(losses.Loss):
     @staticmethod
     def _sig_error(signature1, signature2):
         '''Compute distance between two topological signatures.'''
-        return tf.reduce_sum(tf.square(signature1 - signature2), axis=-1)
+        return tf.reduce_sum(tf.square(signature1 - signature2))
 
     def _compute_distance_matrix(self, x):
         x_flat = tf.reshape(x, [tf.shape(x)[0], -1])
