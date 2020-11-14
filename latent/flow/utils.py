@@ -123,12 +123,13 @@ def compute_persistent_homology(matrix):
             persistence_pairs.append((v, u))
 
     # Return empty cycles component
-    return np.array(persistence_pairs, dtype=np.int64), np.array([], dtype=np.float32)
+    # -> Changed to not return cycles
+    return np.array(persistence_pairs, dtype=np.int64)
 
 
 def persistent_homology(matrix):
     return tf.numpy_function(
-        compute_persistent_homology, [matrix], [tf.int64, tf.float32])
+        compute_persistent_homology, [matrix], tf.int64)
 
 
 ### Other
@@ -145,6 +146,11 @@ def nan2inf(x):
     return tf.where(tf.math.is_nan(x), tf.zeros_like(x) + np.inf, x)
 
 
+def clip_nonzero(x, min_val=1e-8):
+    clipped_x = tf.clip_by_value(x, min_val, tf.math.reduce_max(x))
+    return tf.where(x > 0, clipped_x, x)
+
+
 def nelem(x):
     nelem = tf.math.reduce_sum(tf.cast(~tf.math.is_nan(x), tf.float32))
     return tf.cast(tf.where(tf.math.equal(nelem, 0.), 1., nelem), x.dtype)
@@ -152,5 +158,9 @@ def nelem(x):
 
 def slice_matrix(matrix, row_idx, col_idx):
     row_select = tf.gather(matrix, row_idx, axis=0)
-    col_select = tf.gather(matrix, col_idx, axis=1)
+    col_select = tf.gather(row_select, col_idx, axis=-1)
     return col_select
+
+
+def l2_norm(x, axis=2, eps=1e-8):
+    return tf.sqrt(tf.reduce_sum(tf.square(x), axis=axis) + eps)
