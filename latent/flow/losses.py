@@ -232,6 +232,10 @@ class TopologicalSignatureDistance(losses.Loss):
 
             distance = distance1_2 + distance2_1
 
+        # Normalize distance by batch size
+        batch_size = tf.cast(tf.shape(y_true)[0], tf.float32)
+        distance = distance / batch_size
+
         if self.return_additional_metrics:
             return distance, distance_components
         else:

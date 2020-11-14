@@ -210,3 +210,18 @@ class TopologicalAutoencoder(Autoencoder):
             initializer = self.initializer,
             hidden_units = self.hidden_units
         )
+
+
+class PoissonTopoAE(PoissonAutoencoder, TopologicalAutoencoder):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class NegativeBinomialTopoAE(NegativeBinomialAutoencoder, TopologicalAutoencoder):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class ZINBTopoAE(ZINBAutoencoder, TopologicalAutoencoder):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
