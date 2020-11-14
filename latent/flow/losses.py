@@ -5,7 +5,7 @@ from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
 from .utils import ms_rbf_kernel, rbf_kernel, persistent_homology, slice_matrix
-from .utils import KERNELS
+from .utils import l2_norm, KERNELS
 
 
 def maximum_mean_discrepancy(x, y, kernel_method='multiscale_rbf'):
@@ -125,6 +125,7 @@ class TopologicalSignatureDistance(losses.Loss):
         use_cycles = False,
         match_edges = None,
         return_additional_metrics = False,
+        eps = 1e-8,
         **kwargs
     ):
         '''Topological signature computation.
@@ -135,49 +136,29 @@ class TopologicalSignatureDistance(losses.Loss):
                 or not.
         '''
         super().__init__(**kwargs)
-        self.use_cycles = use_cycles
         self.match_edges = match_edges
         self.return_additional_metrics = return_additional_metrics
+        self.eps = eps
 
-    def _get_pairings(self, distances):
-        pairs_0, pairs_1 = persistent_homology(distances)
-        return pairs_0, pairs_1
+    @staticmethod
+    def _get_pairings(distances):
+        return persistent_homology(tf.stop_gradient(distances))
 
-    def _select_distances_from_pairs(self, distance_matrix, pairs):
-        # Split 0th order and 1st order features (edges and cycles)
-        pairs_0, pairs_1 = pairs
-        # slice_matrix utility func because tf does not allow us to slice matrices
-        selected_distances = slice_matrix(distance_matrix, pairs_0[:, 0], pairs_0[:, 1])
-
-        if self.use_cycles:
-            edges_1 = slice_matrix(distance_matrix, pairs_1[:, 0], pairs_1[:, 1])
-            edges_2 = slice_matrix(distance_matrix, pairs_1[:, 2], pairs_1[:, 3])
-            edge_differences = edges_2 - edges_1
-
-            selected_distances = tf.concat(
-                (selected_distances, edge_differences))
-
+    @staticmethod
+    def _select_distances_from_pairs(distance_matrix, pairs):
+        # Utility func slice_matrix because tf does not allow us to slice matrices
+        selected_distances = slice_matrix(distance_matrix, pairs[:, 0], pairs[:, 1])
         return selected_distances
 
     @staticmethod
-    def sig_error(signature1, signature2):
+    def _sig_error(signature1, signature2):
         '''Compute distance between two topological signatures.'''
-        return tf.reduce_sum((signature1 - signature2)**2, axis=-1)
+        return tf.reduce_sum(tf.square(signature1 - signature2), axis=-1)
 
-    @staticmethod
-    def _count_matching_pairs(pairs1, pairs2):
-        return tf.sets.intersection(pairs1, pairs2)
-
-    @staticmethod
-    def _get_nonzero_cycles(pairs):
-        all_indices_equal = tf.math.reduce_sum(
-            pairs[:, [0]] == pairs[:, 1:], axis=-1) == 3
-        return tf.math.reduce_sum(tf.math.logical_not(all_indices_equal))
-
-    @staticmethod
-    def _compute_distance_matrix(x, ord=2):
+    def _compute_distance_matrix(self, x):
         x_flat = tf.reshape(x, [tf.shape(x)[0], -1])
-        distances = tf.norm(x_flat[:, None] - x_flat, axis=2, ord=ord)
+        # Custom l2_norm because tf.norm can cause problems with gradients
+        distances = l2_norm(x_flat[:, None] - x_flat, axis=2, eps=self.eps)
         return distances
 
     def call(self, y_true, y_pred):
@@ -198,23 +179,12 @@ class TopologicalSignatureDistance(losses.Loss):
         pairs1 = self._get_pairings(distances1)
         pairs2 = self._get_pairings(distances2)
 
-        distance_components = {
-            'metrics.matched_pairs_0D': self._count_matching_pairs(
-                pairs1[0], pairs2[0])
-        }
-        # Also count matched cycles if present
-        if self.use_cycles:
-            distance_components['metrics.matched_pairs_1D'] = \
-                self._count_matching_pairs(pairs1[1], pairs2[1])
-            nonzero_cycles_1 = self._get_nonzero_cycles(pairs1[1])
-            nonzero_cycles_2 = self._get_nonzero_cycles(pairs2[1])
-            distance_components['metrics.non_zero_cycles_1'] = nonzero_cycles_1
-            distance_components['metrics.non_zero_cycles_2'] = nonzero_cycles_2
+        distance_components = {}
 
         if not self.match_edges:
             sig1 = self._select_distances_from_pairs(distances1, pairs1)
             sig2 = self._select_distances_from_pairs(distances2, pairs2)
-            distance = self.sig_error(sig1, sig2)
+            distance = self._sig_error(sig1, sig2)
 
         elif self.match_edges == 'symmetric':
             sig1 = self._select_distances_from_pairs(distances1, pairs1)
@@ -223,8 +193,8 @@ class TopologicalSignatureDistance(losses.Loss):
             sig1_2 = self._select_distances_from_pairs(distances2, pairs1)
             sig2_1 = self._select_distances_from_pairs(distances1, pairs2)
 
-            distance1_2 = self.sig_error(sig1, sig1_2)
-            distance2_1 = self.sig_error(sig2, sig2_1)
+            distance1_2 = self._sig_error(sig1, sig1_2)
+            distance2_1 = self._sig_error(sig2, sig2_1)
 
             distance_components['metrics.distance1-2'] = distance1_2
             distance_components['metrics.distance2-1'] = distance2_1
@@ -237,12 +207,12 @@ class TopologicalSignatureDistance(losses.Loss):
             # for compactness
             n_instances = len(pairs1[0])
             pairs1 = tf.concat([
-                tf.random.shuffle(n_instances)[:, None],
-                tf.random.shuffle(n_instances)[:, None]
+                tf.random.shuffle(tf.range(n_instances))[:, None],
+                tf.random.shuffle(tf.range(n_instances))[:, None]
             ], axis=1)
             pairs2 = tf.concat([
-                tf.random.shuffle(n_instances)[:, None],
-                tf.random.shuffle(n_instances)[:, None]
+                tf.random.shuffle(tf.range(n_instances))[:, None],
+                tf.random.shuffle(tf.range(n_instances))[:, None]
             ], axis=1)
 
             sig1_1 = self._select_distances_from_pairs(
@@ -255,8 +225,8 @@ class TopologicalSignatureDistance(losses.Loss):
             sig2_1 = self._select_distances_from_pairs(
                 distances1, (pairs2, None))
 
-            distance1_2 = self.sig_error(sig1_1, sig1_2)
-            distance2_1 = self.sig_error(sig2_1, sig2_2)
+            distance1_2 = self._sig_error(sig1_1, sig1_2)
+            distance2_1 = self._sig_error(sig2_1, sig2_2)
             distance_components['metrics.distance1-2'] = distance1_2
             distance_components['metrics.distance2-1'] = distance2_1
 
