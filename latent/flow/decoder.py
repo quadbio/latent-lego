@@ -115,7 +115,7 @@ class NegativeBinomialDecoder(Decoder):
             self.dispersion_layer = Constant(
                 constant = self.dispersion,
                 name = 'constant_dispersion',
-                activation = clipped_softplus
+                activation = clipped_exp
             )
         self.norm_layer = ColwiseMult()
 
