@@ -7,7 +7,7 @@ from tensorflow.keras import Input, Model
 
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
-from .encoder import VariationalEncoder
+from .encoder import VariationalEncoder, TopologicalVariationalEncoder
 
 
 class VariationalAutoencoder(Autoencoder):
@@ -58,3 +58,27 @@ class NegativeBinomialVAE(NegativeBinomialAutoencoder, VariationalAutoencoder):
 class ZINBVAE(ZINBAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+
+class TopologicalVariationalAutoencoder(VariationalAutoencoder):
+    '''Variational autoencoder model with topological loss on latent space'''
+    def __init__(self, topo_weight=1., **kwargs):
+        super().__init__(**kwargs)
+        self.topo_weight = topo_weight
+
+        # Define components
+        self.encoder = TopologicalVariationalEncoder(
+            topo_weight = self.topo_weight,
+            kld_weight = self.kld_weight,
+            prior = self.prior,
+            iaf_units = self.iaf_units,
+            n_pseudoinputs = self.n_pseudoinputs,
+            latent_dim = self.latent_dim,
+            dropout_rate = self.dropout_rate,
+            batchnorm = self.batchnorm,
+            l1 = self.l1,
+            l2 = self.l2,
+            activation = self.activation,
+            initializer = self.initializer,
+            hidden_units = self.hidden_units
+        )
