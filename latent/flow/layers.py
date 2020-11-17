@@ -126,6 +126,7 @@ class Sampling(layers.Layer):
         epsilon = tf.random.normal(shape=tf.shape(mean))
         return mean + tf.math.exp(0.5 * log_var) * epsilon
 
+
 class SharedDispersion(layers.Layer):
     '''Layer to get shared dispersion estimates per gene.'''
     def __init__(
@@ -150,6 +151,7 @@ class SharedDispersion(layers.Layer):
         h = tf.broadcast_to(self.disp, tf.shape(inputs))
         outputs = self.activation(h)
         return outputs
+
 
 class Constant(layers.Layer):
     '''Layer to get shared dispersion estimates per gene.'''
