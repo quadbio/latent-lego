@@ -142,6 +142,11 @@ class VariationalEncoder(Encoder):
         h = self.dense_stack(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
+        self._add_kld_loss(inputs, outputs)
+        return outputs
+
+    def _add_kld_loss(self, inputs, outputs, name='kld_loss'):
+        '''Adds KLDivergence loss to model'''
         # VAMP prior depends on input, so we have to add it here
         if self.prior == 'vamp':
             prior_dist = self._vamp_prior(inputs)
@@ -157,7 +162,6 @@ class VariationalEncoder(Encoder):
         # Add losses manually to better monitor them
         self.add_loss(kld_loss)
         self.add_metric(kld_loss, name='kld_loss')
-        return outputs
 
     def _vamp_prior(self, inputs):
         '''Computes VAMP prior by feeding pseudoinputs through model'''
@@ -183,6 +187,8 @@ class VariationalEncoder(Encoder):
         # actually just take the absolute difference
         kld = tf.math.reduce_mean(x_log_prob - p_log_prob)
         return tf.math.abs(kld)
+
+
 
 
 #### TODO ###
