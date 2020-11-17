@@ -100,21 +100,22 @@ class NegativeBinomialDecoder(Decoder):
         )
         if self.dispersion == 'cell-gene':
             self.dispersion_layer = layers.Dense(
-                self.x_dim, name='dispersion',
+                self.x_dim,
+                name = 'dispersion',
                 activation = clipped_softplus,
                 kernel_initializer = self.initializer
             )
         elif self.dispersion == 'gene':
             self.dispersion_layer = SharedDispersion(
-                name='shared_dispersion',
+                name = 'shared_dispersion',
                 activation = clipped_softplus,
                 kernel_initializer = self.initializer
             )
         elif isinstance(self.dispersion, (float, int)):
-            self.dispersion_layer = SharedDispersion(
-                name='shared_dispersion',
-                activation = clipped_softplus,
-                kernel_initializer = self.initializer
+            self.dispersion_layer = Constant(
+                constant = self.dispersion,
+                name = 'constant_dispersion',
+                activation = clipped_softplus
             )
         self.norm_layer = ColwiseMult()
 
@@ -128,7 +129,7 @@ class NegativeBinomialDecoder(Decoder):
         return [mean, disp]
 
 
-class ZINBDecoder(Decoder):
+class ZINBDecoder(NegativeBinomialDecoder):
     '''
     ZINB decoder model.
     Rough reimplementation of the ZINB Deep Count Autoencoder by Erslan et al. 2019
@@ -136,22 +137,11 @@ class ZINBDecoder(Decoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Define new components
-        self.mean_layer = layers.Dense(
-            self.x_dim, name='mean',
-            activation = clipped_exp,
-            kernel_initializer = self.initializer
-        )
-        self.dispersion_layer = layers.Dense(
-            self.x_dim, name='dispersion',
-            activation = clipped_softplus,
-            kernel_initializer = self.initializer
-        )
         self.pi_layer = layers.Dense(
             self.x_dim, name='dispersion',
             activation = 'sigmoid',
             kernel_initializer = self.initializer
         )
-        self.norm_layer = ColwiseMult()
 
     def call(self, inputs):
         '''Full forward pass through model'''

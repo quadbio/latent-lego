@@ -151,6 +151,31 @@ class SharedDispersion(layers.Layer):
         outputs = self.activation(h)
         return outputs
 
+class Constant(layers.Layer):
+    '''Layer to get shared dispersion estimates per gene.'''
+    def __init__(
+        self,
+        units = None,
+        constant = 1.,
+        name = 'constant',
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.const = constant
+        if isinstance(activation, str):
+            self.activation = ACTIVATIONS.get(activation, clipped_softplus)
+        else:
+            self.activation = activation
+
+    def call(self, inputs):
+        const = tf.constant([[self.const]], dtype=inputs.dtype)
+        if self.units:
+            h = tf.broadcast_to(const, (tf.shape(inputs)[0], units))
+        else:
+            h = tf.broadcast_to(const, tf.shape(inputs))
+        outputs = self.activation(h)
+        return outputs
+
 
 # Implementation adapted from https://github.com/theislab/sfaira/
 class PseudoInputs(layers.Layer):
