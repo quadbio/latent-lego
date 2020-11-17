@@ -142,10 +142,10 @@ class VariationalEncoder(Encoder):
         h = self.dense_stack(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
-        self._add_kld_loss(inputs, outputs)
+        self.add_kld_loss(inputs, outputs)
         return outputs
 
-    def _add_kld_loss(self, inputs, outputs, name='kld_loss'):
+    def add_kld_loss(self, inputs, outputs, name='kld_loss'):
         '''Adds KLDivergence loss to model'''
         # VAMP prior depends on input, so we have to add it here
         if self.prior == 'vamp':
@@ -197,3 +197,31 @@ class VariationalEncoder(Encoder):
 #     def __init__(self, **kwargs):
 #         super().__init__(**kwargs)
 #         pass
+
+
+class TopologicalVariationalEncoder(VariationalEncoder):
+    '''Variational encoder model with topological loss on latent space'''
+    def __init__(
+        self,
+        name = 'topological_variational_encoder',
+        topo_weight = 1.,
+        **kwargs
+    ):
+        super().__init__(name=name, **kwargs)
+        self.topo_weight = topo_weight
+        self.topo_regularizer = TopologicalSignatureDistance()
+
+    def call(self, inputs):
+        '''Full forward pass through model'''
+        h = self.dense_stack(inputs)
+        dist_params = self.dist_param_layer(h)
+        outputs = self.sampling(dist_params)
+        self.add_kld_loss(inputs, outputs)
+        self.add_topo_loss(inputs, outputs)
+        return outputs
+
+    def add_topo_loss(self, inputs, outputs, name='topo_loss'):
+        '''Added topological loss to final model'''
+        topo_loss = self.topo_weight * self.topo_regularizer(inputs, outputs)
+        self.add_loss(topo_loss)
+        self.add_metric(topo_loss, name='topo_loss')
