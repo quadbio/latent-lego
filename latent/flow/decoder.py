@@ -90,7 +90,7 @@ class NegativeBinomialDecoder(Decoder):
     Negative Binomial decoder model.
     Rough reimplementation of the NB Deep Count Autoencoder by Erslan et al. 2019
     '''
-    def __init__(self, dispersion='cell-gene', **kwargs):
+    def __init__(self, dispersion='gene', **kwargs):
         super().__init__(**kwargs)
         # Define new components
         self.mean_layer = layers.Dense(
@@ -102,13 +102,13 @@ class NegativeBinomialDecoder(Decoder):
             self.dispersion_layer = layers.Dense(
                 self.x_dim,
                 name = 'dispersion',
-                activation = clipped_softplus,
+                activation = clipped_exp,
                 kernel_initializer = self.initializer
             )
         elif self.dispersion == 'gene':
             self.dispersion_layer = SharedDispersion(
                 name = 'shared_dispersion',
-                activation = clipped_softplus,
+                activation = clipped_exp,
                 kernel_initializer = self.initializer
             )
         elif isinstance(self.dispersion, (float, int)):

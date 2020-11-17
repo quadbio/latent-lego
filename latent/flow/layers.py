@@ -16,7 +16,7 @@ tfb = tfp.bijectors
 
 from collections.abc import Iterable
 
-from .activations import ACTIVATIONS, clipped_softplus
+from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy
 
 
@@ -135,7 +135,7 @@ class SharedDispersion(layers.Layer):
     ):
         super().__init__(**kwargs)
         if isinstance(activation, str):
-            self.activation = ACTIVATIONS.get(activation, clipped_softplus)
+            self.activation = ACTIVATIONS.get(activation, clipped_exp)
         else:
             self.activation = activation
 
@@ -163,7 +163,7 @@ class Constant(layers.Layer):
         super().__init__(**kwargs)
         self.const = constant
         if isinstance(activation, str):
-            self.activation = ACTIVATIONS.get(activation, clipped_softplus)
+            self.activation = ACTIVATIONS.get(activation, clipped_exp)
         else:
             self.activation = activation
 
