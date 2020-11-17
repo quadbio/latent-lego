@@ -8,7 +8,7 @@ import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, DenseStack
+from .layers import ColwiseMult, DenseStack, SharedDispersion
 
 
 class Decoder(keras.Model):
@@ -90,7 +90,7 @@ class NegativeBinomialDecoder(Decoder):
     Negative Binomial decoder model.
     Rough reimplementation of the NB Deep Count Autoencoder by Erslan et al. 2019
     '''
-    def __init__(self, **kwargs):
+    def __init__(self, dispersion='cell-gene', **kwargs):
         super().__init__(**kwargs)
         # Define new components
         self.mean_layer = layers.Dense(
@@ -98,11 +98,24 @@ class NegativeBinomialDecoder(Decoder):
             activation = clipped_exp,
             kernel_initializer = self.initializer
         )
-        self.dispersion_layer = layers.Dense(
-            self.x_dim, name='dispersion',
-            activation = clipped_softplus,
-            kernel_initializer = self.initializer
-        )
+        if self.dispersion == 'cell-gene':
+            self.dispersion_layer = layers.Dense(
+                self.x_dim, name='dispersion',
+                activation = clipped_softplus,
+                kernel_initializer = self.initializer
+            )
+        elif self.dispersion == 'gene':
+            self.dispersion_layer = SharedDispersion(
+                name='shared_dispersion',
+                activation = clipped_softplus,
+                kernel_initializer = self.initializer
+            )
+        elif isinstance(self.dispersion, (float, int)):
+            self.dispersion_layer = SharedDispersion(
+                name='shared_dispersion',
+                activation = clipped_softplus,
+                kernel_initializer = self.initializer
+            )
         self.norm_layer = ColwiseMult()
 
     def call(self, inputs):

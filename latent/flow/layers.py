@@ -16,7 +16,7 @@ tfb = tfp.bijectors
 
 from collections.abc import Iterable
 
-from .activations import ACTIVATIONS
+from .activations import ACTIVATIONS, clipped_softplus
 from .losses import MaximumMeanDiscrepancy
 
 
@@ -125,6 +125,31 @@ class Sampling(layers.Layer):
         mean, log_var = inputs
         epsilon = tf.random.normal(shape=tf.shape(mean))
         return mean + tf.math.exp(0.5 * log_var) * epsilon
+
+class SharedDispersion(layers.Layer):
+    '''Layer to get shared dispersion estimates per gene.'''
+    def __init__(
+        self,
+        name = 'shared_dispersion',
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        if isinstance(activation, str):
+            self.activation = ACTIVATIONS.get(activation, clipped_softplus)
+        else:
+            self.activation = activation
+
+    def build(self, input_shape):
+        self.disp = self.add_weight(
+            name='dispersion',
+            shape=(1, input_shape[-1]),
+            initializer=self.kernel_initializer
+        )
+
+    def call(self, inputs):
+        h = tf.broadcast_to(self.disp, tf.shape(inputs))
+        outputs = self.activation(h)
+        return outputs
 
 
 # Implementation adapted from https://github.com/theislab/sfaira/
