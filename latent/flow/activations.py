@@ -18,6 +18,7 @@ ACTIVATIONS = {
     'selu': Activation('selu'),
     'linear': Activation('linear'),
     'sigmoid': Activation('sigmoid'),
+    'hard_sigmoid': Activation('hard_sigmoid'),
     'clipped_exp': Activation(clipped_exp),
     'clipped_softplus': Activation(clipped_softplus)
 }

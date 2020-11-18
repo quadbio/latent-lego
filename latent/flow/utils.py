@@ -161,7 +161,7 @@ def entropic_gromov_wasserstein_distance(x, y):
         _entropic_gromov_wasserstein_distance, [x, y], tf.float32)
 
 
-GW_DIST = {
+OT_DIST = {
     'gw': gromov_wasserstein_distance,
     'entropic_gw': entropic_gromov_wasserstein_distance
 }

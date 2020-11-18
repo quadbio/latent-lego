@@ -40,7 +40,7 @@ class DenseBlock(layers.Layer):
         self.batchnorm =  batchnorm
         self.l1 = l1
         self.l2 = l2
-        self.initializer = keras.initializers.get(initializer)
+        self.initializer = initializers.get(initializer)
 
         # Define block components
         self.dense = layers.Dense(
@@ -264,6 +264,10 @@ class MMDCritic(layers.Layer):
         self.weight = weight
         self.n_conditions = n_conditions
         self.kernel_method = kernel_method
+        self.loss_func = MaximumMeanDiscrepancy(
+            n_conditions = self.n_conditions,
+            kernel_method = self.kernel_method
+        )
 
         # Define components
         if self.hidden_units:
@@ -277,11 +281,7 @@ class MMDCritic(layers.Layer):
         outputs, labels = inputs
         if self.hidden_units:
             outputs = self.mmd_layer(outputs)
-        mmd_loss = MaximumMeanDiscrepancy(
-            n_conditions = self.n_conditions,
-            kernel_method = self.kernel_method
-        )
-        crit_loss = self.weight * mmd_loss(labels, outputs)
+        crit_loss = self.weight * self.loss_func(labels, outputs)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
         return outputs
@@ -293,9 +293,7 @@ class PairwiseDistCritic(layers.Layer):
         self,
         name = 'pairing_critic',
         weight = 1.,
-        n_conditions = 2,
         hidden_units = None,
-        kernel_method = 'rbf',
         **kwargs
     ):
         super().__init__(name=name)
@@ -304,7 +302,7 @@ class PairwiseDistCritic(layers.Layer):
 
         # Define components
         if self.hidden_units:
-            self.mmd_layer = DenseStack(
+            self.hidden_layer = DenseStack(
                 hidden_units = self.hidden_units,
                 dropout_rate = 0.,
                 **kwargs
@@ -313,7 +311,7 @@ class PairwiseDistCritic(layers.Layer):
     def call(self, inputs):
         outputs, labels = inputs
         if self.hidden_units:
-            outputs = self.mmd_layer(outputs)
+            outputs = self.hidden_layer(outputs)
         x1, x2 = tf.dynamic_partition(outputs, labels, 2)
         # Element-wise difference
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
@@ -323,9 +321,48 @@ class PairwiseDistCritic(layers.Layer):
         return outputs
 
 
+class GromovWassersteinCritic(layers.Layer):
+    '''Adds Gromov-Wasserstein loss between conditions.'''
+    def __init__(
+        self,
+        name = 'wasserstein_critic',
+        method = 'gw',
+        weight = 1.,
+        n_conditions = 2,
+        kernel_method = 'rbf',
+        **kwargs
+    ):
+        super().__init__(name=name)
+        self.hidden_units = hidden_units
+        self.weight = weight
+        self.loss_func = GromovWassersteinDistance(
+            method = method
+        )
+
+        # Define components
+        if self.hidden_units:
+            self.hidden_layer = DenseStack(
+                hidden_units = self.hidden_units,
+                dropout_rate = 0.,
+                **kwargs
+            )
+
+    def call(self, inputs):
+        outputs, labels = inputs
+        if self.hidden_units:
+            outputs = self.hidden_layer(outputs)
+        x1, x2 = tf.dynamic_partition(outputs, labels, 2)
+        # Element-wise difference
+        crit_loss = self.weight * self.loss_func(x1, x2)
+        self.add_loss(crit_loss)
+        self.add_metric(crit_loss, name=f'{self.name}_loss')
+        return outputs
+
+
 CRITICS = {
     'pairing': PairwiseDistCritic,
-    'mmd': MMDCritic
+    'mmd': MMDCritic,
+    'wasserstein': GromovWassersteinCritic
 }
 
 
