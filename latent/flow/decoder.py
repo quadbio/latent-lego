@@ -98,20 +98,20 @@ class NegativeBinomialDecoder(Decoder):
             activation = clipped_exp,
             kernel_initializer = self.initializer
         )
-        if self.dispersion == 'cell-gene':
+        if dispersion == 'cell-gene':
             self.dispersion_layer = layers.Dense(
                 self.x_dim,
                 name = 'dispersion',
                 activation = clipped_exp,
                 kernel_initializer = self.initializer
             )
-        elif self.dispersion == 'gene':
+        elif dispersion == 'gene':
             self.dispersion_layer = SharedDispersion(
                 name = 'shared_dispersion',
                 activation = clipped_exp,
                 kernel_initializer = self.initializer
             )
-        elif isinstance(self.dispersion, (float, int)):
+        elif isinstance(dispersion, (float, int)):
             self.dispersion_layer = Constant(
                 constant = self.dispersion,
                 name = 'constant_dispersion',
