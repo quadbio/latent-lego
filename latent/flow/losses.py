@@ -5,7 +5,7 @@ from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
 from .utils import ms_rbf_kernel, rbf_kernel, persistent_homology, slice_matrix
-from .utils import l2_norm, KERNELS
+from .utils import l2_norm, KERNELS, OT_DIST
 
 
 def maximum_mean_discrepancy(x, y, kernel_method='multiscale_rbf'):
@@ -240,3 +240,36 @@ class TopologicalSignatureDistance(losses.Loss):
             return distance, distance_components
         else:
             return distance
+
+
+class GromovWassersteinDistance(losses.Loss):
+    '''Gromov-Wasserstein distance with POT'''
+    def __init__(
+        self,
+        method = 'gw',
+        **kwargs
+    ):
+    super().__init__(**kwargs)
+    self.dist_func = OT_DIST.get(method)
+
+    def _compute_distance_matrix(self, x):
+        x_flat = tf.reshape(x, [tf.shape(x)[0], -1])
+        # Custom l2_norm because tf.norm can cause problems with gradients
+        distances = l2_norm(x_flat[:, None] - x_flat, axis=2, eps=self.eps)
+        return distances
+
+    def call(self, y_true, y_pred):
+        '''Return optimal transport distance of two data spaces.
+
+        Args:
+            y_true: Coordinates in space 1 (x)
+            y_pred: Coordinates in space 2 (latent)
+
+        Returns:
+            distance
+        '''
+        distances1 = self._compute_distance_matrix(y_true)
+        distances1 = distances1 / tf.math.reduce_max(distances1)
+        distances2 = self._compute_distance_matrix(y_pred)
+        distances2 = distances2 / tf.math.reduce_max(distances2)
+        return self.dist_func(distances1, distances2)
