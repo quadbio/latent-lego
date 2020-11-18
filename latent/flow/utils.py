@@ -4,6 +4,8 @@ from keras import backend as K
 import tensorflow_probability as tfp
 kernels = tfp.math.psd_kernels
 
+### Only needed for GW-OT
+import ot
 
 ### Kernels
 # Multi-scale RBF kernel modified from https://github.com/theislab/scarches
@@ -88,7 +90,7 @@ class UnionFind:
                 yield vertex
 
 
-def compute_persistent_homology(matrix):
+def _persistent_homology(matrix):
     '''Performs persistent homology calculation'''
     n_vertices = matrix.shape[0]
     uf = UnionFind(n_vertices)
@@ -129,7 +131,40 @@ def compute_persistent_homology(matrix):
 
 def persistent_homology(matrix):
     return tf.numpy_function(
-        compute_persistent_homology, [matrix], tf.int64)
+        _persistent_homology, [matrix], tf.int64)
+
+
+### Methods for Gromov-Wasserstein distance calculations
+def _gromov_wasserstein_distance(x, y):
+    x_p = ot.unif(x.shape[0])
+    y_q = ot.unif(y.shape[0])
+    gw_dist = ot.gromov.gromov_wasserstein2(
+        x, y, x_p, y_q, loss_fun='kl_loss')
+    return np.array(gw_dist, dtype=np.float32)
+
+
+def _entropic_gromov_wasserstein_distance(x, y):
+    x_p = ot.unif(x.shape[0])
+    y_q = ot.unif(y.shape[0])
+    gw_dist = ot.gromov.entropic_gromov_wasserstein2(
+        x, y, x_p, y_q, loss_fun='kl_loss')
+    return np.array(gw_dist, dtype=np.float32)
+
+
+def gromov_wasserstein_distance(x, y):
+    return tf.numpy_function(
+        _gromov_wasserstein_distance, [x, y], tf.float32)
+
+
+def entropic_gromov_wasserstein_distance(x, y):
+    return tf.numpy_function(
+        _entropic_gromov_wasserstein_distance, [x, y], tf.float32)
+
+
+GW_DIST = {
+    'gw': gromov_wasserstein_distance,
+    'entropic_gw': entropic_gromov_wasserstein_distance
+}
 
 
 ### Other
