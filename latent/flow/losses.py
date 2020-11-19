@@ -247,10 +247,12 @@ class GromovWassersteinDistance(losses.Loss):
     def __init__(
         self,
         method = 'gw',
+        eps = 1e-8,
         **kwargs
     ):
         super().__init__(**kwargs)
         self.dist_func = OT_DIST.get(method)
+        self.eps = eps
 
     def _compute_distance_matrix(self, x):
         x_flat = tf.reshape(x, [tf.shape(x)[0], -1])

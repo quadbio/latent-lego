@@ -17,7 +17,7 @@ tfb = tfp.bijectors
 from collections.abc import Iterable
 
 from .activations import ACTIVATIONS, clipped_exp
-from .losses import MaximumMeanDiscrepancy
+from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
 
 
 ### Core layers and stacks
@@ -131,10 +131,16 @@ class SharedDispersion(layers.Layer):
     '''Layer to get shared dispersion estimates per gene.'''
     def __init__(
         self,
+        units,
+        activation = 'clipped_exp',
+        initializer = 'glorot_normal',
         name = 'shared_dispersion',
         **kwargs
     ):
         super().__init__(**kwargs)
+        self.units = units
+        self.initializer = initializer
+
         if isinstance(activation, str):
             self.activation = ACTIVATIONS.get(activation, clipped_exp)
         else:
@@ -142,39 +148,39 @@ class SharedDispersion(layers.Layer):
 
     def build(self, input_shape):
         self.disp = self.add_weight(
-            name='dispersion',
-            shape=(1, input_shape[-1]),
-            initializer=self.kernel_initializer
+            name = 'dispersion',
+            shape = (1, self.units),
+            initializer = self.initializer
         )
 
     def call(self, inputs):
-        h = tf.broadcast_to(self.disp, tf.shape(inputs))
+        h = tf.broadcast_to(self.disp, (tf.shape(inputs)[0], self.units))
         outputs = self.activation(h)
         return outputs
 
 
 class Constant(layers.Layer):
-    '''Layer to get shared dispersion estimates per gene.'''
+    '''Layer that outputs a constant value.'''
     def __init__(
         self,
-        units = None,
+        units,
         constant = 1.,
+        trainable = True,
+        activation = 'clipped_exp',
         name = 'constant',
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.const = constant
+        self.units = units
+        self.const = tf.Variable(
+            [[constant]], dtype=tf.float32, trainable=trainable)
         if isinstance(activation, str):
             self.activation = ACTIVATIONS.get(activation, clipped_exp)
         else:
             self.activation = activation
 
     def call(self, inputs):
-        const = tf.constant([[self.const]], dtype=inputs.dtype)
-        if self.units:
-            h = tf.broadcast_to(const, (tf.shape(inputs)[0], units))
-        else:
-            h = tf.broadcast_to(const, tf.shape(inputs))
+        h = tf.broadcast_to(self.const, (tf.shape(inputs)[0], self.units))
         outputs = self.activation(h)
         return outputs
 
@@ -328,8 +334,7 @@ class GromovWassersteinCritic(layers.Layer):
         name = 'wasserstein_critic',
         method = 'gw',
         weight = 1.,
-        n_conditions = 2,
-        kernel_method = 'rbf',
+        hidden_units = None,
         **kwargs
     ):
         super().__init__(name=name)

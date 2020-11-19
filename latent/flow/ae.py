@@ -140,11 +140,13 @@ class PoissonAutoencoder(Autoencoder):
 
 class NegativeBinomialAutoencoder(PoissonAutoencoder):
     '''Autoencoder with negative binomial loss for count data'''
-    def __init__(self, **kwargs):
+    def __init__(self, dispersion='gene', **kwargs):
         super().__init__(**kwargs)
+        self.dispersion = dispersion
 
         self.decoder = NegativeBinomialDecoder(
             x_dim = self.x_dim,
+            dispersion = self.dispersion,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
             l1 = self.l1,

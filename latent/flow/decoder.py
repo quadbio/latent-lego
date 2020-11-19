@@ -8,7 +8,7 @@ import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 
 from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, DenseStack, SharedDispersion
+from .layers import ColwiseMult, DenseStack, SharedDispersion, Constant
 
 
 class Decoder(keras.Model):
@@ -92,6 +92,8 @@ class NegativeBinomialDecoder(Decoder):
     '''
     def __init__(self, dispersion='gene', **kwargs):
         super().__init__(**kwargs)
+        self.dispersion = dispersion
+
         # Define new components
         self.mean_layer = layers.Dense(
             self.x_dim, name='mean',
@@ -103,17 +105,27 @@ class NegativeBinomialDecoder(Decoder):
                 self.x_dim,
                 name = 'dispersion',
                 activation = clipped_exp,
-                kernel_initializer = self.initializer
+                initializer = self.initializer
             )
         elif dispersion == 'gene':
             self.dispersion_layer = SharedDispersion(
+                self.x_dim,
                 name = 'shared_dispersion',
                 activation = clipped_exp,
-                kernel_initializer = self.initializer
+                initializer = self.initializer
+            )
+        elif dispersion == 'constant':
+            self.dispersion_layer = Constant(
+                self.x_dim,
+                trainable = True,
+                name = 'constant_dispersion',
+                activation = clipped_exp
             )
         elif isinstance(dispersion, (float, int)):
             self.dispersion_layer = Constant(
+                self.x_dim,
                 constant = self.dispersion,
+                trainable = False,
                 name = 'constant_dispersion',
                 activation = clipped_exp
             )
