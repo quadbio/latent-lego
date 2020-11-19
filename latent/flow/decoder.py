@@ -37,16 +37,17 @@ class Decoder(keras.Model):
         self.initializer = keras.initializers.get(initializer)
 
         # Define components
-        self.dense_stack = DenseStack(
-            name = self.name,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units
-        )
+        if self.hidden_units:
+            self.dense_stack = DenseStack(
+                name = self.name,
+                dropout_rate = self.dropout_rate,
+                batchnorm = self.batchnorm,
+                l1 = self.l1,
+                l2 = self.l2,
+                activation = self.activation,
+                initializer = self.initializer,
+                hidden_units = self.hidden_units
+            )
         self.final_layer = layers.Dense(
             self.x_dim, name = 'decoder_final',
             kernel_initializer = self.initializer
@@ -55,7 +56,7 @@ class Decoder(keras.Model):
 
     def call(self, inputs):
         '''Full forward pass through model'''
-        h = self.dense_stack(inputs)
+        h = self.dense_stack(inputs) if self.hidden_units else inputs
         h = self.final_layer(h)
         outputs = self.final_act(h)
         return outputs
