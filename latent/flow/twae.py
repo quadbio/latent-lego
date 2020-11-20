@@ -1,4 +1,4 @@
-'''Tensorflow Twin (Variational) Autoencoder Models'''
+"""Tensorflow Twin (Variational) Autoencoder Models"""
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -14,7 +14,7 @@ from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 
 
 class TwinAutoencoder(keras.Model):
-    '''Twin autoencoder that joins two autoencoders in a shared latent space'''
+    """Twin autoencoder that joins two autoencoders in a shared latent space"""
     def __init__(
         self,
         models,
@@ -83,5 +83,5 @@ class TwinAutoencoder(keras.Model):
         return [out.numpy() for out in outputs]
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
-        '''Compile model with default loss and optimizer'''
+        """Compile model with default loss and optimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)

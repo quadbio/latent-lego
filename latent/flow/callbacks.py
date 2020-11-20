@@ -1,4 +1,4 @@
-'''Tensorflow implementations of callbacks for training'''
+"""Tensorflow implementations of callbacks for training"""
 
 import numpy as np
 import tensorflow as tf
@@ -8,7 +8,7 @@ import tensorflow.keras.callbacks as callbacks
 
 
 class IncreaseKLDOnEpoch(callbacks.Callback):
-    '''Increase VAE KLD loss during training'''
+    """Increase VAE KLD loss during training"""
     def __init__(
         self,
         factor = 1.5,
@@ -31,7 +31,7 @@ class IncreaseKLDOnEpoch(callbacks.Callback):
 
 
 class KLDivergenceScheduler(callbacks.Callback):
-    '''Schedule VAE KLD loss during training'''
+    """Schedule VAE KLD loss during training"""
     def __init__(
         self,
         schedule,
@@ -52,7 +52,7 @@ class KLDivergenceScheduler(callbacks.Callback):
 
 
 class CriticWeightScheduler(callbacks.Callback):
-    '''Schedule critic weight during training'''
+    """Schedule critic weight during training"""
     def __init__(
         self,
         schedule,

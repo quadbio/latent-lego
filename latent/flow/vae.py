@@ -1,4 +1,4 @@
-'''Tensorflow Variational Autoencoder Models'''
+"""Tensorflow Variational Autoencoder Models"""
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -11,7 +11,7 @@ from .encoder import VariationalEncoder, TopologicalVariationalEncoder
 
 
 class VariationalAutoencoder(Autoencoder):
-    '''Variational Autoencoder'''
+    """Variational Autoencoder"""
     def __init__(
         self,
         kld_weight = 1e-5,
@@ -61,7 +61,7 @@ class ZINBVAE(ZINBAutoencoder, VariationalAutoencoder):
 
 
 class TopologicalVariationalAutoencoder(VariationalAutoencoder):
-    '''Variational autoencoder model with topological loss on latent space'''
+    """Variational autoencoder model with topological loss on latent space"""
     def __init__(self, topo_weight=1., **kwargs):
         super().__init__(**kwargs)
         self.topo_weight = topo_weight

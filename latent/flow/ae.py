@@ -1,4 +1,4 @@
-'''Tensorflow Autoencoder Models'''
+"""Tensorflow Autoencoder Models"""
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -12,7 +12,7 @@ from .losses import NegativeBinomial, ZINB
 
 
 class Autoencoder(keras.Model):
-    '''Classical autoencoder'''
+    """Classical autoencoder"""
     def __init__(
         self,
         x_dim,
@@ -77,13 +77,13 @@ class Autoencoder(keras.Model):
         return outputs
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         latent = self.encode(inputs)
         outputs = self.decode(inputs, latent)
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
-        '''Compile model with default loss and omptimizer'''
+        """Compile model with default loss and omptimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):
@@ -93,12 +93,12 @@ class Autoencoder(keras.Model):
             return super().fit(x, x, **kwargs)
 
     def transform(self, inputs):
-        '''Map data (x) to latent space (z)'''
+        """Map data (x) to latent space (z)"""
         return self.encoder.predict(inputs)
 
 
 class PoissonAutoencoder(Autoencoder):
-    '''Normalizing autoencoder for count data'''
+    """Normalizing autoencoder for count data"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -125,7 +125,7 @@ class PoissonAutoencoder(Autoencoder):
         return outputs
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         x, sf = inputs
         latent = self.encode(x)
         outputs = self.decode(x, latent, sf)
@@ -139,7 +139,7 @@ class PoissonAutoencoder(Autoencoder):
 
 
 class NegativeBinomialAutoencoder(PoissonAutoencoder):
-    '''Autoencoder with negative binomial loss for count data'''
+    """Autoencoder with negative binomial loss for count data"""
     def __init__(self, dispersion='gene', **kwargs):
         super().__init__(**kwargs)
         self.dispersion = dispersion
@@ -169,7 +169,7 @@ class NegativeBinomialAutoencoder(PoissonAutoencoder):
 
 
 class ZINBAutoencoder(PoissonAutoencoder):
-    '''Autoencoder with ZINB loss for count data'''
+    """Autoencoder with ZINB loss for count data"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -197,7 +197,7 @@ class ZINBAutoencoder(PoissonAutoencoder):
 
 
 class TopologicalAutoencoder(Autoencoder):
-    '''Autoencoder model with topological loss on latent space'''
+    """Autoencoder model with topological loss on latent space"""
     def __init__(self, topo_weight=1., **kwargs):
         super().__init__(**kwargs)
         self.topo_weight = topo_weight
