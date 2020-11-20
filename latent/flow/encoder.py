@@ -1,4 +1,4 @@
-'''Tensorflow implementations of encoder models'''
+"""Tensorflow implementations of encoder models"""
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -12,27 +12,29 @@ tfpl = tfp.layers
 tfd = tfp.distributions
 tfb = tfp.bijectors
 
+from fastcore import delegates
+from typing import Iterable, Literal, Union, Callable
+
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
 from .losses import TopologicalSignatureDistance
 
 
 class Encoder(keras.Model):
-    '''Classical encoder model'''
+    """Encoder base model"""
     def __init__(
         self,
-        latent_dim = 50,
-        name='encoder',
-        dropout_rate = 0.1,
-        batchnorm = True,
-        l1 = 0.,
-        l2 = 0.,
-        hidden_units = [128, 128],
-        activation = 'leaky_relu',
-        initializer = 'glorot_normal',
-        **kwargs
+        latent_dim: int = 50,
+        name: str = 'encoder',
+        dropout_rate: float = 0.1,
+        batchnorm:  = True,
+        l1: float = 0.,
+        l2: float = 0.,
+        hidden_units: Iterable[int] = [128, 128],
+        activation: str = 'leaky_relu',
+        initializer: str = 'glorot_normal'
     ):
-        super().__init__(name=name, **kwargs)
+        super().__init__(name=name)
         self.latent_dim = latent_dim
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
@@ -43,7 +45,7 @@ class Encoder(keras.Model):
         self.initializer = keras.initializers.get(initializer)
 
         # Define components
-        self.dense_stack = DenseStack(
+        self.hidden_layers = DenseStack(
             name = self.name,
             dropout_rate = self.dropout_rate,
             batchnorm = self.batchnorm,
@@ -54,25 +56,26 @@ class Encoder(keras.Model):
             hidden_units = self.hidden_units
         )
         self.final_layer = layers.Dense(
-            self.latent_dim, name = 'encoder_final',
-            kernel_initializer = self.initializer
+            self.latent_dim,
+            name = 'encoder_latent',
+            kernel_initializer = self.initializer,
+            activation = 'linear'
         )
-        self.final_act = layers.Activation('linear', name='encoder_final_activation')
 
     def call(self, inputs):
-        '''Full forward pass through model'''
-        h = self.dense_stack(inputs)
-        h = self.final_layer(h)
-        outputs = self.final_act(h)
+        """Full forward pass through model"""
+        h = self.hidden_layers(inputs)
+        outputs = self.final_layer(h)
         return outputs
 
 
+@delegates()
 class TopologicalEncoder(Encoder):
-    '''Encoder model with topological loss on latent space'''
+    """Encoder model with topological loss on latent space"""
     def __init__(
         self,
-        name = 'topological_encoder',
-        topo_weight = 1.,
+        name: str = 'topological_encoder',
+        topo_weight: float = 1.,
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
@@ -80,26 +83,30 @@ class TopologicalEncoder(Encoder):
         self.topo_regularizer = TopologicalSignatureDistance()
 
     def call(self, inputs):
-        '''Full forward pass through model'''
-        h = self.dense_stack(inputs)
-        h = self.final_layer(h)
-        outputs = self.final_act(h)
+        """Full forward pass through model"""
+        h = self.hidden_layers(inputs)
+        outputs = self.final_layer(h)
+        topo_loss = self.add_topo_loss(inputs, outputs)
+        return outputs
+
+    def add_topo_loss(self, inputs, outputs):
+        """Added topological loss to final model"""
         topo_loss = self.topo_weight * self.topo_regularizer(inputs, outputs)
         self.add_loss(topo_loss)
         self.add_metric(topo_loss, name='topo_loss')
-        return outputs
 
 
+@delegates()
 class VariationalEncoder(Encoder):
-    '''Variational encoder'''
+    """Variational encoder"""
     def __init__(
         self,
-        name = 'variational_encoder',
-        kld_weight = 1e-5,
-        prior = None,
-        latent_dist = 'independent_normal',
-        iaf_units = [256, 256],
-        n_pseudoinputs = 200,
+        name: str = 'variational_encoder',
+        kld_weight: float = 1e-4,
+        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
+        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        iaf_units: Iterable[int] = [256, 256],
+        n_pseudoinputs: int = 200,
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
@@ -138,15 +145,15 @@ class VariationalEncoder(Encoder):
             self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h = self.dense_stack(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
         self.add_kld_loss(inputs, outputs)
         return outputs
 
-    def add_kld_loss(self, inputs, outputs, name='kld_loss'):
-        '''Adds KLDivergence loss to model'''
+    def add_kld_loss(self, inputs, outputs):
+        """Adds KLDivergence loss to model"""
         # VAMP prior depends on input, so we have to add it here
         if self.prior == 'vamp':
             prior_dist = self._vamp_prior(inputs)
@@ -164,7 +171,7 @@ class VariationalEncoder(Encoder):
         self.add_metric(kld_loss, name='kld_loss')
 
     def _vamp_prior(self, inputs):
-        '''Computes VAMP prior by feeding pseudoinputs through model'''
+        """Computes VAMP prior by feeding pseudoinputs through model"""
         # Inputs are needed to infer shape
         # and to ensure a connected graph
         h = self.pseudo_inputs(inputs)
@@ -175,7 +182,7 @@ class VariationalEncoder(Encoder):
 
     # Adapted from original implementation https://github.com/jmtomczak/vae_vampprior
     def _vamp_kld(self, xdist, pdist):
-        '''Computes KLD between x and VAMP prior'''
+        """Computes KLD between x and VAMP prior"""
         z = tf.convert_to_tensor(xdist)
         n_pseudo = tf.cast(self.n_pseudoinputs, tf.float32)
         x_log_prob = xdist.log_prob(z)
@@ -189,39 +196,21 @@ class VariationalEncoder(Encoder):
         return tf.math.abs(kld)
 
 
-
-
-#### TODO ###
-# class HierarchicalVariationalEncoder(VariationalEncoder):
-#     '''Hierarchical variational encoder (Tomczak & Welling 2018)'''
-#     def __init__(self, **kwargs):
-#         super().__init__(**kwargs)
-#         pass
-
-
-class TopologicalVariationalEncoder(VariationalEncoder):
-    '''Variational encoder model with topological loss on latent space'''
+@delegates()
+class TopologicalVariationalEncoder(VariationalEncoder, TopologicalEncoder):
+    """Variational encoder model with topological loss on latent space"""
     def __init__(
         self,
-        name = 'topological_variational_encoder',
-        topo_weight = 1.,
+        name: str = 'topological_variational_encoder',
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
-        self.topo_weight = topo_weight
-        self.topo_regularizer = TopologicalSignatureDistance()
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h = self.dense_stack(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
         self.add_kld_loss(inputs, outputs)
         self.add_topo_loss(inputs, outputs)
         return outputs
-
-    def add_topo_loss(self, inputs, outputs, name='topo_loss'):
-        '''Added topological loss to final model'''
-        topo_loss = self.topo_weight * self.topo_regularizer(inputs, outputs)
-        self.add_loss(topo_loss)
-        self.add_metric(topo_loss, name='topo_loss')
