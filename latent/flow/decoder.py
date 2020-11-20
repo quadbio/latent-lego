@@ -1,4 +1,4 @@
-'''Tensorflow implementations of decoder models'''
+"""Tensorflow implementations of decoder models"""
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -12,7 +12,7 @@ from .layers import ColwiseMult, DenseStack, SharedDispersion, Constant
 
 
 class Decoder(keras.Model):
-    '''Classical encoder model'''
+    """Deocder base model"""
     def __init__(
         self,
         x_dim,
@@ -26,7 +26,7 @@ class Decoder(keras.Model):
         initializer = 'glorot_normal',
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        super().__init__(name=name)
         self.x_dim = x_dim
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
@@ -38,8 +38,8 @@ class Decoder(keras.Model):
 
         # Define components
         if self.hidden_units:
-            self.dense_stack = DenseStack(
-                name = self.name,
+            self.hidden_layers = DenseStack(
+                name = f'{self.name}_hidden',
                 dropout_rate = self.dropout_rate,
                 batchnorm = self.batchnorm,
                 l1 = self.l1,
@@ -49,24 +49,33 @@ class Decoder(keras.Model):
                 hidden_units = self.hidden_units
             )
         self.final_layer = layers.Dense(
-            self.x_dim, name = 'decoder_final',
-            kernel_initializer = self.initializer
+            self.x_dim,
+            name = f'{self.name}_output',
+            kernel_initializer = self.initializer,
+            activation = 'linear'
         )
-        self.final_act = layers.Activation('linear', name='reconstruction_output')
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h = self.dense_stack(inputs) if self.hidden_units else inputs
         h = self.final_layer(h)
         outputs = self.final_act(h)
         return outputs
 
+    def hidden(self, inputs):
+        """Pass through hidden layers"""
+        return self.hidden_layers(inputs) if self.hidden_units else inputs
+
+    def output(self, inputs):
+        """Resonstructs output"""
+        return self.final_layer(inputs)
+
 
 class CountDecoder(Decoder):
-    '''
+    """
     Count decoder model.
     Rough reimplementation of the poisson Deep Count Autoencoder by Erslan et al. 2019
-    '''
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Define new components
@@ -78,7 +87,7 @@ class CountDecoder(Decoder):
         self.norm_layer = ColwiseMult(name='reconstruction_output')
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h, sf = inputs
         h = self.dense_stack(h)
         mean = self.mean_layer(h)
@@ -87,10 +96,10 @@ class CountDecoder(Decoder):
 
 
 class NegativeBinomialDecoder(Decoder):
-    '''
+    """
     Negative Binomial decoder model.
     Rough reimplementation of the NB Deep Count Autoencoder by Erslan et al. 2019
-    '''
+    """
     def __init__(self, dispersion='gene', **kwargs):
         super().__init__(**kwargs)
         self.dispersion = dispersion
@@ -133,7 +142,7 @@ class NegativeBinomialDecoder(Decoder):
         self.norm_layer = ColwiseMult()
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h, sf = inputs
         h = self.dense_stack(h)
         mean = self.mean_layer(h)
@@ -143,10 +152,10 @@ class NegativeBinomialDecoder(Decoder):
 
 
 class ZINBDecoder(NegativeBinomialDecoder):
-    '''
+    """
     ZINB decoder model.
     Rough reimplementation of the ZINB Deep Count Autoencoder by Erslan et al. 2019
-    '''
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Define new components
@@ -157,7 +166,7 @@ class ZINBDecoder(NegativeBinomialDecoder):
         )
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h, sf = inputs
         h = self.dense_stack(h)
         mean = self.mean_layer(h)
