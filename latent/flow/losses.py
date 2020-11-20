@@ -1,4 +1,4 @@
-'''Tensorflow implementations of losses for autoencoders'''
+"""Tensorflow implementations of losses for autoencoders"""
 
 import tensorflow as tf
 from tensorflow.keras import backend as K
@@ -8,11 +8,7 @@ from .utils import ms_rbf_kernel, rbf_kernel, persistent_homology, slice_matrix
 from .utils import l2_norm, KERNELS, OT_DIST
 
 
-def maximum_mean_discrepancy(x, y, kernel_method='multiscale_rbf'):
-    if isinstance(kernel_method, str):
-        kernel = KERNELS.get(kernel_method, ms_rbf_kernel)
-    else:
-        kernel = kernel_method
+def maximum_mean_discrepancy(x, y, kernel=ms_rbf_kernel):
     x = tf.cast(x, tf.float32)
     y = tf.cast(y, tf.float32)
     x_kernel = tf.math.reduce_mean(kernel(x, x))
@@ -22,11 +18,11 @@ def maximum_mean_discrepancy(x, y, kernel_method='multiscale_rbf'):
 
 
 class MaximumMeanDiscrepancy(losses.Loss):
-    '''MMD loss function between conditions'''
+    """MMD loss function between conditions"""
     def __init__(
         self,
         n_conditions = 2,
-        kernel_method = 'multiscale_rbf',
+        kernel_method = 'ms_rbf',
         **kwargs
     ):
         super().__init__()
@@ -37,7 +33,7 @@ class MaximumMeanDiscrepancy(losses.Loss):
             self.kernel = kernel_method
 
     def call(self, y_true, y_pred):
-        '''Calculated MMD between labels in y_pred space'''
+        """Calculated MMD between labels in y_pred space"""
 
         # No different conditions, no loss
         if self.n_conditions == 1:
@@ -60,7 +56,7 @@ class MaximumMeanDiscrepancy(losses.Loss):
             for j in range(i):
                 res = maximum_mean_discrepancy(
                     conditions[i], conditions[j],
-                    kernel_method = self.kernel
+                    kernel = self.kernel
                 )
                 result.append(res)
         return tf.cast(result, tf.float32)
@@ -68,14 +64,14 @@ class MaximumMeanDiscrepancy(losses.Loss):
 
 # Implementation adapted from https://github.com/theislab/dca
 class NegativeBinomial(losses.Loss):
-    '''Negative binomial loss'''
+    """Negative binomial loss"""
     def __init__(self, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
         self.eps = tf.cast(eps, tf.float32)
         self.theta = tf.cast(theta, tf.float32)
 
     def call(self, y_true, y_pred):
-        '''Calculates negative log likelihood of the NB distribution'''
+        """Calculates negative log likelihood of the NB distribution"""
         x = tf.cast(y_true, tf.float32)
         mu = tf.cast(y_pred, tf.float32)
 
@@ -95,7 +91,7 @@ class NegativeBinomial(losses.Loss):
 
 # Implementation adapted from https://github.com/theislab/dca
 class ZINB(losses.Loss):
-    '''Zero-inflated negative binomial loss'''
+    """Zero-inflated negative binomial loss"""
     def __init__(self, pi, theta, eps=1e-8, **kwargs):
         super().__init__(**kwargs)
         self.eps = tf.cast(eps, tf.float32)
@@ -103,7 +99,7 @@ class ZINB(losses.Loss):
         self.pi = tf.cast(pi, tf.float32)
 
     def call(self, y_true, y_pred):
-        '''Calculates negative log likelihood of the ZINB distribution'''
+        """Calculates negative log likelihood of the ZINB distribution"""
         x = tf.cast(y_true, tf.float32)
         mu = tf.cast(y_pred, tf.float32)
         nb_loss = NegativeBinomial(self.theta, eps=self.eps, reduction='none')
@@ -118,7 +114,7 @@ class ZINB(losses.Loss):
 
 # Implementation adapted from https://github.com/BorgwardtLab/topological-autoencoders
 class TopologicalSignatureDistance(losses.Loss):
-    '''Distance between topological signatures.'''
+    """Distance between topological signatures."""
     def __init__(
         self,
         sort_selected = False,
@@ -128,13 +124,13 @@ class TopologicalSignatureDistance(losses.Loss):
         eps = 1e-8,
         **kwargs
     ):
-        '''Topological signature computation.
+        """Topological signature computation.
 
         Args:
             p: Order of norm used for distance computation
             use_cycles: Flag to indicate whether cycles should be used
                 or not.
-        '''
+        """
         super().__init__(**kwargs)
         self.match_edges = match_edges
         self.return_additional_metrics = return_additional_metrics
@@ -152,7 +148,7 @@ class TopologicalSignatureDistance(losses.Loss):
 
     @staticmethod
     def _sig_error(signature1, signature2):
-        '''Compute distance between two topological signatures.'''
+        """Compute distance between two topological signatures."""
         return tf.reduce_sum(tf.square(signature1 - signature2), axis=-1)
 
     def _compute_distance_matrix(self, x):
@@ -162,7 +158,7 @@ class TopologicalSignatureDistance(losses.Loss):
         return distances
 
     def call(self, y_true, y_pred):
-        '''Return topological distance of two data spaces.
+        """Return topological distance of two data spaces.
 
         Args:
             y_true: Coordinates in space 1 (x)
@@ -170,7 +166,7 @@ class TopologicalSignatureDistance(losses.Loss):
 
         Returns:
             distance, [dict(additional outputs)]
-        '''
+        """
         distances1 = self._compute_distance_matrix(y_true)
         distances1 = distances1 / tf.math.reduce_max(distances1)
         distances2 = self._compute_distance_matrix(y_pred)
@@ -243,7 +239,7 @@ class TopologicalSignatureDistance(losses.Loss):
 
 
 class GromovWassersteinDistance(losses.Loss):
-    '''Gromov-Wasserstein distance with POT'''
+    """Gromov-Wasserstein distance with POT"""
     def __init__(
         self,
         method = 'gw',
@@ -261,7 +257,7 @@ class GromovWassersteinDistance(losses.Loss):
         return distances
 
     def call(self, y_true, y_pred):
-        '''Return optimal transport distance of two data spaces.
+        """Return optimal transport distance of two data spaces.
 
         Args:
             y_true: Coordinates in space 1 (x)
@@ -269,7 +265,7 @@ class GromovWassersteinDistance(losses.Loss):
 
         Returns:
             distance
-        '''
+        """
         distances1 = self._compute_distance_matrix(y_true)
         distances1 = distances1 / tf.math.reduce_max(distances1)
         distances2 = self._compute_distance_matrix(y_pred)

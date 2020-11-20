@@ -31,8 +31,8 @@ class Encoder(keras.Model):
         l1: float = 0.,
         l2: float = 0.,
         hidden_units: Iterable[int] = [128, 128],
-        activation: str = 'leaky_relu',
-        initializer: str = 'glorot_normal'
+        activation: Union[str, Callable] = 'leaky_relu',
+        initializer: Union[str, Callable] = 'glorot_normal'
     ):
         super().__init__(name=name)
         self.latent_dim = latent_dim

@@ -10,7 +10,7 @@ import ot
 ### Kernels
 # Multi-scale RBF kernel modified from https://github.com/theislab/scarches
 def ms_rbf_kernel(x, y):
-    '''Multi-scale RBF kernel'''
+    """Multi-scale RBF kernel"""
     sigmas = [
         1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1,
         1, 5, 10, 15, 20, 25, 30, 35, 100,
@@ -23,19 +23,19 @@ def ms_rbf_kernel(x, y):
 
 
 def rbf_kernel(x, y):
-    '''Radial Basis Function or Exponentiated Quadratic kernel'''
+    """Radial Basis Function or Exponentiated Quadratic kernel"""
     kernel = kernels.ExponentiatedQuadratic()
     return kernel.matrix(x, y)
 
 
 def rq_kernel(x, y):
-    '''Rational Quadratic kernel'''
+    """Rational Quadratic kernel"""
     kernel = kernels.RationalQuadratic()
     return kernel.matrix(x, y)
 
 
 KERNELS = {
-    'multiscale_rbf': ms_rbf_kernel,
+    'ms_rbf': ms_rbf_kernel,
     'rbf': rbf_kernel,
     'rq': rq_kernel
 }
@@ -44,24 +44,24 @@ KERNELS = {
 ### Methods for calculating lower-dimensional persistent homology.
 # Implementations adapted from https://github.com/BorgwardtLab/topological-autoencoders
 class UnionFind:
-    '''
+    """
     An implementation of a UnionFind class. The class performs path
     compression by default. It uses integers for storing one disjoint
     set, assuming that vertices are zero-indexed.
-    '''
+    """
 
     def __init__(self, n_vertices):
-        '''
+        """
         Initializes an empty Union--Find data structure for a given
         number of vertices.
-        '''
+        """
 
         self._parent = np.arange(n_vertices, dtype=int)
 
     def find(self, u):
-        '''
+        """
         Finds and returns the parent of u with respect to the hierarchy.
-        '''
+        """
 
         if self._parent[u] == u:
             return u
@@ -71,19 +71,19 @@ class UnionFind:
             return self._parent[u]
 
     def merge(self, u, v):
-        '''
+        """
         Merges vertex u into the component of vertex v. Note the
         asymmetry of this operation.
-        '''
+        """
 
         if u != v:
             self._parent[self.find(u)] = self.find(v)
 
     def roots(self):
-        '''
+        """
         Generator expression for returning roots, i.e. components that
         are their own parents.
-        '''
+        """
 
         for vertex, parent in enumerate(self._parent):
             if vertex == parent:
@@ -91,7 +91,7 @@ class UnionFind:
 
 
 def _persistent_homology(matrix):
-    '''Performs persistent homology calculation'''
+    """Performs persistent homology calculation"""
     n_vertices = matrix.shape[0]
     uf = UnionFind(n_vertices)
 

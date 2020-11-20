@@ -1,4 +1,4 @@
-'''Tensorflow implementations of useful layers and blocks'''
+"""Tensorflow implementations of useful layers and blocks"""
 
 import numpy as np
 import tensorflow as tf
@@ -14,7 +14,8 @@ tfpl = tfp.layers
 tfd = tfp.distributions
 tfb = tfp.bijectors
 
-from collections.abc import Iterable
+from fastcore import delegates
+from typing import Iterable, Literal, Union, Callable
 
 from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
@@ -22,20 +23,19 @@ from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
 
 ### Core layers and stacks
 class DenseBlock(layers.Layer):
-    '''Basic dense layer block'''
+    """Basic dense layer block"""
     def __init__(
         self,
-        units,
-        name = 'dense_block',
-        dropout_rate = 0.1,
-        batchnorm = True,
-        l1 = 0.,
-        l2 = 0.,
-        activation = 'leaky_relu',
-        initializer = 'glorot_normal',
-        **kwargs
+        units: int,
+        name: str = 'dense_block',
+        dropout_rate: float = 0.1,
+        batchnorm: bool = True,
+        l1: float = 0.,
+        l2: float = 0.,
+        activation: Union[str, Callable] = 'leaky_relu',
+        initializer: Union[str, Callable] = 'glorot_normal'
     ):
-        super().__init__(name=name, **kwargs)
+        super().__init__(name=name)
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
         self.l1 = l1
@@ -57,7 +57,7 @@ class DenseBlock(layers.Layer):
 
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h = self.dense(inputs)
         h = self.bn(h)
         h = self.activation(h)
@@ -65,40 +65,27 @@ class DenseBlock(layers.Layer):
         return outputs
 
 
+@delegates(DenseBlock)
 class DenseStack(layers.Layer):
-    '''Core dense layer stack of encoders and decoders'''
+    """Core dense layer stack of encoders and decoders"""
     def __init__(
         self,
-        name = 'dense_stack',
-        dropout_rate = 0.1,
-        batchnorm = True,
-        l1 = 0.,
-        l2 = 0.,
-        hidden_units = [128, 128],
-        activation = 'leaky_relu',
-        initializer = 'glorot_normal',
+        name: str = 'dense_stack',
+        hidden_units: Iterable[int] = [128, 128],
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        super().__init__(name=name)
         self.hidden_units =  hidden_units
 
         # Define stack
         self.dense_stack = []
         for idx, dim in enumerate(self.hidden_units):
             layer_name = f'{self.name}_{idx}'
-            layer = DenseBlock(
-                dim,
-                name = layer_name,
-                dropout_rate = dropout_rate,
-                batchnorm = batchnorm,
-                initializer = initializer,
-                l1 = l1,
-                l2 = l2
-            )
+            layer = DenseBlock(dim, name=layer_name, **kwargs)
             self.dense_stack.append(layer)
 
     def call(self, inputs):
-        '''Full forward pass through model'''
+        """Full forward pass through model"""
         h = inputs
         for layer in self.dense_stack:
             h = layer(h)
@@ -108,18 +95,18 @@ class DenseStack(layers.Layer):
 
 ### Utility layers
 class ColwiseMult(layers.Layer):
-    '''Performs column-wise multiplication between input vectors.'''
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    """Performs column-wise multiplication between input vectors."""
+    def __init__(self, name:str = 'colwise_mult'):
+        super().__init__(name=name)
 
     def call(self, inputs):
         return inputs[0] * K.reshape(inputs[1], (-1, 1))
 
 
 class Sampling(layers.Layer):
-    '''Uses inputs (z_mean, log_var) to sample z.'''
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    """Uses inputs (z_mean, log_var) to sample z."""
+    def __init__(self, name:str = 'sampling'):
+        super().__init__(name=name)
 
     def call(self, inputs):
         mean, log_var = inputs
@@ -128,16 +115,15 @@ class Sampling(layers.Layer):
 
 
 class SharedDispersion(layers.Layer):
-    '''Layer to get shared dispersion estimates per gene.'''
+    """Layer to get shared dispersion estimates per gene."""
     def __init__(
         self,
-        units,
-        activation = 'clipped_exp',
-        initializer = 'glorot_normal',
-        name = 'shared_dispersion',
-        **kwargs
+        units: int,
+        name: str = 'shared_dispersion',
+        activation: Union[str, Callable] = 'clipped_exp',
+        initializer: Union[str, Callable] = 'glorot_normal'
     ):
-        super().__init__(**kwargs)
+        super().__init__(name=name)
         self.units = units
         self.initializer = initializer
 
@@ -160,17 +146,16 @@ class SharedDispersion(layers.Layer):
 
 
 class Constant(layers.Layer):
-    '''Layer that outputs a constant value.'''
+    """Layer that outputs a constant value."""
     def __init__(
         self,
-        units,
-        constant = 1.,
-        trainable = True,
-        activation = 'clipped_exp',
-        name = 'constant',
-        **kwargs
+        units: int,
+        name: str = 'constant',
+        constant: float = 1.,
+        trainable: bool = True,
+        activation: Union[str, Callable] = 'clipped_exp'
     ):
-        super().__init__(**kwargs)
+        super().__init__(name=name)
         self.units = units
         self.const = tf.Variable(
             [[constant]], dtype=tf.float32, trainable=trainable)
@@ -187,15 +172,15 @@ class Constant(layers.Layer):
 
 # Implementation adapted from https://github.com/theislab/sfaira/
 class PseudoInputs(layers.Layer):
-    '''Creates trainable pseudo inputs'''
+    """Creates trainable pseudo inputs"""
     def __init__(
         self,
-        n_inputs,
-        activation = 'hard_sigmoid',
-        initializer = None,
-        **kwargs
+        n_inputs: int,
+        name: str = 'pseudo_inputs',
+        activation: Union[str, Callable] = 'hard_sigmoid',
+        initializer: Union[str, Callable] = None
     ):
-        super().__init__(**kwargs)
+        super().__init__(name=name)
         self.n_inputs = n_inputs
         self.activation = activations.get(activation)
         if initializer:
@@ -217,9 +202,9 @@ class PseudoInputs(layers.Layer):
 
 
 class GradReversal(layers.Layer):
-    '''Reverses gradient during backprop.'''
-    def __init__(self, weight=1., **kwargs):
-        super().__init__(**kwargs)
+    """Reverses gradient during backprop."""
+    def __init__(self, name:str = 'grad_reversal', weight:float = 1.):
+        super().__init__(name=name)
         self.weight = weight
 
     def call(self, inputs):
@@ -234,13 +219,13 @@ class GradReversal(layers.Layer):
 
 
 class KLDivergenceAddLoss(layers.Layer):
-    '''
+    """
     Identity transform layer that adds analytic KL divergence
     (based on mean ans log_var) to the final model loss.
-    '''
+    """
 
-    def __init__(self, name='kld', weight=1., **kwargs):
-        super().__init__(name=name, **kwargs)
+    def __init__(self, name: str = 'kld', weight: float = 1.):
+        super().__init__(name=name)
         self.weight = weight
 
     def call(self, inputs):
@@ -254,15 +239,16 @@ class KLDivergenceAddLoss(layers.Layer):
 
 
 ### Critic layers
+@delegates(DenseStack)
 class MMDCritic(layers.Layer):
-    '''Adds MMD loss between conditions.'''
+    """Adds MMD loss between conditions."""
     def __init__(
         self,
-        name = 'mmd_critic',
-        weight = 1.,
-        n_conditions = 2,
-        hidden_units = None,
-        kernel_method = 'rbf',
+        name: str = 'mmd_critic',
+        weight: float = 1.,
+        n_conditions: int = 2,
+        hidden_units: Iterable[int] = None,
+        kernel_method: Union[Literal['rbf', 'ms_rbf', 'rq'], Callable] = 'rbf',
         **kwargs
     ):
         super().__init__(name=name)
@@ -277,7 +263,7 @@ class MMDCritic(layers.Layer):
 
         # Define components
         if self.hidden_units:
-            self.mmd_layer = DenseStack(
+            self.hidden_layers = DenseStack(
                 hidden_units = self.hidden_units,
                 dropout_rate = 0.,
                 **kwargs
@@ -286,20 +272,21 @@ class MMDCritic(layers.Layer):
     def call(self, inputs):
         outputs, labels = inputs
         if self.hidden_units:
-            outputs = self.mmd_layer(outputs)
+            outputs = self.hidden_layers(outputs)
         crit_loss = self.weight * self.loss_func(labels, outputs)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
         return outputs
 
 
+@delegates(DenseStack)
 class PairwiseDistCritic(layers.Layer):
-    '''Matches paired points in latent space by forcing them to the same location.'''
+    """Matches paired points in latent space by forcing them to the same location."""
     def __init__(
         self,
-        name = 'pairing_critic',
-        weight = 1.,
-        hidden_units = None,
+        name: str = 'pairing_critic',
+        weight: float = 1.,
+        hidden_units: Iterable[int] = None,
         **kwargs
     ):
         super().__init__(name=name)
@@ -327,14 +314,15 @@ class PairwiseDistCritic(layers.Layer):
         return outputs
 
 
+@delegates(DenseStack)
 class GromovWassersteinCritic(layers.Layer):
-    '''Adds Gromov-Wasserstein loss between conditions.'''
+    """Adds Gromov-Wasserstein loss between conditions."""
     def __init__(
         self,
-        name = 'wasserstein_critic',
-        method = 'gw',
-        weight = 1.,
-        hidden_units = None,
+        name: str = 'wasserstein_critic',
+        method: Literal['gw', 'entropic_gw'] = 'gw',
+        weight: float = 1.,
+        hidden_units: Iterable[int] = None,
         **kwargs
     ):
         super().__init__(name=name)
@@ -373,6 +361,6 @@ CRITICS = {
 
 ### PROBABILISTIC LAYERS
 DISTRIBUTIONS = {
-    'independent_normal': tfpl.IndependentNormal,
-    'multivariate_normal': tfpl.MultivariateNormalTriL
+    'independent': tfpl.IndependentNormal,
+    'multivariate': tfpl.MultivariateNormalTriL
 }
