@@ -12,6 +12,7 @@ from typing import Iterable, Literal, Union, Callable
 
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack, SharedDispersion, Constant
+from .layers import DenseBlock
 from .losses import NegativeBinomial, ZINB
 
 from .utils import delegates
@@ -66,7 +67,7 @@ class Decoder(keras.Model):
     def add_reconstruction_loss(self, x, output):
         """Adds reconstruction loss to final model loss"""
         if self.reconstruction_loss:
-            rec_loss = self.reconstruction_loss(latent, output)
+            rec_loss = self.reconstruction_loss(x, output)
             self.add_loss(rec_loss)
             self.add_metric(rec_loss, name=self.loss_name)
 

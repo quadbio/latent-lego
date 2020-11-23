@@ -14,6 +14,7 @@ from .encoder import VariationalEncoder, TopologicalVariationalEncoder
 
 from .utils import delegates
 
+
 @delegates()
 class VariationalAutoencoder(Autoencoder):
     """Variational Autoencoder"""

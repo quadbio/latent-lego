@@ -9,8 +9,8 @@ import tensorflow.keras.losses as losses
 from typing import Iterable, Literal, Union, Callable
 
 from .encoder import Encoder, TopologicalEncoder
-from .decoder import Decoder, CountDecoder, NegativeBinomialDecoder
-from .decoder import ZINBDecoder
+from .decoder import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder
+from .layers import DenseBlock
 from .losses import NegativeBinomial, ZINB
 
 from .utils import delegates
@@ -26,7 +26,7 @@ class Autoencoder(keras.Model):
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 64],
-        hidden_units: Iterable[int] = [64, 128],
+        decoder_units: Iterable[int] = [64, 128],
         compile_model: bool = True,
         reconstruction_loss: Callable = None,
         **kwargs
@@ -71,12 +71,12 @@ class Autoencoder(keras.Model):
         outputs = self.decode(inputs, latent)
         return outputs
 
-    @delegates(super().compile)
+    @delegates(keras.Model.compile)
     def compile(self, optimizer='adam', loss=None, **kwargs):
         """Compile model with default loss and omptimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
-    @delegates(super().fit)
+    @delegates(keras.Model.fit)
     def fit(self, x, y=None, **kwargs):
         if y:
             return super().fit(x, y, **kwargs)
@@ -111,7 +111,7 @@ class PoissonAutoencoder(Autoencoder):
         outputs = self.decode(x, latent, sf)
         return outputs
 
-    @delegates(super().fit)
+    @delegates(keras.Model.fit)
     def fit(self, x, y=None, **kwargs):
         if y:
             return super(Autoencoder, self).fit(x, y, **kwargs)

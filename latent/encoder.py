@@ -21,7 +21,7 @@ from .losses import TopologicalSignatureDistance
 
 from .utils import delegates
 
-@delegates(DenseBlock)
+@delegates(DenseStack)
 class Encoder(keras.Model):
     """Encoder base model"""
     def __init__(
@@ -33,13 +33,11 @@ class Encoder(keras.Model):
     ):
         super().__init__(name=name)
         self.latent_dim = latent_dim
-        self.hidden_units =  hidden_units
         self.initializer = keras.initializers.get(initializer)
 
         # Define components
         self.hidden_layers = DenseStack(
             name = self.name,
-            hidden_units = self.hidden_units,
             initializer = self.initializer,
             **kwargs
         )
@@ -134,7 +132,7 @@ class VariationalEncoder(Encoder):
 
     def call(self, inputs):
         """Full forward pass through model"""
-        h = self.dense_stack(inputs)
+        h = self.hidden_layers(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
         self.add_kld_loss(inputs, outputs)
@@ -196,7 +194,7 @@ class TopologicalVariationalEncoder(VariationalEncoder, TopologicalEncoder):
 
     def call(self, inputs):
         """Full forward pass through model"""
-        h = self.dense_stack(inputs)
+        h = self.hidden_layers(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
         self.add_kld_loss(inputs, outputs)

@@ -14,12 +14,13 @@ tfpl = tfp.layers
 tfd = tfp.distributions
 tfb = tfp.bijectors
 
-from fastcore import delegates
+# from fastcore import delegates
 from typing import Iterable, Literal, Union, Callable
 
 from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
 
+from .utils import delegates
 
 ### Core layers and stacks
 class DenseBlock(layers.Layer):
