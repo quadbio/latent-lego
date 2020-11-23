@@ -5,7 +5,7 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
-from fastcore import delegates
+# from fastcore import delegates
 from typing import Iterable, Literal, Union, Callable
 
 from .encoder import Encoder, TopologicalEncoder
@@ -13,16 +13,17 @@ from .decoder import Decoder, CountDecoder, NegativeBinomialDecoder
 from .decoder import ZINBDecoder
 from .losses import NegativeBinomial, ZINB
 
+from .utils import delegates
 
 @delegates(DenseBlock)
 class Autoencoder(keras.Model):
     """Autoencoder base class"""
     def __init__(
         self,
-        encoder = None,
-        decoder = None,
+        encoder: keras.Model = None,
+        decoder: keras.Model = None,
         name: str = 'autoencoder',
-        x_dim: int,
+        x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 64],
         hidden_units: Iterable[int] = [64, 128],
