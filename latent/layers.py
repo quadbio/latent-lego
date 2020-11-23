@@ -307,7 +307,7 @@ class PairwiseDistCritic(layers.Layer):
             outputs = self.hidden_layer(outputs)
         x1, x2 = tf.dynamic_partition(outputs, labels, 2)
         # Element-wise difference
-        dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
+        dist = l2_norm(tf.math.subtract(x1, x2), axis=0)
         crit_loss = self.weight * dist
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
