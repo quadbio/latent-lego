@@ -12,13 +12,14 @@ tfpl = tfp.layers
 tfd = tfp.distributions
 tfb = tfp.bijectors
 
-from fastcore import delegates
+# from fastcore import delegates
 from typing import Iterable, Literal, Union, Callable
 
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
 from .losses import TopologicalSignatureDistance
 
+from .utils import delegates
 
 @delegates(DenseBlock)
 class Encoder(keras.Model):
