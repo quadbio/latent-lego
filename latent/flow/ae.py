@@ -5,76 +5,64 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
+from fastcore import delegates
+from typing import Iterable, Literal, Union, Callable
+
 from .encoder import Encoder, TopologicalEncoder
 from .decoder import Decoder, CountDecoder, NegativeBinomialDecoder
 from .decoder import ZINBDecoder
 from .losses import NegativeBinomial, ZINB
 
 
+@delegates(DenseBlock)
 class Autoencoder(keras.Model):
-    """Classical autoencoder"""
+    """Autoencoder base class"""
     def __init__(
         self,
-        x_dim,
-        latent_dim = 50,
-        dropout_rate = 0.1,
-        batchnorm = True,
-        l1 = 0.,
-        l2 = 0.,
-        hidden_units = [128, 64],
-        compile_model = True,
-        activation = 'prelu',
-        initializer = 'glorot_normal',
-        reconstruction_loss = None,
+        encoder = None,
+        decoder = None,
+        name: str = 'autoencoder',
+        x_dim: int,
+        latent_dim: int = 50,
+        encoder_units: Iterable[int] = [128, 64],
+        hidden_units: Iterable[int] = [64, 128],
+        compile_model: bool = True,
+        reconstruction_loss: Callable = None,
         **kwargs
     ):
-        super().__init__(**kwargs)
+        super().__init__(name=name)
         self.latent_dim = int(latent_dim)
         self.x_dim = int(x_dim)
-        self.dropout_rate = dropout_rate
-        self.batchnorm =  batchnorm
-        self.l1 = l1
-        self.l2 = l2
-        self.activation = activation
-        self.hidden_units = hidden_units
-        self.initializer = keras.initializers.get(initializer)
+        self.encoder_units = encoder_units
+        self.decoder_units = decoder_units
+        self.reconstruction_loss = reconstruction_loss
+        self.net_kwargs = kwargs
 
         # Define components
-        self.encoder = Encoder(
-            latent_dim = self.latent_dim,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units
-        )
+        if encoder:
+            self.encoder = encoder
+        else:
+            self.encoder = Encoder(
+                latent_dim = self.latent_dim,
+                hidden_units = self.encoder_units,
+                **kwargs
+            )
 
-        self.decoder = Decoder(
-            x_dim = self.x_dim,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units[::-1]
-        )
-
-        self.rec_loss = reconstruction_loss
+        if decoder:
+            self.decoder = decoder
+        else:
+            self.decoder = Decoder(
+                x_dim = self.x_dim,
+                hidden_units = self.decoder_units,
+                reconstruction_loss = self.reconstruction_loss,
+                **kwargs
+            )
 
     def encode(self, x):
         return self.encoder(x)
 
-    def decode(self, x, latent, loss_name='rec_loss'):
-        outputs = self.decoder(latent)
-        # Rec loss is added in the decoder to make twin autoencoders possible
-        if self.rec_loss:
-            rec_loss = self.rec_loss(x, outputs)
-            self.add_loss(rec_loss)
-            self.add_metric(rec_loss, name=loss_name)
-        return outputs
+    def decode(self, x, latent):
+        return self.decoder([x, latent])
 
     def call(self, inputs):
         """Full forward pass through model"""
@@ -82,10 +70,12 @@ class Autoencoder(keras.Model):
         outputs = self.decode(inputs, latent)
         return outputs
 
+    @delegates(super().compile)
     def compile(self, optimizer='adam', loss=None, **kwargs):
         """Compile model with default loss and omptimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
+    @delegates(super().fit)
     def fit(self, x, y=None, **kwargs):
         if y:
             return super().fit(x, y, **kwargs)
@@ -97,32 +87,21 @@ class Autoencoder(keras.Model):
         return self.encoder.predict(inputs)
 
 
+@delegates()
 class PoissonAutoencoder(Autoencoder):
-    """Normalizing autoencoder for count data"""
+    """Poisson autoencoder for count data"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.decoder = CountDecoder(
+        self.decoder = PoissonDecoder(
             x_dim = self.x_dim,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units[::-1]
+            hidden_units = self.decoder_units,
+            **self.net_kwargs
         )
 
-        # Loss is added in call()
-        self.rec_loss = None
-
-    def decode(self, x, latent, size_factors, loss_name='poisson_loss'):
-        outputs = self.decoder([latent, size_factors])
-        poisson_loss = losses.Poisson()
-        rec_loss = poisson_loss(x, outputs)
-        self.add_loss(rec_loss)
-        self.add_metric(rec_loss, name=loss_name)
-        return outputs
+    def decode(self, x, latent, size_factors):
+        output = self.decoder([x, latent, size_factors])
+        return output
 
     def call(self, inputs):
         """Full forward pass through model"""
@@ -131,6 +110,7 @@ class PoissonAutoencoder(Autoencoder):
         outputs = self.decode(x, latent, sf)
         return outputs
 
+    @delegates(super().fit)
     def fit(self, x, y=None, **kwargs):
         if y:
             return super(Autoencoder, self).fit(x, y, **kwargs)
@@ -138,67 +118,48 @@ class PoissonAutoencoder(Autoencoder):
             return super(Autoencoder, self).fit(x, x[0], **kwargs)
 
 
+@delegates()
 class NegativeBinomialAutoencoder(PoissonAutoencoder):
     """Autoencoder with negative binomial loss for count data"""
-    def __init__(self, dispersion='gene', **kwargs):
+    def __init__(
+        self,
+        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'gene',
+        **kwargs
+    ):
         super().__init__(**kwargs)
         self.dispersion = dispersion
 
         self.decoder = NegativeBinomialDecoder(
             x_dim = self.x_dim,
             dispersion = self.dispersion,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units[::-1]
+            hidden_units = self.decoder_units,
+            **self.net_kwargs
         )
 
-        # Loss is added in call()
-        self.rec_loss = None
 
-    def decode(self, x, latent, size_factors, loss_name='nb_loss'):
-        outputs, disp = self.decoder([latent, size_factors])
-        # Add loss here so it can be parameterized by theta
-        rec_loss = NegativeBinomial(theta=disp)
-        self.add_loss(rec_loss(x, outputs))
-        self.add_metric(rec_loss(x, outputs), name=loss_name)
-        return outputs
-
-
+@delegates()
 class ZINBAutoencoder(PoissonAutoencoder):
     """Autoencoder with ZINB loss for count data"""
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'gene',
+        **kwargs
+    ):
         super().__init__(**kwargs)
+        self.dispersion = dispersion
 
         self.decoder = ZINBDecoder(
             x_dim = self.x_dim,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units[::-1]
+            dispersion = self.dispersion,
+            hidden_units = self.decoder_units,
+            **self.net_kwargs
         )
 
-        # Loss is added in call()
-        self.rec_loss = None
 
-    def decode(self, x, latent, size_factors, loss_name='zinb_loss'):
-        outputs, disp, pi = self.decoder([latent, size_factors])
-        # Add loss here so it can be parameterized by theta and pi
-        rec_loss = ZINB(theta=disp, pi=pi)
-        self.add_loss(rec_loss(x, outputs))
-        self.add_metric(rec_loss(x, outputs), name=loss_name)
-        return outputs
-
-
+@delegates()
 class TopologicalAutoencoder(Autoencoder):
     """Autoencoder model with topological loss on latent space"""
-    def __init__(self, topo_weight=1., **kwargs):
+    def __init__(self, topo_weight:float = 1., **kwargs):
         super().__init__(**kwargs)
         self.topo_weight = topo_weight
 
@@ -206,13 +167,8 @@ class TopologicalAutoencoder(Autoencoder):
         self.encoder = TopologicalEncoder(
             topo_weight = self.topo_weight,
             latent_dim = self.latent_dim,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
-            initializer = self.initializer,
-            hidden_units = self.hidden_units
+            hidden_units = self.decoder_units,
+            **self.net_kwargs
         )
 
 
