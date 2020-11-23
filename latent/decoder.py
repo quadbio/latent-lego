@@ -7,7 +7,6 @@ from tensorflow.keras.regularizers import l1_l2
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 
-# from fastcore import delegates
 from typing import Iterable, Literal, Union, Callable
 
 from .activations import clipped_softplus, clipped_exp

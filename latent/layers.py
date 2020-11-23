@@ -14,7 +14,6 @@ tfpl = tfp.layers
 tfd = tfp.distributions
 tfb = tfp.bijectors
 
-# from fastcore import delegates
 from typing import Iterable, Literal, Union, Callable
 
 from .activations import ACTIVATIONS, clipped_exp

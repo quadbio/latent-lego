@@ -14,6 +14,8 @@ from .encoder import VariationalEncoder
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 
+from .utils import delegates
+
 
 class TwinAutoencoder(keras.Model):
     """Twin autoencoder that joins two autoencoders in a shared latent space"""
@@ -35,8 +37,8 @@ class TwinAutoencoder(keras.Model):
         self.ae1, self.ae2 = models
         # Change rec loss name if the same
         if self.ae1.decoder.loss_name == self.ae2.decoder.loss_name:
-            self.ae1.decoder.loss_name = f'{ae1.decoder.loss_name}_1'
-            self.ae2.decoder.loss_name = f'{ae2.decoder.loss_name}_2'
+            self.ae1.decoder.loss_name = f'{self.ae1.decoder.loss_name}_1'
+            self.ae2.decoder.loss_name = f'{self.ae2.decoder.loss_name}_2'
 
         if isinstance(critic, str):
             critic = CRITICS.get(critic, MMDCritic)

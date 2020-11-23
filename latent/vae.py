@@ -5,7 +5,6 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input, Model
 
-# from fastcore import delegates
 from typing import Iterable, Literal, Union, Callable
 
 from .ae import Autoencoder, PoissonAutoencoder

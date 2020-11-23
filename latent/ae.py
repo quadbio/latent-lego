@@ -5,7 +5,6 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
-# from fastcore import delegates
 from typing import Iterable, Literal, Union, Callable
 
 from .encoder import Encoder, TopologicalEncoder
