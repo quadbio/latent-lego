@@ -31,6 +31,10 @@ class TwinAutoencoder(keras.Model):
 
         # Define components
         self.ae1, self.ae2 = models
+        # Change rec loss name if the same
+        if self.ae1.decoder.loss_name == self.ae2.decoder.loss_name:
+            self.ae1.decoder.loss_name = f'{ae1.decoder.loss_name}_1'
+            self.ae2.decoder.loss_name = f'{ae2.decoder.loss_name}_2'
 
         if isinstance(critic, str):
             critic = CRITICS.get(critic, MMDCritic)
@@ -69,8 +73,8 @@ class TwinAutoencoder(keras.Model):
         # Critic joins, adds loss, and splits
         latent1, latent2 = self.critic(latent1, latent2)
         # Reconstruction loss should be added by the decoders
-        out1 = self.ae1.decode(x1, latent1, sf1, loss_name='rec_loss_1')
-        out2 = self.ae2.decode(x2, latent2, sf2, loss_name='rec_loss_2')
+        out1 = self.ae1.decode(x1, latent1, sf1)
+        out2 = self.ae2.decode(x2, latent2, sf2)
         return out1, out2
 
     def transform(self, inputs, split_output=False):
