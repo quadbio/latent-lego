@@ -45,16 +45,19 @@ class VariationalAutoencoder(Autoencoder):
         )
 
 
+@delegates()
 class PoissonVAE(PoissonAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
+@delegates()
 class NegativeBinomialVAE(NegativeBinomialAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
+@delegates()
 class ZINBVAE(ZINBAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

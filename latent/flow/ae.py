@@ -172,16 +172,19 @@ class TopologicalAutoencoder(Autoencoder):
         )
 
 
+@delegates()
 class PoissonTopoAE(PoissonAutoencoder, TopologicalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
+@delegates()
 class NegativeBinomialTopoAE(NegativeBinomialAutoencoder, TopologicalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
+@delegates()
 class ZINBTopoAE(ZINBAutoencoder, TopologicalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
