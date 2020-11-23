@@ -20,40 +20,27 @@ from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIO
 from .losses import TopologicalSignatureDistance
 
 
+@delegates(DenseBlock)
 class Encoder(keras.Model):
     """Encoder base model"""
     def __init__(
         self,
         latent_dim: int = 50,
         name: str = 'encoder',
-        dropout_rate: float = 0.1,
-        batchnorm:  = True,
-        l1: float = 0.,
-        l2: float = 0.,
-        hidden_units: Iterable[int] = [128, 128],
-        activation: Union[str, Callable] = 'leaky_relu',
-        initializer: Union[str, Callable] = 'glorot_normal'
+        initializer: Union[str, Callable] = 'glorot_normal',
+        **kwargs
     ):
         super().__init__(name=name)
         self.latent_dim = latent_dim
-        self.dropout_rate = dropout_rate
-        self.batchnorm =  batchnorm
-        self.l1 = l1
-        self.l2 = l2
-        self.activation = activation
         self.hidden_units =  hidden_units
         self.initializer = keras.initializers.get(initializer)
 
         # Define components
         self.hidden_layers = DenseStack(
             name = self.name,
-            dropout_rate = self.dropout_rate,
-            batchnorm = self.batchnorm,
-            l1 = self.l1,
-            l2 = self.l2,
-            activation = self.activation,
+            hidden_units = self.hidden_units,
             initializer = self.initializer,
-            hidden_units = self.hidden_units
+            **kwargs
         )
         self.final_layer = layers.Dense(
             self.latent_dim,

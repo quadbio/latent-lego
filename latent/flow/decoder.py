@@ -15,45 +15,33 @@ from .layers import ColwiseMult, DenseStack, SharedDispersion, Constant
 from .losses import NegativeBinomial, ZINB
 
 
+@delegates(DenseBlock)
 class Decoder(keras.Model):
     """Deocder base model"""
     def __init__(
         self,
         x_dim: int,
         name: str = 'decoder',
-        dropout_rate: float = 0.1,
-        batchnorm: bool = True,
-        l1: float = 0.,
-        l2: float = 0.,
         hidden_units = [128, 128],
-        activation: Union[str, Callable] = 'leaky_relu',
-        initializer: Union[str, Callable] = 'glorot_normal',
         reconstruction_loss: Callable = None,
-        loss_name = 'rec_loss'
+        loss_name = 'rec_loss',
+        initializer: Union[str, Callable] = 'glorot_normal',
+        **kwargs
     ):
         super().__init__(name=name)
         self.x_dim = x_dim
-        self.dropout_rate = dropout_rate
-        self.batchnorm =  batchnorm
-        self.l1 = l1
-        self.l2 = l2
-        self.activation = activation
         self.hidden_units =  hidden_units
-        self.initializer = keras.initializers.get(initializer)
         self.reconstruction_loss = reconstruction_loss
         self.loss_name = loss_name
+        self.initializer = keras.initializers.get(initializer)
 
         # Define components
         if self.hidden_units:
             self.hidden_layers = DenseStack(
                 name = f'{self.name}_hidden',
-                dropout_rate = self.dropout_rate,
-                batchnorm = self.batchnorm,
-                l1 = self.l1,
-                l2 = self.l2,
-                activation = self.activation,
+                hidden_units = self.hidden_units,
                 initializer = self.initializer,
-                hidden_units = self.hidden_units
+                **kwargs
             )
         self.final_layer = layers.Dense(
             self.x_dim,
@@ -179,7 +167,7 @@ class ZINBDecoder(NegativeBinomialDecoder):
     """Decoder with ZINB reconstruction loss"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+
         # Define new components
         self.pi_layer = layers.Dense(
             self.x_dim,
