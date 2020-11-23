@@ -6,6 +6,8 @@ from tensorflow.keras import backend as K
 import tensorflow.keras.layers as layers
 from tensorflow.keras.losses import MeanSquaredError, Poisson
 
+from typing import Iterable, Literal, Union, Callable, Tuple
+
 from .layers import DenseBlock, MMDCritic, CRITICS
 from .losses import MaximumMeanDiscrepancy
 from .encoder import VariationalEncoder
@@ -17,11 +19,11 @@ class TwinAutoencoder(keras.Model):
     """Twin autoencoder that joins two autoencoders in a shared latent space"""
     def __init__(
         self,
-        models,
-        critic = 'mmd',
-        kernel_method = 'multiscale_rbf',
-        critic_weight = 1.,
-        critic_units = None,
+        models: Tuple[keras.Model, keras.Model],
+        critic: Union[str, keras.Model] = 'mmd',
+        kernel_method: Union[str, Callable] = 'multiscale_rbf',
+        critic_weight: float = 1.,
+        critic_units: Iterable[int] = None,
         **kwargs
     ):
         super().__init__()
@@ -86,6 +88,7 @@ class TwinAutoencoder(keras.Model):
         outputs = self.critic(latent1, latent2, split_output=split_output)
         return [out.numpy() for out in outputs]
 
+    @delegates(keras.Model.compile)
     def compile(self, optimizer='adam', loss=None, **kwargs):
         """Compile model with default loss and optimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
