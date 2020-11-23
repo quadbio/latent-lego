@@ -17,8 +17,8 @@ from typing import Iterable, Literal, Union, Callable
 from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
 from .losses import TopologicalSignatureDistance
-
 from .utils import delegates
+
 
 @delegates(DenseStack)
 class Encoder(keras.Model):

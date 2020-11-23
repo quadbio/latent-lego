@@ -13,8 +13,8 @@ from .activations import clipped_softplus, clipped_exp
 from .layers import ColwiseMult, DenseStack, SharedDispersion, Constant
 from .layers import DenseBlock
 from .losses import NegativeBinomial, ZINB
-
 from .utils import delegates
+
 
 @delegates(DenseBlock)
 class Decoder(keras.Model):

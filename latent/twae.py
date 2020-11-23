@@ -13,7 +13,6 @@ from .losses import MaximumMeanDiscrepancy
 from .encoder import VariationalEncoder
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
-
 from .utils import delegates
 
 

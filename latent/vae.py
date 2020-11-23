@@ -10,7 +10,6 @@ from typing import Iterable, Literal, Union, Callable
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 from .encoder import VariationalEncoder, TopologicalVariationalEncoder
-
 from .utils import delegates
 
 

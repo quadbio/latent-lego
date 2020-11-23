@@ -18,8 +18,8 @@ from typing import Iterable, Literal, Union, Callable
 
 from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
+from .utils import delegates, l2_norm
 
-from .utils import delegates
 
 ### Core layers and stacks
 class DenseBlock(layers.Layer):

@@ -11,7 +11,6 @@ from .encoder import Encoder, TopologicalEncoder
 from .decoder import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder
 from .layers import DenseBlock
 from .losses import NegativeBinomial, ZINB
-
 from .utils import delegates
 
 @delegates(DenseBlock)
