@@ -7,11 +7,12 @@ import tensorflow.keras.losses as losses
 
 from typing import Iterable, Literal, Union, Callable
 
-from .encoder import Encoder, TopologicalEncoder
-from .decoder import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder
-from .layers import DenseBlock
-from .losses import NegativeBinomial, ZINB
-from .utils import delegates
+from latent.modules import Encoder, TopologicalEncoder
+from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder
+from latent.layers import DenseBlock
+from latent.losses import NegativeBinomial, ZINB
+from latent.utils import delegates
+
 
 @delegates(DenseBlock)
 class Autoencoder(keras.Model):

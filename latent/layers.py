@@ -248,7 +248,7 @@ class MMDCritic(layers.Layer):
         weight: float = 1.,
         n_conditions: int = 2,
         hidden_units: Iterable[int] = None,
-        kernel_method: Union[Literal['rbf', 'ms_rbf', 'rq'], Callable] = 'rbf',
+        kernel_method: Union[Literal['rbf', 'ms_rbf', 'rq'], Callable] = 'ms_rbf',
         **kwargs
     ):
         super().__init__(name=name)
@@ -306,9 +306,9 @@ class PairwiseDistCritic(layers.Layer):
         if self.hidden_units:
             outputs = self.hidden_layer(outputs)
         x1, x2 = tf.dynamic_partition(outputs, labels, 2)
-        # Element-wise difference
-        dist = l2_norm(tf.math.subtract(x1, x2), axis=0)
-        crit_loss = self.weight * dist
+        # Element-wise euclidean distance
+        dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
+        crit_loss = self.weight * tf.math.reduce_mean(dist)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
         return outputs

@@ -9,11 +9,11 @@ import tensorflow.keras.losses as losses
 
 from typing import Iterable, Literal, Union, Callable
 
-from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, DenseStack, SharedDispersion, Constant
-from .layers import DenseBlock
-from .losses import NegativeBinomial, ZINB
-from .utils import delegates
+from latent.activations import clipped_softplus, clipped_exp
+from latent.layers import ColwiseMult, DenseStack, SharedDispersion, Constant
+from latent.layers import DenseBlock
+from latent.losses import NegativeBinomial, ZINB
+from latent.utils import delegates
 
 
 @delegates(DenseBlock)

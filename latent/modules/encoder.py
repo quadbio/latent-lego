@@ -14,10 +14,10 @@ tfb = tfp.bijectors
 
 from typing import Iterable, Literal, Union, Callable
 
-from .activations import clipped_softplus, clipped_exp
-from .layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
-from .losses import TopologicalSignatureDistance
-from .utils import delegates
+from latent.activations import clipped_softplus, clipped_exp
+from latent.layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
+from latent.losses import TopologicalSignatureDistance
+from latent.utils import delegates
 
 
 @delegates(DenseStack)

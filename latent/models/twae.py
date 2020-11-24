@@ -8,12 +8,11 @@ from tensorflow.keras.losses import MeanSquaredError, Poisson
 
 from typing import Iterable, Literal, Union, Callable, Tuple
 
-from .layers import DenseBlock, MMDCritic, CRITICS
-from .losses import MaximumMeanDiscrepancy
-from .encoder import VariationalEncoder
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
-from .utils import delegates
+from latent.layers import DenseBlock, MMDCritic, CRITICS
+from latent.losses import MaximumMeanDiscrepancy
+from latent.utils import delegates
 
 
 class TwinAutoencoder(keras.Model):
@@ -22,14 +21,12 @@ class TwinAutoencoder(keras.Model):
         self,
         models: Tuple[keras.Model, keras.Model],
         critic: Union[str, keras.Model] = 'mmd',
-        kernel_method: Union[str, Callable] = 'multiscale_rbf',
         critic_weight: float = 1.,
         critic_units: Iterable[int] = None,
         **kwargs
     ):
         super().__init__()
         self.critic_weight = tf.Variable(critic_weight, trainable=False)
-        self.kernel_method = kernel_method
         self.critic_units = critic_units
 
         # Define components
@@ -44,7 +41,6 @@ class TwinAutoencoder(keras.Model):
 
         self.critic_layer = critic(
             weight = self.critic_weight,
-            kernel_method = self.kernel_method,
             hidden_units = self.critic_units,
             **kwargs
         )
