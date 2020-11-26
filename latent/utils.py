@@ -206,6 +206,11 @@ def l2_norm(x, axis=2, eps=1e-8):
     return tf.sqrt(tf.reduce_sum(tf.square(x), axis=axis) + eps)
 
 
+def size_factors(x):
+    n = x.sum(1)
+    return n / np.median(n)
+
+
 def delegates(to=None, keep=False):
     """Decorator: replace `**kwargs` in signature with params from `to`"""
     def _f(f):

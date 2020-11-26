@@ -160,7 +160,7 @@ class VariationalEncoder(Encoder):
         # Inputs are needed to infer shape
         # and to ensure a connected graph
         h = self.pseudo_inputs(inputs)
-        h = self.dense_stack(h)
+        h = self.hidden_layers(h)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
         return outputs
