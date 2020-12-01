@@ -180,7 +180,7 @@ class ZINBDecoder(NegativeBinomialDecoder):
     def call(self, inputs):
         """Full forward pass through model"""
         x, latent, sf = inputs
-        h = self.dense_stack(h)
+        h = self.hidden(latent)
         mean = self.mean_layer(h)
         outputs = self.norm_layer([mean, sf])
         disp = self.dispersion_layer(h)
