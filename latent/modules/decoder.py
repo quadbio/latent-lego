@@ -160,7 +160,6 @@ class NegativeBinomialDecoder(PoissonDecoder):
         return outputs
 
 
-@delegates()
 class ZINBDecoder(NegativeBinomialDecoder):
     """Decoder with ZINB reconstruction loss"""
     def __init__(self, **kwargs):
