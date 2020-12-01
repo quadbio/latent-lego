@@ -17,10 +17,8 @@ from typing import Iterable, Literal, Union, Callable
 from latent.activations import clipped_softplus, clipped_exp
 from latent.layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
 from latent.losses import TopologicalSignatureDistance
-from latent.utils import delegates
 
 
-@delegates(DenseStack)
 class Encoder(keras.Model):
     """Encoder base model"""
     def __init__(
@@ -54,7 +52,6 @@ class Encoder(keras.Model):
         return outputs
 
 
-@delegates()
 class TopologicalEncoder(Encoder):
     """Encoder model with topological loss on latent space"""
     def __init__(
@@ -81,7 +78,6 @@ class TopologicalEncoder(Encoder):
         self.add_metric(topo_loss, name='topo_loss')
 
 
-@delegates()
 class VariationalEncoder(Encoder):
     """Variational encoder"""
     def __init__(
@@ -181,7 +177,6 @@ class VariationalEncoder(Encoder):
         return tf.math.abs(kld)
 
 
-@delegates()
 class TopologicalVariationalEncoder(VariationalEncoder, TopologicalEncoder):
     """Variational encoder model with topological loss on latent space"""
     def __init__(

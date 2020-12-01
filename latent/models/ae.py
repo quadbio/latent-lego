@@ -11,10 +11,8 @@ from latent.modules import Encoder, TopologicalEncoder
 from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder
 from latent.layers import DenseBlock
 from latent.losses import NegativeBinomial, ZINB
-from latent.utils import delegates
 
 
-@delegates(DenseBlock)
 class Autoencoder(keras.Model):
     """Autoencoder base class"""
     def __init__(
@@ -70,12 +68,10 @@ class Autoencoder(keras.Model):
         outputs = self.decode(inputs, latent)
         return outputs
 
-    @delegates(keras.Model.compile)
     def compile(self, optimizer='adam', loss=None, **kwargs):
         """Compile model with default loss and omptimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
-    @delegates(keras.Model.fit)
     def fit(self, x, y=None, **kwargs):
         if y:
             return super().fit(x, y, **kwargs)
@@ -87,7 +83,6 @@ class Autoencoder(keras.Model):
         return self.encoder.predict(inputs)
 
 
-@delegates()
 class PoissonAutoencoder(Autoencoder):
     """Poisson autoencoder for count data"""
     def __init__(self, **kwargs):
@@ -110,7 +105,6 @@ class PoissonAutoencoder(Autoencoder):
         outputs = self.decode(x, latent, sf)
         return outputs
 
-    @delegates(keras.Model.fit)
     def fit(self, x, y=None, **kwargs):
         if y:
             return super(Autoencoder, self).fit(x, y, **kwargs)
@@ -118,7 +112,6 @@ class PoissonAutoencoder(Autoencoder):
             return super(Autoencoder, self).fit(x, x[0], **kwargs)
 
 
-@delegates()
 class NegativeBinomialAutoencoder(PoissonAutoencoder):
     """Autoencoder with negative binomial loss for count data"""
     def __init__(
@@ -137,7 +130,6 @@ class NegativeBinomialAutoencoder(PoissonAutoencoder):
         )
 
 
-@delegates()
 class ZINBAutoencoder(PoissonAutoencoder):
     """Autoencoder with ZINB loss for count data"""
     def __init__(
@@ -156,7 +148,6 @@ class ZINBAutoencoder(PoissonAutoencoder):
         )
 
 
-@delegates()
 class TopologicalAutoencoder(Autoencoder):
     """Autoencoder model with topological loss on latent space"""
     def __init__(self, topo_weight:float = 1., **kwargs):
@@ -172,19 +163,16 @@ class TopologicalAutoencoder(Autoencoder):
         )
 
 
-@delegates()
 class PoissonTopoAE(PoissonAutoencoder, TopologicalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-@delegates()
 class NegativeBinomialTopoAE(NegativeBinomialAutoencoder, TopologicalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-@delegates()
 class ZINBTopoAE(ZINBAutoencoder, TopologicalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

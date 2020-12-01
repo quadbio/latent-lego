@@ -12,7 +12,6 @@ from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 from latent.layers import DenseBlock, MMDCritic, CRITICS
 from latent.losses import MaximumMeanDiscrepancy
-from latent.utils import delegates
 
 
 class TwinAutoencoder(keras.Model):
@@ -85,7 +84,6 @@ class TwinAutoencoder(keras.Model):
         outputs = self.critic(latent1, latent2, split_output=split_output)
         return [out.numpy() for out in outputs]
 
-    @delegates(keras.Model.compile)
     def compile(self, optimizer='adam', loss=None, **kwargs):
         """Compile model with default loss and optimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)

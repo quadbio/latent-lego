@@ -13,10 +13,8 @@ from latent.activations import clipped_softplus, clipped_exp
 from latent.layers import ColwiseMult, DenseStack, SharedDispersion, Constant
 from latent.layers import DenseBlock
 from latent.losses import NegativeBinomial, ZINB
-from latent.utils import delegates
 
 
-@delegates(DenseBlock)
 class Decoder(keras.Model):
     """Deocder base model"""
     def __init__(
@@ -71,7 +69,6 @@ class Decoder(keras.Model):
             self.add_metric(rec_loss, name=self.loss_name)
 
 
-@delegates()
 class PoissonDecoder(Decoder):
     """Decoder with poisson reconstruction loss."""
     def __init__(

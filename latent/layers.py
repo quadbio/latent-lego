@@ -18,7 +18,7 @@ from typing import Iterable, Literal, Union, Callable
 
 from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
-from .utils import delegates, l2_norm
+from .utils import l2_norm
 
 
 ### Core layers and stacks
@@ -65,7 +65,6 @@ class DenseBlock(layers.Layer):
         return outputs
 
 
-@delegates(DenseBlock)
 class DenseStack(layers.Layer):
     """Core dense layer stack of encoders and decoders"""
     def __init__(
@@ -239,7 +238,6 @@ class KLDivergenceAddLoss(layers.Layer):
 
 
 ### Critic layers
-@delegates(DenseStack)
 class MMDCritic(layers.Layer):
     """Adds MMD loss between conditions."""
     def __init__(
@@ -279,7 +277,6 @@ class MMDCritic(layers.Layer):
         return outputs
 
 
-@delegates(DenseStack)
 class PairwiseDistCritic(layers.Layer):
     """Matches paired points in latent space by forcing them to the same location."""
     def __init__(
@@ -314,7 +311,6 @@ class PairwiseDistCritic(layers.Layer):
         return outputs
 
 
-@delegates(DenseStack)
 class GromovWassersteinCritic(layers.Layer):
     """Adds Gromov-Wasserstein loss between conditions."""
     def __init__(

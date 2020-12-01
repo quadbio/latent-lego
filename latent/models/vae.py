@@ -8,12 +8,10 @@ from tensorflow.keras import Input, Model
 from typing import Iterable, Literal, Union, Callable
 
 from latent.modules import VariationalEncoder, TopologicalVariationalEncoder
-from latent.utils import delegates
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 
 
-@delegates()
 class VariationalAutoencoder(Autoencoder):
     """Variational Autoencoder"""
     def __init__(
@@ -45,25 +43,21 @@ class VariationalAutoencoder(Autoencoder):
         )
 
 
-@delegates()
 class PoissonVAE(PoissonAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-@delegates()
 class NegativeBinomialVAE(NegativeBinomialAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-@delegates()
 class ZINBVAE(ZINBAutoencoder, VariationalAutoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-@delegates()
 class TopologicalVariationalAutoencoder(VariationalAutoencoder):
     """Variational autoencoder model with topological loss on latent space"""
     def __init__(self, topo_weight:float = 1., **kwargs):
