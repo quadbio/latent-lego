@@ -98,7 +98,6 @@ class PoissonDecoder(Decoder):
         return outputs
 
 
-@delegates()
 class NegativeBinomialDecoder(PoissonDecoder):
     """Decoder with negative binomial reconstruction loss."""
     def __init__(
