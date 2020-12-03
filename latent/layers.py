@@ -81,7 +81,7 @@ class DenseStack(layers.Layer):
         for idx, dim in enumerate(self.hidden_units):
             layer_name = f'{self.name}_{idx}'
             layer = DenseBlock(dim, name=layer_name, **kwargs)
-            self.dense_stack.append(layer)
+            self.dense_stack += [layer]
 
     def call(self, inputs):
         """Full forward pass through model"""

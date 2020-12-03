@@ -22,8 +22,8 @@ class Autoencoder(keras.Model):
         name: str = 'autoencoder',
         x_dim: int = None,
         latent_dim: int = 50,
-        encoder_units: Iterable[int] = [128, 64],
-        decoder_units: Iterable[int] = [64, 128],
+        encoder_units: Iterable[int] = [128, 128],
+        decoder_units: Iterable[int] = [128, 128],
         compile_model: bool = True,
         reconstruction_loss: Callable = None,
         **kwargs

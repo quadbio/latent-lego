@@ -53,8 +53,8 @@ class Decoder(keras.Model):
         """Full forward pass through model"""
         x, latent = inputs
         h = self.hidden(latent)
-        output = self.final_layer(h)
-        self.add_reconstruction_loss(x, output)
+        outputs = self.final_layer(h)
+        self.add_reconstruction_loss(x, outputs)
         return outputs
 
     def hidden(self, latent):
@@ -78,7 +78,12 @@ class PoissonDecoder(Decoder):
         loss_name: str = 'poisson_loss',
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        super().__init__(
+            name = name,
+            reconstruction_loss = reconstruction_loss,
+            loss_name = loss_name,
+            **kwargs
+        )
         # Define new components
         self.mean_layer = layers.Dense(
             self.x_dim,
@@ -91,7 +96,7 @@ class PoissonDecoder(Decoder):
     def call(self, inputs):
         """Full forward pass through model"""
         x, latent, sf = inputs
-        h = self.hidden(h)
+        h = self.hidden(latent)
         mean = self.mean_layer(h)
         outputs = self.norm_layer([mean, sf])
         self.add_reconstruction_loss(x, outputs)
@@ -107,7 +112,12 @@ class NegativeBinomialDecoder(PoissonDecoder):
         loss_name: str = 'nb_loss',
         **kwargs
     ):
-        super().__init__(**kwargs)
+        super().__init__(
+            name = name,
+            loss_name = loss_name,
+            reconstruction_loss = None,
+            **kwargs
+        )
         self.dispersion = dispersion
 
         # Define new components
@@ -121,7 +131,7 @@ class NegativeBinomialDecoder(PoissonDecoder):
                 self.x_dim,
                 name = 'dispersion',
                 activation = clipped_exp,
-                initializer = self.initializer
+                kernel_initializer = self.initializer
             )
         elif dispersion == 'gene':
             self.dispersion_layer = SharedDispersion(
@@ -161,8 +171,17 @@ class NegativeBinomialDecoder(PoissonDecoder):
 
 class ZINBDecoder(NegativeBinomialDecoder):
     """Decoder with ZINB reconstruction loss"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        name: str = 'zinb_decoder',
+        loss_name: str = 'zinb_loss',
+        **kwargs
+    ):
+        super().__init__(
+            name = name,
+            loss_name = loss_name,
+            **kwargs
+        )
 
         # Define new components
         self.pi_layer = layers.Dense(
