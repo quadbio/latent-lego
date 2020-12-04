@@ -28,7 +28,6 @@ class DenseBlock(layers.Layer):
         self,
         units: int,
         name: str = 'dense_block',
-        conditional: bool = False,
         dropout_rate: float = 0.1,
         batchnorm: bool = True,
         layernorm: bool = False,
@@ -62,8 +61,6 @@ class DenseBlock(layers.Layer):
 
     def call(self, inputs):
         """Full forward pass through model"""
-        if self.conditional:
-            inputs = tf.concat(inputs, axis=-1)
         h = self.dense(inputs)
         if self.batchnorm:
             h = self.bn(h)
@@ -80,6 +77,7 @@ class DenseStack(layers.Layer):
         self,
         name: str = 'dense_stack',
         hidden_units: Iterable[int] = [128, 128],
+        conditional: Literal['first', 'all'] = None,
         **kwargs
     ):
         super().__init__(name=name)
@@ -87,18 +85,32 @@ class DenseStack(layers.Layer):
 
         # Define stack
         self.dense_stack = []
-        for idx, dim in enumerate(self.hidden_units):
+        for idx, units in enumerate(self.hidden_units):
             layer_name = f'{self.name}_{idx}'
-            layer = DenseBlock(dim, name=layer_name, **kwargs)
+            layer = DenseBlock(units, name=layer_name, **kwargs)
             self.dense_stack += [layer]
 
     def call(self, inputs):
         """Full forward pass through model"""
-        h = inputs
-        for layer in self.dense_stack:
+        if self.conditional:
+            h, *conditions = inputs
+        else:
+            h = inputs
+        for idx, layer in enumerate(self.dense_stack):
+            if self._inject_condition(idx):
+                h = tf.concat([h, *conditions], axis=-1)
             h = layer(h)
         outputs = h
         return outputs
+
+    def _inject_condition(self, idx):
+        """Checks if conditions should be injected into layer"""
+        if not self.conditional:
+            return False
+        elif self.conditional == 'all':
+            return True
+        elif self.conditional == 'first':
+            return idx == 0
 
 
 ### Utility layers
