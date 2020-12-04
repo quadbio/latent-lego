@@ -30,6 +30,7 @@ class DenseBlock(layers.Layer):
         name: str = 'dense_block',
         dropout_rate: float = 0.1,
         batchnorm: bool = True,
+        layernorm: bool = False,
         l1: float = 0.,
         l2: float = 0.,
         activation: Union[str, Callable] = 'leaky_relu',
@@ -49,6 +50,7 @@ class DenseBlock(layers.Layer):
             kernel_regularizer = l1_l2(self.l1, self.l2)
         )
         self.bn = layers.BatchNormalization(center=True, scale=True)
+        self.ln = layers.LayerNormalization(center=True, scale=True)
         if isinstance(activation, str):
             self.activation = ACTIVATIONS.get(activation, layers.LeakyReLU())
         else:
@@ -59,7 +61,10 @@ class DenseBlock(layers.Layer):
     def call(self, inputs):
         """Full forward pass through model"""
         h = self.dense(inputs)
-        h = self.bn(h)
+        if self.batchnorm:
+            h = self.bn(h)
+        if self.layernorm:
+            h = self.ln(h)
         h = self.activation(h)
         outputs = self.dropout(h)
         return outputs
