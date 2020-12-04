@@ -96,13 +96,12 @@ class PoissonAutoencoder(Autoencoder):
     """Poisson autoencoder for count data"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.decoder = PoissonDecoder(
             x_dim = self.x_dim,
             hidden_units = self.decoder_units,
             **self.net_kwargs
         )
-
+        self.use_sf = True
 
 class NegativeBinomialAutoencoder(Autoencoder):
     """Autoencoder with negative binomial loss for count data"""
@@ -113,13 +112,13 @@ class NegativeBinomialAutoencoder(Autoencoder):
     ):
         super().__init__(**kwargs)
         self.dispersion = dispersion
-
         self.decoder = NegativeBinomialDecoder(
             x_dim = self.x_dim,
             dispersion = self.dispersion,
             hidden_units = self.decoder_units,
             **self.net_kwargs
         )
+        self.use_sf = True
 
 
 class ZINBAutoencoder(Autoencoder):
@@ -131,13 +130,13 @@ class ZINBAutoencoder(Autoencoder):
     ):
         super().__init__(**kwargs)
         self.dispersion = dispersion
-
         self.decoder = ZINBDecoder(
             x_dim = self.x_dim,
             dispersion = self.dispersion,
             hidden_units = self.decoder_units,
             **self.net_kwargs
         )
+        self.use_sf = True
 
 
 class TopologicalAutoencoder(Autoencoder):
