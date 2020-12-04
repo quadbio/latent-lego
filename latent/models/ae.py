@@ -24,7 +24,6 @@ class Autoencoder(keras.Model):
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
-        use_size_factors: bool = False,
         reconstruction_loss: Callable = None,
         **kwargs
     ):
@@ -56,6 +55,11 @@ class Autoencoder(keras.Model):
                 reconstruction_loss = self.reconstruction_loss,
                 **kwargs
             )
+        # Set usage of size factors
+        if hasattr(self.decoder, 'use_sf'):
+            self.use_sf = self.decoder.use_sf
+        else:
+            self.use_sf = False
 
     def encode(self, x):
         return self.encoder(x)
@@ -75,7 +79,7 @@ class Autoencoder(keras.Model):
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
-        """Compile model with default loss and omptimizer"""
+        """Compile model with default loss and optimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):

@@ -33,8 +33,8 @@ class Decoder(keras.Model):
         self.reconstruction_loss = reconstruction_loss
         self.loss_name = loss_name
         self.initializer = keras.initializers.get(initializer)
-        # Set uses_sf to False because this base model only expects one input
-        self.uses_sf = False
+        # Set use_sf to False because this base model only expects one input
+        self.use_sf = False
 
         # Define components
         if self.hidden_units:
@@ -86,8 +86,8 @@ class PoissonDecoder(Decoder):
             loss_name = loss_name,
             **kwargs
         )
-        # Here uses_sf becomes true
-        self.uses_sf = True
+        # Here use_sf becomes True
+        self.use_sf = True
 
         # Define new components
         self.mean_layer = layers.Dense(
