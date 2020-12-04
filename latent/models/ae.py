@@ -99,25 +99,8 @@ class PoissonAutoencoder(Autoencoder):
             **self.net_kwargs
         )
 
-    def decode(self, x, latent, size_factors):
-        output = self.decoder([x, latent, size_factors])
-        return output
 
-    def call(self, inputs):
-        """Full forward pass through model"""
-        x, sf = inputs
-        latent = self.encode(x)
-        outputs = self.decode(x, latent, sf)
-        return outputs
-
-    def fit(self, x, y=None, **kwargs):
-        if y:
-            return super(Autoencoder, self).fit(x, y, **kwargs)
-        else:
-            return super(Autoencoder, self).fit(x, x[0], **kwargs)
-
-
-class NegativeBinomialAutoencoder(PoissonAutoencoder):
+class NegativeBinomialAutoencoder(Autoencoder):
     """Autoencoder with negative binomial loss for count data"""
     def __init__(
         self,
@@ -135,7 +118,7 @@ class NegativeBinomialAutoencoder(PoissonAutoencoder):
         )
 
 
-class ZINBAutoencoder(PoissonAutoencoder):
+class ZINBAutoencoder(Autoencoder):
     """Autoencoder with ZINB loss for count data"""
     def __init__(
         self,
