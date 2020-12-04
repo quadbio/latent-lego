@@ -24,7 +24,7 @@ class Autoencoder(keras.Model):
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
-        compile_model: bool = True,
+        use_size_factors: bool = False,
         reconstruction_loss: Callable = None,
         **kwargs
     ):
@@ -33,6 +33,7 @@ class Autoencoder(keras.Model):
         self.x_dim = int(x_dim)
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
+        self.use_sf = use_size_factors
         self.reconstruction_loss = reconstruction_loss
         self.net_kwargs = kwargs
 
@@ -60,11 +61,16 @@ class Autoencoder(keras.Model):
         return self.encoder(x)
 
     def decode(self, x, latent):
-        return self.decoder([x, latent])
+        return self.decoder([x, *latent])
 
     def call(self, inputs):
         """Full forward pass through model"""
-        latent = self.encode(inputs)
+        if self.use_sf:
+            x, sf = inputs
+        else:
+            x = inputs
+        latent = self.encode(x)
+        latent = [latent, sf] if self.use_sf else [latent]
         outputs = self.decode(inputs, latent)
         return outputs
 
@@ -73,10 +79,9 @@ class Autoencoder(keras.Model):
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):
-        if y:
-            return super().fit(x, y, **kwargs)
-        else:
-            return super().fit(x, x, **kwargs)
+        if not y:
+            y = x[0] if self.use_size_factors else x
+        return super().fit(x, y, **kwargs)
 
     def transform(self, inputs):
         """Map data (x) to latent space (z)"""
