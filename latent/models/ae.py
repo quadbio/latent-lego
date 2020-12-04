@@ -32,7 +32,6 @@ class Autoencoder(keras.Model):
         self.x_dim = int(x_dim)
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
-        self.use_sf = use_size_factors
         self.reconstruction_loss = reconstruction_loss
         self.net_kwargs = kwargs
 
@@ -55,11 +54,13 @@ class Autoencoder(keras.Model):
                 reconstruction_loss = self.reconstruction_loss,
                 **kwargs
             )
-        # Set usage of size factors
+
+    def _use_sf(self):
+        """Determine whether decoder uses size factors"""
         if hasattr(self.decoder, 'use_sf'):
-            self.use_sf = self.decoder.use_sf
+            return self.decoder.use_sf
         else:
-            self.use_sf = False
+            return False
 
     def encode(self, x):
         return self.encoder(x)
@@ -69,13 +70,13 @@ class Autoencoder(keras.Model):
 
     def call(self, inputs):
         """Full forward pass through model"""
-        if self.use_sf:
+        if self._use_sf():
             x, sf = inputs
         else:
             x = inputs
         latent = self.encode(x)
-        latent = [latent, sf] if self.use_sf else [latent]
-        outputs = self.decode(inputs, latent)
+        latent = [latent, sf] if self._use_sf() else [latent]
+        outputs = self.decode(x, latent)
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
@@ -84,7 +85,7 @@ class Autoencoder(keras.Model):
 
     def fit(self, x, y=None, **kwargs):
         if not y:
-            y = x[0] if self.use_size_factors else x
+            y = x[0] if self._use_sf() else x
         return super().fit(x, y, **kwargs)
 
     def transform(self, inputs):
@@ -101,7 +102,7 @@ class PoissonAutoencoder(Autoencoder):
             hidden_units = self.decoder_units,
             **self.net_kwargs
         )
-        self.use_sf = True
+
 
 class NegativeBinomialAutoencoder(Autoencoder):
     """Autoencoder with negative binomial loss for count data"""
@@ -118,7 +119,6 @@ class NegativeBinomialAutoencoder(Autoencoder):
             hidden_units = self.decoder_units,
             **self.net_kwargs
         )
-        self.use_sf = True
 
 
 class ZINBAutoencoder(Autoencoder):
@@ -136,7 +136,6 @@ class ZINBAutoencoder(Autoencoder):
             hidden_units = self.decoder_units,
             **self.net_kwargs
         )
-        self.use_sf = True
 
 
 class TopologicalAutoencoder(Autoencoder):

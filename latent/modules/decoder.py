@@ -124,6 +124,7 @@ class NegativeBinomialDecoder(PoissonDecoder):
             **kwargs
         )
         self.dispersion = dispersion
+        self.use_sf = True
 
         # Define new components
         self.mean_layer = layers.Dense(
@@ -187,6 +188,7 @@ class ZINBDecoder(NegativeBinomialDecoder):
             loss_name = loss_name,
             **kwargs
         )
+        self.use_sf = True
 
         # Define new components
         self.pi_layer = layers.Dense(

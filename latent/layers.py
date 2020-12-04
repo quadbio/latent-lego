@@ -37,9 +37,9 @@ class DenseBlock(layers.Layer):
         initializer: Union[str, Callable] = 'glorot_normal'
     ):
         super().__init__(name=name)
-        self.conditional = conditional
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
+        self.layernorm =  layernorm
         self.l1 = l1
         self.l2 = l2
         self.initializer = initializers.get(initializer)
@@ -82,6 +82,7 @@ class DenseStack(layers.Layer):
     ):
         super().__init__(name=name)
         self.hidden_units =  hidden_units
+        self.conditional =  conditional
 
         # Define stack
         self.dense_stack = []
