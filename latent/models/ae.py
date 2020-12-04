@@ -62,6 +62,20 @@ class Autoencoder(keras.Model):
         else:
             return False
 
+    def _conditional_encoder(self):
+        """Determine whether decoder uses size factors"""
+        if hasattr(self.encoder, 'hidden_layers'):
+            return self.encoder.hidden_layers.conditional != None
+        else:
+            return False
+
+    def _conditional_decoder(self):
+        """Determine whether decoder uses size factors"""
+        if hasattr(self.decoder, 'hidden_layers'):
+            return self.decoder.hidden_layers.conditional != None
+        else:
+            return False
+
     def encode(self, inputs):
         if self._use_sf():
             x, sf = inputs
