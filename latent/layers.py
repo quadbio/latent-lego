@@ -28,6 +28,7 @@ class DenseBlock(layers.Layer):
         self,
         units: int,
         name: str = 'dense_block',
+        conditional: bool = False,
         dropout_rate: float = 0.1,
         batchnorm: bool = True,
         layernorm: bool = False,
@@ -37,6 +38,7 @@ class DenseBlock(layers.Layer):
         initializer: Union[str, Callable] = 'glorot_normal'
     ):
         super().__init__(name=name)
+        self.conditional = conditional
         self.dropout_rate = dropout_rate
         self.batchnorm =  batchnorm
         self.l1 = l1
@@ -60,6 +62,8 @@ class DenseBlock(layers.Layer):
 
     def call(self, inputs):
         """Full forward pass through model"""
+        if self.conditional:
+            inputs = tf.concat(inputs, axis=-1)
         h = self.dense(inputs)
         if self.batchnorm:
             h = self.bn(h)
