@@ -62,21 +62,22 @@ class Autoencoder(keras.Model):
         else:
             return False
 
-    def encode(self, x):
-        return self.encoder(x)
+    def encode(self, inputs):
+        if self._use_sf():
+            x, sf = inputs
+            return self.encoder(x), sf
+        else:
+            return [self.encoder(inputs)]
 
     def decode(self, x, latent):
+        if self._use_sf():
+            x, _ = x
         return self.decoder([x, *latent])
 
     def call(self, inputs):
         """Full forward pass through model"""
-        if self._use_sf():
-            x, sf = inputs
-        else:
-            x = inputs
-        latent = self.encode(x)
-        latent = [latent, sf] if self._use_sf() else [latent]
-        outputs = self.decode(x, latent)
+        latent = self.encode(inputs)
+        outputs = self.decode(inputs, latent)
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
