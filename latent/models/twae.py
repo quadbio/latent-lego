@@ -63,16 +63,22 @@ class TwinAutoencoder(keras.Model):
 
     def call(self, inputs):
         in1, in2 = inputs
-        x1, sf1 = in1
-        x2, sf2 = in2
         # Map to latent
-        latent1 = self.ae1.encode(x1)
-        latent2 = self.ae2.encode(x2)
+        latent1 = self.ae1.encode(in1)
+        latent2 = self.ae2.encode(in2)
         # Critic joins, adds loss, and splits
+        if self.ae1._use_sf():
+            latent1, sf1 = latent1
+        if self.ae2._use_sf():
+            latent2, sf2 = latent2
         latent1, latent2 = self.critic(latent1, latent2)
         # Reconstruction loss should be added by the decoders
-        out1 = self.ae1.decode(x1, latent1, sf1)
-        out2 = self.ae2.decode(x2, latent2, sf2)
+        if self.ae1._use_sf():
+            latent1 = [latent1, sf1]
+        if self.ae2._use_sf():
+            latent2 = [latent2, sf2]
+        out1 = self.ae1.decode(x1, [latent1, sf1])
+        out2 = self.ae2.decode(x2, [latent2, sf2])
         return out1, out2
 
     def transform(self, inputs, split_output=False):
