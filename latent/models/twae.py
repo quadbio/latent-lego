@@ -77,8 +77,8 @@ class TwinAutoencoder(keras.Model):
             latent1 = [latent1, sf1]
         if self.ae2._use_sf():
             latent2 = [latent2, sf2]
-        out1 = self.ae1.decode(x1, [latent1, sf1])
-        out2 = self.ae2.decode(x2, [latent2, sf2])
+        out1 = self.ae1.decode(in1, latent1)
+        out2 = self.ae2.decode(in2, latent2)
         return out1, out2
 
     def transform(self, inputs, split_output=False):
