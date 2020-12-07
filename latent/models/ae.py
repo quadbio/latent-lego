@@ -60,7 +60,7 @@ class Autoencoder(keras.Model):
         if self._conditional_encoder():
             return self.encoder([inputs['x'], *inputs['cond']])
         else:
-            return self.encoder(inputs)
+            return self.encoder(inputs['x'])
 
     def decode(self, inputs, latent):
         """Prepare input for decoder and decode"""
