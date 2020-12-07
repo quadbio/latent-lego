@@ -56,19 +56,28 @@ class Autoencoder(keras.Model):
             )
 
     def encode(self, inputs):
-        if self._use_sf():
-            x, sf = inputs
-            return self.encoder(x), sf
+        """Prepare input for encoder and encode"""
+        if self._conditional_encoder():
+            return self.encoder([inputs['x'], *inputs['cond']])
         else:
-            return [self.encoder(inputs)]
+            return self.encoder(inputs)
 
-    def decode(self, x, latent):
-        if self._use_sf():
-            x, _ = x
-        return self.decoder([x, *latent])
+    def decode(self, inputs, latent):
+        """Prepare input for decoder and decode"""
+        if self._use_sf() and not self._conditional_decoder():
+            return self.decoder([inputs['x'], latent, inputs['sf']])
+        if not self._use_sf() and not self._conditional_decoder():
+            return self.decoder([inputs['x'], latent, inputs['sf']])
+        if self._use_sf() and self._conditional_decoder():
+            latent = [latent, *inputs['cond']]
+            return self.decoder([inputs['x'], latent, inputs['sf']])
+        if not self._use_sf() and self._conditional_decoder():
+            latent = [latent, *inputs['cond']]
+            return self.decoder([inputs['x'], latent])
 
     def call(self, inputs):
         """Full forward pass through model"""
+        inputs = self.unpack_inputs(inputs)
         latent = self.encode(inputs)
         outputs = self.decode(inputs, latent)
         return outputs
@@ -86,6 +95,21 @@ class Autoencoder(keras.Model):
         """Map data (x) to latent space (z)"""
         return self.encoder.predict(inputs)
 
+    def unpack_inputs(self, inputs):
+        """Unpacks inputs into x, conditions and size_factors."""
+        if self._use_sf() and self._use_conditions():
+            x, *cond, sf = inputs
+            return {'x': x, 'cond': cond, 'sf': sf}
+        if self._use_sf() and not self._use_conditions():
+            x, sf = inputs
+            return {'x': x, 'sf': sf}
+        if not self._use_sf() and not self._use_conditions():
+            x = inputs
+            return {'x': x}
+        if not self._use_sf() and self._use_conditions():
+            x, *cond = inputs
+            return {'x': x, 'cond': cond}
+
     def _use_sf(self):
         """Determine whether decoder uses size factors"""
         if hasattr(self.decoder, 'use_sf'):
@@ -94,18 +118,22 @@ class Autoencoder(keras.Model):
             return False
 
     def _conditional_encoder(self):
-        """Determine whether decoder uses size factors"""
+        """Determine whether encoder injects conditions"""
         if hasattr(self.encoder, 'hidden_layers'):
             return self.encoder.hidden_layers.conditional != None
         else:
             return False
 
     def _conditional_decoder(self):
-        """Determine whether decoder uses size factors"""
+        """Determine whether decoder injects conditions"""
         if hasattr(self.decoder, 'hidden_layers'):
             return self.decoder.hidden_layers.conditional != None
         else:
             return False
+
+    def _use_conditions(self):
+        """Determine whether to use conditions in model"""
+        return self._conditional_decoder() or self._conditional_encoder()
 
 
 class PoissonAutoencoder(Autoencoder):
