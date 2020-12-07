@@ -198,18 +198,29 @@ class PseudoInputs(layers.Layer):
         self,
         n_inputs: int,
         name: str = 'pseudo_inputs',
-        activation: Union[str, Callable] = 'hard_sigmoid',
+        activation: Union[str, Callable] = 'relu',
         initializer: Union[str, Callable] = None
     ):
         super().__init__(name=name)
         self.n_inputs = n_inputs
         self.activation = activations.get(activation)
+        self.cond_activation = activations.get('hard_sigmoid')
         if initializer:
             self.initializer = initializers.get(initializer)
         else:
             self.initializer = tf.random_normal_initializer(mean=-0.05, stddev=0.01)
 
     def build(self, input_shape):
+        # Extra pseudoiput with sigmoid activation for conditions
+        if isinstance(input_shape, (list, tuple)):
+            input_shape, *cond_shapes = input_shape
+            c_shape = tf.math.reduce_sum([s[-1] for s in cond_shapes])
+            self.c = self.add_weight(
+                shape = (self.n_inputs, c_shape),
+                initializer = self.initializer,
+                dtype = tf.float32,
+                name = 'u'
+            )
         self.u = self.add_weight(
             shape = (self.n_inputs, input_shape[-1]),
             initializer = self.initializer,
@@ -218,8 +229,10 @@ class PseudoInputs(layers.Layer):
         )
 
     def call(self, inputs):
-        batch_size = tf.shape(inputs)[0]
-        return self.activation(self.u)
+        if isinstance(inputs, (list, tuple)):
+            return self.activation(self.u), self.cond_activation(self.c)
+        else:
+            return self.activation(self.u)
 
 
 class GradReversal(layers.Layer):
