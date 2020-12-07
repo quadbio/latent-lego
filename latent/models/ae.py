@@ -25,6 +25,7 @@ class Autoencoder(keras.Model):
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
         reconstruction_loss: Callable = None,
+        use_conditions: bool = False,
         **kwargs
     ):
         super().__init__(name=name)
@@ -33,6 +34,7 @@ class Autoencoder(keras.Model):
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
         self.reconstruction_loss = reconstruction_loss
+        self.use_conditions = use_conditions
         self.net_kwargs = kwargs
 
         # Define components
@@ -133,7 +135,8 @@ class Autoencoder(keras.Model):
 
     def _use_conditions(self):
         """Determine whether to use conditions in model"""
-        return self._conditional_decoder() or self._conditional_encoder()
+        return (self._conditional_decoder() or self._conditional_encoder()
+            or self.use_conditions)
 
 
 class PoissonAutoencoder(Autoencoder):
