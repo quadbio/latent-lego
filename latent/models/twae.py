@@ -27,7 +27,7 @@ class TwinAutoencoder(keras.Model):
     ):
         super().__init__()
         self.critic_weight = tf.Variable(critic_weight, trainable=False)
-        self.critic_units = critic_units
+        self.condition_weight = tf.Variable(condition_weight, trainable=False)
 
         # Define components
         self.ae1, self.ae2 = models
@@ -49,16 +49,16 @@ class TwinAutoencoder(keras.Model):
         )
         if self.join_conditions:
             self.condition_layer = critic(
-                weight = self.join_weight,
+                weight = self.condition_weight,
                 hidden_units = None,
                 **kwargs
             )
 
     def critic(self, inputs, latents, split_output=True):
         # Join latent spaces and assign labels
-        shared_latent = layers.concatenate([latents], axis=0)
+        shared_latent = tf.concat(latents, axis=0)
         labels = tf.concat(
-            [tf.zeros(tf.shape(latent[0])[0]), tf.ones(tf.shape(latent[1])[0])],
+            [tf.zeros(tf.shape(latents[0])[0]), tf.ones(tf.shape(latents[1])[0])],
             axis = 0
         )
         labels = tf.cast(labels, tf.int32)
@@ -79,8 +79,8 @@ class TwinAutoencoder(keras.Model):
     def call(self, inputs):
         in1, in2 = inputs
         # Unpack inputs for each autoencoder
-        in1 = self.ae1.encode.unpack_inputs(in1)
-        in2 = self.ae2.encode.unpack_inputs(in2)
+        in1 = self.ae1.unpack_inputs(in1)
+        in2 = self.ae2.unpack_inputs(in2)
         # Map to latent
         latent1 = self.ae1.encode(in1)
         latent2 = self.ae2.encode(in2)
