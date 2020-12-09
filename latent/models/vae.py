@@ -1,13 +1,9 @@
 """Tensorflow Variational Autoencoder Models"""
 
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras import backend as K
-from tensorflow.keras import Input, Model
-
-from typing import Iterable, Literal, Union, Callable
-
+from typing import Iterable, Literal
 from latent.modules import VariationalEncoder, TopologicalVariationalEncoder
+
 from .ae import Autoencoder, PoissonAutoencoder
 from .ae import NegativeBinomialAutoencoder, ZINBAutoencoder
 
@@ -32,13 +28,13 @@ class VariationalAutoencoder(Autoencoder):
         self.latent_dist = latent_dist
 
         self.encoder = VariationalEncoder(
-            kld_weight = self.kld_weight,
-            prior = self.prior,
-            iaf_units = self.iaf_units,
-            n_pseudoinputs = self.n_pseudoinputs,
-            latent_dim = self.latent_dim,
-            hidden_units = self.encoder_units,
-            latent_dist = self.latent_dist,
+            kld_weight=self.kld_weight,
+            prior=self.prior,
+            iaf_units=self.iaf_units,
+            n_pseudoinputs=self.n_pseudoinputs,
+            latent_dim=self.latent_dim,
+            hidden_units=self.encoder_units,
+            latent_dist=self.latent_dist,
             **self.net_kwargs
         )
 
@@ -60,18 +56,18 @@ class ZINBVAE(ZINBAutoencoder, VariationalAutoencoder):
 
 class TopologicalVariationalAutoencoder(VariationalAutoencoder):
     """Variational autoencoder model with topological loss on latent space"""
-    def __init__(self, topo_weight:float = 1., **kwargs):
+    def __init__(self, topo_weight: float = 1., **kwargs):
         super().__init__(**kwargs)
         self.topo_weight = topo_weight
 
         # Define components
         self.encoder = TopologicalVariationalEncoder(
-            topo_weight = self.topo_weight,
-            kld_weight = self.kld_weight,
-            prior = self.prior,
-            iaf_units = self.iaf_units,
-            n_pseudoinputs = self.n_pseudoinputs,
-            latent_dim = self.latent_dim,
-            hidden_units = self.encoder_units,
+            topo_weight=self.topo_weight,
+            kld_weight=self.kld_weight,
+            prior=self.prior,
+            iaf_units=self.iaf_units,
+            n_pseudoinputs=self.n_pseudoinputs,
+            latent_dim=self.latent_dim,
+            hidden_units=self.encoder_units,
             **self.net_kwargs
         )

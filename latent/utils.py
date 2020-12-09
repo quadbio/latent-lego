@@ -2,17 +2,17 @@ import inspect
 import warnings
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.backend as K
 import tensorflow_probability as tfp
 kernels = tfp.math.psd_kernels
 
-### Only needed for GW-OT
+# Only needed for GW-OT
 try:
     import ot
 except ModuleNotFoundError:
     warnings.warn('POT package not available.')
 
-### Kernels
+
+# Kernels
 # Multi-scale RBF kernel modified from https://github.com/theislab/scarches
 def ms_rbf_kernel(x, y):
     """Multi-scale RBF kernel"""
@@ -46,7 +46,7 @@ KERNELS = {
 }
 
 
-### Methods for calculating lower-dimensional persistent homology.
+# Methods for calculating lower-dimensional persistent homology.
 # Implementations adapted from https://github.com/BorgwardtLab/topological-autoencoders
 class UnionFind:
     """
@@ -139,7 +139,7 @@ def persistent_homology(matrix):
         _persistent_homology, [matrix], tf.int64)
 
 
-### Methods for Gromov-Wasserstein distance calculations
+# Methods for Gromov-Wasserstein distance calculations
 def _gromov_wasserstein_distance(x, y):
     x_p = ot.unif(x.shape[0])
     y_q = ot.unif(y.shape[0])
@@ -172,7 +172,7 @@ OT_DIST = {
 }
 
 
-### Other
+# Other
 def squared_distance(x, y):
     r = tf.expand_dims(x, axis=1)
     return tf.math.reduce_sum(tf.math.square(r - y), axis=-1)

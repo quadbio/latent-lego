@@ -5,7 +5,7 @@ from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
 from .utils import ms_rbf_kernel, rbf_kernel, persistent_homology, slice_matrix
-from .utils import l2_norm, KERNELS, OT_DIST
+from .utils import l2_norm, nan2zero, KERNELS, OT_DIST
 
 
 def maximum_mean_discrepancy(x, y, kernel=ms_rbf_kernel):
@@ -59,7 +59,8 @@ class MaximumMeanDiscrepancy(losses.Loss):
                     kernel = self.kernel
                 )
                 result.append(res)
-        return tf.cast(result, tf.float32)
+        # Empty conditions will produce nan values
+        return nan2zero(tf.cast(result, tf.float32))
 
 
 # Implementation adapted from https://github.com/theislab/dca

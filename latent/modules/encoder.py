@@ -2,21 +2,16 @@
 
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras import backend as K
-from tensorflow.keras.regularizers import l1_l2
 import tensorflow.keras.layers as layers
-import tensorflow.keras.losses as losses
-
 import tensorflow_probability as tfp
+from typing import Iterable, Literal, Union, Callable
+
+from latent.layers import DenseStack, PseudoInputs, DISTRIBUTIONS
+from latent.losses import TopologicalSignatureDistance
+
 tfpl = tfp.layers
 tfd = tfp.distributions
 tfb = tfp.bijectors
-
-from typing import Iterable, Literal, Union, Callable
-
-from latent.activations import clipped_softplus, clipped_exp
-from latent.layers import ColwiseMult, DenseStack, PseudoInputs, Sampling, DISTRIBUTIONS
-from latent.losses import TopologicalSignatureDistance
 
 
 class Encoder(keras.Model):
@@ -34,15 +29,15 @@ class Encoder(keras.Model):
 
         # Define components
         self.hidden_layers = DenseStack(
-            name = self.name,
-            initializer = self.initializer,
+            name=self.name,
+            initializer=self.initializer,
             **kwargs
         )
         self.final_layer = layers.Dense(
             self.latent_dim,
-            name = 'encoder_latent',
-            kernel_initializer = self.initializer,
-            activation = 'linear'
+            name='encoder_latent',
+            kernel_initializer=self.initializer,
+            activation='linear'
         )
 
     def call(self, inputs):
@@ -68,7 +63,7 @@ class TopologicalEncoder(Encoder):
         """Full forward pass through model"""
         h = self.hidden_layers(inputs)
         outputs = self.final_layer(h)
-        topo_loss = self.add_topo_loss(inputs, outputs)
+        self.add_topo_loss(inputs, outputs)
         return outputs
 
     def add_topo_loss(self, inputs, outputs):
@@ -101,23 +96,23 @@ class VariationalEncoder(Encoder):
         self.latent_dist_layer = DISTRIBUTIONS.get(latent_dist, tfpl.IndependentNormal)
         self.dist_param_layer = layers.Dense(
             self.latent_dist_layer.params_size(self.latent_dim),
-            name = 'encoder_dist_params',
-            kernel_initializer = self.initializer
+            name='encoder_dist_params',
+            kernel_initializer=self.initializer
         )
         self.sampling = self.latent_dist_layer(self.latent_dim)
 
         # Independent() reinterprets each latent_dim as an independent distribution
         self.prior_dist = tfd.Independent(
             tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
-            reinterpreted_batch_ndims = 1
+            reinterpreted_batch_ndims=1
         )
 
         if self.prior == 'iaf':
             # Inverse autoregressive flow (Kingma et al. 2016)
             made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
             self.prior_dist = tfd.TransformedDistribution(
-                distribution = self.prior_dist,
-                bijector = tfb.Invert(tfb.MaskedAutoregressiveFlow(
+                distribution=self.prior_dist,
+                bijector=tfb.Invert(tfb.MaskedAutoregressiveFlow(
                     shift_and_log_scale_fn=made))
             )
 
@@ -143,8 +138,8 @@ class VariationalEncoder(Encoder):
             prior_dist = self.prior_dist
             kld_regularizer = tfpl.KLDivergenceRegularizer(
                 prior_dist,
-                weight = self.kld_weight,
-                test_points_reduce_axis = None
+                weight=self.kld_weight,
+                test_points_reduce_axis=None
             )
             kld_loss = kld_regularizer(outputs)
         # Add losses manually to better monitor them

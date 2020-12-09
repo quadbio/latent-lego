@@ -1,16 +1,10 @@
 """Tensorflow Autoencoder Models"""
 
-import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras import backend as K
-import tensorflow.keras.losses as losses
-
 from typing import Iterable, Literal, Union, Callable
 
 from latent.modules import Encoder, TopologicalEncoder
 from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder
-from latent.layers import DenseBlock
-from latent.losses import NegativeBinomial, ZINB
 
 
 class Autoencoder(keras.Model):
@@ -42,8 +36,8 @@ class Autoencoder(keras.Model):
             self.encoder = encoder
         else:
             self.encoder = Encoder(
-                latent_dim = self.latent_dim,
-                hidden_units = self.encoder_units,
+                latent_dim=self.latent_dim,
+                hidden_units=self.encoder_units,
                 **kwargs
             )
 
@@ -51,9 +45,9 @@ class Autoencoder(keras.Model):
             self.decoder = decoder
         else:
             self.decoder = Decoder(
-                x_dim = self.x_dim,
-                hidden_units = self.decoder_units,
-                reconstruction_loss = self.reconstruction_loss,
+                x_dim=self.x_dim,
+                hidden_units=self.decoder_units,
+                reconstruction_loss=self.reconstruction_loss,
                 **kwargs
             )
 
@@ -122,21 +116,21 @@ class Autoencoder(keras.Model):
     def _conditional_encoder(self):
         """Determine whether encoder injects conditions"""
         if hasattr(self.encoder, 'hidden_layers'):
-            return self.encoder.hidden_layers.conditional != None
+            return self.encoder.hidden_layers.conditional is not None
         else:
             return False
 
     def _conditional_decoder(self):
         """Determine whether decoder injects conditions"""
         if hasattr(self.decoder, 'hidden_layers'):
-            return self.decoder.hidden_layers.conditional != None
+            return self.decoder.hidden_layers.conditional is not None
         else:
             return False
 
     def _use_conditions(self):
         """Determine whether to use conditions in model"""
-        return (self._conditional_decoder() or self._conditional_encoder()
-            or self.use_conditions)
+        has_cond_module = self._conditional_decoder() or self._conditional_encoder()
+        return has_cond_module or self.use_conditions
 
 
 class PoissonAutoencoder(Autoencoder):
@@ -144,8 +138,8 @@ class PoissonAutoencoder(Autoencoder):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.decoder = PoissonDecoder(
-            x_dim = self.x_dim,
-            hidden_units = self.decoder_units,
+            x_dim=self.x_dim,
+            hidden_units=self.decoder_units,
             **self.net_kwargs
         )
 
@@ -160,9 +154,9 @@ class NegativeBinomialAutoencoder(Autoencoder):
         super().__init__(**kwargs)
         self.dispersion = dispersion
         self.decoder = NegativeBinomialDecoder(
-            x_dim = self.x_dim,
-            dispersion = self.dispersion,
-            hidden_units = self.decoder_units,
+            x_dim=self.x_dim,
+            dispersion=self.dispersion,
+            hidden_units=self.decoder_units,
             **self.net_kwargs
         )
 
@@ -177,24 +171,24 @@ class ZINBAutoencoder(Autoencoder):
         super().__init__(**kwargs)
         self.dispersion = dispersion
         self.decoder = ZINBDecoder(
-            x_dim = self.x_dim,
-            dispersion = self.dispersion,
-            hidden_units = self.decoder_units,
+            x_dim=self.x_dim,
+            dispersion=self.dispersion,
+            hidden_units=self.decoder_units,
             **self.net_kwargs
         )
 
 
 class TopologicalAutoencoder(Autoencoder):
     """Autoencoder model with topological loss on latent space"""
-    def __init__(self, topo_weight:float = 1., **kwargs):
+    def __init__(self, topo_weight: float = 1., **kwargs):
         super().__init__(**kwargs)
         self.topo_weight = topo_weight
 
         # Define components
         self.encoder = TopologicalEncoder(
-            topo_weight = self.topo_weight,
-            latent_dim = self.latent_dim,
-            hidden_units = self.decoder_units,
+            topo_weight=self.topo_weight,
+            latent_dim=self.latent_dim,
+            hidden_units=self.decoder_units,
             **self.net_kwargs
         )
 

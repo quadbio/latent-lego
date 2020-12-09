@@ -1,27 +1,23 @@
 """Tensorflow implementations of useful layers and blocks"""
 
-import numpy as np
 import tensorflow as tf
-import tensorflow.keras as keras
 import tensorflow.keras.initializers as initializers
 import tensorflow.keras.activations as activations
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 import tensorflow.keras.layers as layers
-
 import tensorflow_probability as tfp
-tfpl = tfp.layers
-tfd = tfp.distributions
-tfb = tfp.bijectors
-
 from typing import Iterable, Literal, Union, Callable
 
 from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
-from .utils import l2_norm
+
+tfpl = tfp.layers
+tfd = tfp.distributions
+tfb = tfp.bijectors
 
 
-### Core layers and stacks
+# Core layers and stacks
 class DenseBlock(layers.Layer):
     """Basic dense layer block"""
     def __init__(
@@ -38,8 +34,8 @@ class DenseBlock(layers.Layer):
     ):
         super().__init__(name=name)
         self.dropout_rate = dropout_rate
-        self.batchnorm =  batchnorm
-        self.layernorm =  layernorm
+        self.batchnorm = batchnorm
+        self.layernorm = layernorm
         self.l1 = l1
         self.l2 = l2
         self.initializer = initializers.get(initializer)
@@ -47,8 +43,8 @@ class DenseBlock(layers.Layer):
         # Define block components
         self.dense = layers.Dense(
             units,
-            kernel_initializer = self.initializer,
-            kernel_regularizer = l1_l2(self.l1, self.l2)
+            kernel_initializer=self.initializer,
+            kernel_regularizer=l1_l2(self.l1, self.l2)
         )
         self.bn = layers.BatchNormalization(center=True, scale=True)
         self.ln = layers.LayerNormalization(center=True, scale=True)
@@ -57,7 +53,6 @@ class DenseBlock(layers.Layer):
         else:
             self.activation = activation
         self.dropout = layers.Dropout(self.dropout_rate)
-
 
     def call(self, inputs):
         """Full forward pass through model"""
@@ -81,8 +76,8 @@ class DenseStack(layers.Layer):
         **kwargs
     ):
         super().__init__(name=name)
-        self.hidden_units =  hidden_units
-        self.conditional =  conditional
+        self.hidden_units = hidden_units
+        self.conditional = conditional
 
         # Define stack
         self.dense_stack = []
@@ -114,10 +109,10 @@ class DenseStack(layers.Layer):
             return idx == 0
 
 
-### Utility layers
+# Utility layers
 class ColwiseMult(layers.Layer):
     """Performs column-wise multiplication between input vectors."""
-    def __init__(self, name:str = 'colwise_mult'):
+    def __init__(self, name: str = 'colwise_mult'):
         super().__init__(name=name)
 
     def call(self, inputs):
@@ -126,7 +121,7 @@ class ColwiseMult(layers.Layer):
 
 class Sampling(layers.Layer):
     """Uses inputs (z_mean, log_var) to sample z."""
-    def __init__(self, name:str = 'sampling'):
+    def __init__(self, name: str = 'sampling'):
         super().__init__(name=name)
 
     def call(self, inputs):
@@ -155,9 +150,9 @@ class SharedDispersion(layers.Layer):
 
     def build(self, input_shape):
         self.disp = self.add_weight(
-            name = 'dispersion',
-            shape = (1, self.units),
-            initializer = self.initializer
+            name='dispersion',
+            shape=(1, self.units),
+            initializer=self.initializer
         )
 
     def call(self, inputs):
@@ -216,16 +211,16 @@ class PseudoInputs(layers.Layer):
             input_shape, *cond_shapes = input_shape
             c_shape = tf.math.reduce_sum([s[-1] for s in cond_shapes])
             self.c = self.add_weight(
-                shape = (self.n_inputs, c_shape),
-                initializer = self.initializer,
-                dtype = tf.float32,
-                name = 'u'
+                shape=(self.n_inputs, c_shape),
+                initializer=self.initializer,
+                dtype=tf.float32,
+                name='u'
             )
         self.u = self.add_weight(
-            shape = (self.n_inputs, input_shape[-1]),
-            initializer = self.initializer,
-            dtype = tf.float32,
-            name = 'u'
+            shape=(self.n_inputs, input_shape[-1]),
+            initializer=self.initializer,
+            dtype=tf.float32,
+            name='u'
         )
 
     def call(self, inputs):
@@ -237,7 +232,7 @@ class PseudoInputs(layers.Layer):
 
 class GradReversal(layers.Layer):
     """Reverses gradient during backprop."""
-    def __init__(self, name:str = 'grad_reversal', weight:float = 1.):
+    def __init__(self, name: str = 'grad_reversal', weight: float = 1.):
         super().__init__(name=name)
         self.weight = weight
 
@@ -247,9 +242,11 @@ class GradReversal(layers.Layer):
     @tf.custom_gradient
     def grad_reverse(self, x):
         y = tf.identity(x)
+
         def grad(dy):
             return -dy * self.weight
-        return y, custom_grad
+
+        return y, grad
 
 
 class KLDivergenceAddLoss(layers.Layer):
@@ -272,7 +269,7 @@ class KLDivergenceAddLoss(layers.Layer):
         return inputs
 
 
-### Critic layers
+# Critic layers
 class MMDCritic(layers.Layer):
     """Adds MMD loss between conditions."""
     def __init__(
@@ -290,15 +287,15 @@ class MMDCritic(layers.Layer):
         self.n_conditions = n_conditions
         self.kernel_method = kernel_method
         self.loss_func = MaximumMeanDiscrepancy(
-            n_conditions = self.n_conditions,
-            kernel_method = self.kernel_method
+            n_conditions=self.n_conditions,
+            kernel_method=self.kernel_method
         )
 
         # Define components
         if self.hidden_units:
             self.hidden_layers = DenseStack(
-                hidden_units = self.hidden_units,
-                dropout_rate = 0.,
+                hidden_units=self.hidden_units,
+                dropout_rate=0.,
                 **kwargs
             )
 
@@ -328,8 +325,8 @@ class PairwiseDistCritic(layers.Layer):
         # Define components
         if self.hidden_units:
             self.hidden_layer = DenseStack(
-                hidden_units = self.hidden_units,
-                dropout_rate = 0.,
+                hidden_units=self.hidden_units,
+                dropout_rate=0.,
                 **kwargs
             )
 
@@ -359,15 +356,13 @@ class GromovWassersteinCritic(layers.Layer):
         super().__init__(name=name)
         self.hidden_units = hidden_units
         self.weight = weight
-        self.loss_func = GromovWassersteinDistance(
-            method = method
-        )
+        self.loss_func = GromovWassersteinDistance(method=method)
 
         # Define components
         if self.hidden_units:
             self.hidden_layer = DenseStack(
-                hidden_units = self.hidden_units,
-                dropout_rate = 0.,
+                hidden_units=self.hidden_units,
+                dropout_rate=0.,
                 **kwargs
             )
 
@@ -390,7 +385,7 @@ CRITICS = {
 }
 
 
-### PROBABILISTIC LAYERS
+# PROBABILISTIC LAYERS
 DISTRIBUTIONS = {
     'independent': tfpl.IndependentNormal,
     'multivariate': tfpl.MultivariateNormalTriL
