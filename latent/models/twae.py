@@ -29,7 +29,11 @@ class TwinAutoencoder(keras.Model):
             self.ae2.decoder.loss_name = f'{self.ae2.decoder.loss_name}_2'
 
         has_cond_components = self.ae1._use_conditions() and self.ae2._use_conditions()
-        self.use_conditions = self.n_conditions and has_cond_components
+        self.use_conditions = self.n_conditions is not None
+        # Set condition usage in components id not already set
+        if self.use_conditions and not has_cond_components:
+            rna_ae.use_conditions = True
+            atac_ae.use_conditions = True
 
         if isinstance(critic, str):
             critic = CRITICS.get(critic, MMDCritic)
