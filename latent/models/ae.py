@@ -8,7 +8,34 @@ from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZIN
 
 
 class Autoencoder(keras.Model):
-    """Autoencoder base class"""
+    """Autoencoder base class
+
+    This model stacks together an encoder and a decoder model to produce an autoencoder
+    which compresses input data in a 'latent space' by minimizing the reconstruction
+    error.
+
+    Arguments:
+        encoder: Keras/tensorflow model object that inputs the data and outputs the
+            latent space. If not provided, a default model will be constructed from the
+            arguments.
+        decoder: Keras/tensorflow model object that inputs the latent space and outputs
+            the reconstructed data. If not provided, a default model will be constructed
+            from the arguments.
+        name: String indicating the name of the model.
+        x_dim: Integer indicating the number of features in the input data.
+        latent_dim: Integer indicating the number of dimensions in the latent space.
+        encoder_units: Integer list indicating the number of units of the encoder
+            layers. Only used if `encoder` is not provided.
+        decoder_units: An integer list indicating the number of units of the decoder
+            layers. Only used if `decoder` is not provided.
+        reconstruction_loss: Loss function applied to the reconstructed data and to be
+            added by the decoder. Only used if `decoder` is not provided. Can also be
+            added later by calling `compile()`.
+        use_conditions: Boolean, whether to force the unpacking of conditions from the
+            inputs.
+        **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
+            decoder networks.
+    """
     def __init__(
         self,
         encoder: keras.Model = None,
