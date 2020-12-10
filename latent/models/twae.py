@@ -14,14 +14,11 @@ class TwinAutoencoder(keras.Model):
         models: Tuple[keras.Model, keras.Model],
         critic: Union[str, keras.Model] = 'mmd',
         critic_weight: float = 1.,
-        join_conditions: bool = False,
-        condition_weight: float = 1.,
-        n_conditions: int = 2,
+        n_conditions: int = None,
         **kwargs
     ):
         super().__init__()
         self.critic_weight = tf.Variable(critic_weight, trainable=False)
-        self.condition_weight = tf.Variable(condition_weight, trainable=False)
         self.n_conditions = n_conditions
 
         # Define components
@@ -31,28 +28,20 @@ class TwinAutoencoder(keras.Model):
             self.ae1.decoder.loss_name = f'{self.ae1.decoder.loss_name}_1'
             self.ae2.decoder.loss_name = f'{self.ae2.decoder.loss_name}_2'
 
-        self.join_conditions = (join_conditions and self.ae1._use_conditions()
-                                and self.ae2._use_conditions())
+        has_cond_components = self.ae1._use_conditions() and self.ae2._use_conditions()
+        self.use_conditions = self.n_conditions and has_cond_components
 
         if isinstance(critic, str):
             critic = CRITICS.get(critic, MMDCritic)
 
         self.critic_layer = critic(
             weight=self.critic_weight,
-            hidden_units=None,
             n_conditions=2,
+            n_groups=self.n_conditions,
             **kwargs
         )
-        if self.join_conditions:
-            self.condition_layer = critic(
-                weight=self.condition_weight,
-                hidden_units=None,
-                name='condition_critic',
-                n_conditions=self.n_conditions,
-                **kwargs
-            )
 
-    def critic(self, latents, inputs=None, split_output=True):
+    def critic(self, inputs, latents, split_output=True):
         # Join latent spaces and assign labels
         shared_latent = tf.concat(latents, axis=0)
         labels = tf.concat(
@@ -60,22 +49,18 @@ class TwinAutoencoder(keras.Model):
             axis=0
         )
         labels = tf.cast(labels, tf.int32)
-        # Apply critic
-        shared_latent = self.critic_layer([shared_latent, labels])
-        # Join conditions
-        ###
-        # Loss conditional on condition, calcualte loss between modalities only within condition, instead of globally
-        ###
-        if self.join_conditions and inputs:
+        # If conditions are given, we apply the MMD loss for each separately
+        if self.use_conditions:
+            # Format condition labels
             cond_labels = [tf.squeeze(tf.argmax(i['cond'], axis=-1)) for i in inputs]
-            cond_labels = tf.concat(cond_labels, axis=0)
-            shared_latent = self.condition_layer([shared_latent, cond_labels])
-        # Split latent space again
-        if split_output:
-            latent1, latent2 = tf.dynamic_partition(shared_latent, labels, 2)
-            return latent1, latent2
+            cond_labels = tf.cast(tf.concat(cond_labels, axis=0), tf.int32)
+            shared_latent = self.critic_layer([shared_latent, labels, cond_labels])
         else:
-            return shared_latent, labels
+            # Apply critic
+            shared_latent = self.critic_layer([shared_latent, labels])
+        # Split latent space again
+        latent1, latent2 = tf.dynamic_partition(shared_latent, labels, 2)
+        return latent1, latent2
 
     def call(self, inputs):
         in1, in2 = inputs
@@ -86,20 +71,28 @@ class TwinAutoencoder(keras.Model):
         latent1 = self.ae1.encode(in1)
         latent2 = self.ae2.encode(in2)
         # Critic joins, adds loss, and splits
-        latent1, latent2 = self.critic([latent1, latent2], inputs=[in1, in2])
+        latent1, latent2 = self.critic([in1, in2], [latent1, latent2])
         # Reconstruction loss should be added by the decoders
         out1 = self.ae1.decode(in1, latent1)
         out2 = self.ae2.decode(in2, latent2)
         return out1, out2
 
-    def transform(self, inputs, split_output=False):
+    def transform(self, inputs, join_output=True):
         x1, x2 = inputs
         # Map to latent
         latent1 = self.ae1.encoder(x1)
         latent2 = self.ae2.encoder(x2)
-        # Critic joins, adds loss, and splits
-        outputs = self.critic([latent1, latent2], split_output=split_output)
-        return [out.numpy() for out in outputs]
+        outputs = [latent1, latent2]
+        if join_output:
+            outputs = tf.concat(outputs, axis=0)
+            labels = tf.concat(
+                [tf.zeros(tf.shape(latent1)[0]), tf.ones(tf.shape(latent2)[0])],
+                axis=0
+            )
+            labels = tf.cast(labels, tf.int32)
+            return outputs.numpy(), labels.numpy()
+        else:
+            return outputs.numpy()
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
         """Compile model with default loss and optimizer"""
