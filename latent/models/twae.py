@@ -58,6 +58,7 @@ class TwinAutoencoder(keras.Model):
             # Format condition labels
             cond_labels = [tf.squeeze(tf.argmax(i['cond'], axis=-1)) for i in inputs]
             cond_labels = tf.cast(tf.concat(cond_labels, axis=0), tf.int32)
+            # Apply critic for each group
             shared_latent = self.critic_layer([shared_latent, labels, cond_labels])
         else:
             # Apply critic
