@@ -277,33 +277,33 @@ class MMDCritic(layers.Layer):
         name: str = 'mmd_critic',
         weight: float = 1.,
         n_conditions: int = 2,
-        hidden_units: Iterable[int] = None,
+        n_groups: int = None,
         kernel_method: Union[Literal['rbf', 'ms_rbf', 'rq'], Callable] = 'ms_rbf',
         **kwargs
     ):
         super().__init__(name=name)
-        self.hidden_units = hidden_units
         self.weight = weight
         self.n_conditions = n_conditions
         self.kernel_method = kernel_method
+        self.n_groups = n_groups
         self.loss_func = MaximumMeanDiscrepancy(
             n_conditions=self.n_conditions,
             kernel_method=self.kernel_method
         )
 
-        # Define components
-        if self.hidden_units:
-            self.hidden_layers = DenseStack(
-                hidden_units=self.hidden_units,
-                dropout_rate=0.,
-                **kwargs
-            )
-
     def call(self, inputs):
-        outputs, labels = inputs
-        if self.hidden_units:
-            outputs = self.hidden_layers(outputs)
-        crit_loss = self.weight * self.loss_func(labels, outputs)
+        if self.n_groups:
+            outputs, cond, groups = inputs
+            cond_out = tf.dynamic_partition(outputs, groups, self.n_groups)
+            lab_out = tf.dynamic_partition(cond, groups, self.n_groups)
+            # Apply critic within group
+            crit_loss = []
+            for i in range(len(cond_out)):
+                crit_loss += [self.loss_func(lab_out[i], cond_out[i])]
+            crit_loss = self.weight * tf.math.reduce_mean(crit_loss)
+        else:
+            outputs, cond = inputs
+            crit_loss = self.weight * self.loss_func(cond, outputs)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
         return outputs
@@ -315,25 +315,13 @@ class PairwiseDistCritic(layers.Layer):
         self,
         name: str = 'pairing_critic',
         weight: float = 1.,
-        hidden_units: Iterable[int] = None,
         **kwargs
     ):
         super().__init__(name=name)
-        self.hidden_units = hidden_units
         self.weight = weight
-
-        # Define components
-        if self.hidden_units:
-            self.hidden_layer = DenseStack(
-                hidden_units=self.hidden_units,
-                dropout_rate=0.,
-                **kwargs
-            )
 
     def call(self, inputs):
         outputs, labels = inputs
-        if self.hidden_units:
-            outputs = self.hidden_layer(outputs)
         x1, x2 = tf.dynamic_partition(outputs, labels, 2)
         # Element-wise euclidean distance
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
@@ -350,26 +338,14 @@ class GromovWassersteinCritic(layers.Layer):
         name: str = 'wasserstein_critic',
         method: Literal['gw', 'entropic_gw'] = 'gw',
         weight: float = 1.,
-        hidden_units: Iterable[int] = None,
         **kwargs
     ):
         super().__init__(name=name)
-        self.hidden_units = hidden_units
         self.weight = weight
         self.loss_func = GromovWassersteinDistance(method=method)
 
-        # Define components
-        if self.hidden_units:
-            self.hidden_layer = DenseStack(
-                hidden_units=self.hidden_units,
-                dropout_rate=0.,
-                **kwargs
-            )
-
     def call(self, inputs):
         outputs, labels = inputs
-        if self.hidden_units:
-            outputs = self.hidden_layer(outputs)
         x1, x2 = tf.dynamic_partition(outputs, labels, 2)
         # Element-wise difference
         crit_loss = self.weight * self.loss_func(x1, x2)
