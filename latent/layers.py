@@ -32,6 +32,21 @@ class DenseBlock(layers.Layer):
         activation: Union[str, Callable] = 'leaky_relu',
         initializer: Union[str, Callable] = 'glorot_normal'
     ):
+        """
+        Initializes `DenseBlock` instance
+
+        Arguments:
+            units: Positive integer, dimensionality of the output space.
+            name: String indicating the name of the layer.
+            dropout_rate: Float between 0 and 1. Fraction of the input
+                units to drop.
+            batchnorm: Boolean, whether to perform batch normalization.
+            layernorm: Boolean, whether to perform layer normalization.
+            l1: Float. L1 regularization factor.
+            l2: Float. L2 regularization factor.
+            activation: Activation function to use.
+            initializer: Initializer for the `kernel` weights matrix.
+        """
         super().__init__(name=name)
         self.dropout_rate = dropout_rate
         self.batchnorm = batchnorm
@@ -55,7 +70,6 @@ class DenseBlock(layers.Layer):
         self.dropout = layers.Dropout(self.dropout_rate)
 
     def call(self, inputs):
-        """Full forward pass through model"""
         h = self.dense(inputs)
         if self.batchnorm:
             h = self.bn(h)
@@ -75,6 +89,21 @@ class DenseStack(layers.Layer):
         conditional: Literal['first', 'all'] = None,
         **kwargs
     ):
+        """
+        Initializes `DenseStack` instance
+
+        Arguments:
+            name: String indicating the name of the layer.
+            hidden_units: Iterable of number hidden units per layer. All layers are fully
+                connected. Ex. [128, 64] means first layer has 128 nodes and second one
+                has 64.
+            conditional:
+                One of the following:\n
+                * `'first'` Inject condition into first layer
+                * `'all'` Inject condition into all layers
+                * `None` Don't inject condition
+            **kwargs: Other arguments passed on to `DenseBlock`.
+        """
         super().__init__(name=name)
         self.hidden_units = hidden_units
         self.conditional = conditional
@@ -87,7 +116,6 @@ class DenseStack(layers.Layer):
             self.dense_stack += [layer]
 
     def call(self, inputs):
-        """Full forward pass through model"""
         if self.conditional:
             h, *conditions = inputs
         else:
@@ -113,6 +141,12 @@ class DenseStack(layers.Layer):
 class ColwiseMult(layers.Layer):
     """Performs column-wise multiplication between input vectors."""
     def __init__(self, name: str = 'colwise_mult'):
+        """
+        Initializes `ColwiseMult` instance
+
+        Arguments:
+            name: String indicating the name of the layer.
+        """
         super().__init__(name=name)
 
     def call(self, inputs):
@@ -122,6 +156,12 @@ class ColwiseMult(layers.Layer):
 class Sampling(layers.Layer):
     """Uses inputs (z_mean, log_var) to sample z."""
     def __init__(self, name: str = 'sampling'):
+        """
+        Initializes `Sampling` class
+
+        Arguments:
+            name: String indicating the name of the layer.
+        """
         super().__init__(name=name)
 
     def call(self, inputs):
@@ -139,6 +179,15 @@ class SharedDispersion(layers.Layer):
         activation: Union[str, Callable] = 'clipped_exp',
         initializer: Union[str, Callable] = 'glorot_normal'
     ):
+        """
+        Initializes `SharedDispersion` instance
+
+        Arguments:
+            units: Positive integer, dimensionality of the output space.
+            name: String indicating the name of the layer.
+            activation: Activation function to use.
+            initializer: Initializer for the `kernel` weights matrix.
+        """
         super().__init__(name=name)
         self.units = units
         self.initializer = initializer
@@ -171,6 +220,16 @@ class Constant(layers.Layer):
         trainable: bool = True,
         activation: Union[str, Callable] = 'clipped_exp'
     ):
+        """
+        Initializes `SharedDispersion` instance
+
+        Arguments:
+            units: Positive integer, dimensionality of the output space.
+            name: String indicating the name of the layer.
+            trainable: Boolean, whether to perform updates during
+                training.
+            activation: Activation function to use.
+        """
         super().__init__(name=name)
         self.units = units
         self.const = tf.Variable(
@@ -188,7 +247,10 @@ class Constant(layers.Layer):
 
 # Implementation adapted from https://github.com/theislab/sfaira/
 class PseudoInputs(layers.Layer):
-    """Creates trainable pseudo inputs"""
+    """Creates trainable pseudo inputs
+    ([Tomczak 2017](https://arxiv.org/abs/1705.07120)) based on input
+    shapes.
+    """
     def __init__(
         self,
         n_inputs: int,
@@ -196,6 +258,15 @@ class PseudoInputs(layers.Layer):
         activation: Union[str, Callable] = 'relu',
         initializer: Union[str, Callable] = None
     ):
+        """
+        Initializes `PseudoInputs` layer instance
+
+        Arguments:
+            n_inputs: Positive integer, number of pseudo-inputs.
+            name: String indicating the name of the layer.
+            activation: Activation function to use.
+            initializer: Initializer for the `kernel` weights matrix.
+        """
         super().__init__(name=name)
         self.n_inputs = n_inputs
         self.activation = activations.get(activation)
@@ -247,26 +318,6 @@ class GradReversal(layers.Layer):
             return -dy * self.weight
 
         return y, grad
-
-
-class KLDivergenceAddLoss(layers.Layer):
-    """
-    Identity transform layer that adds analytic KL divergence
-    (based on mean ans log_var) to the final model loss.
-    """
-
-    def __init__(self, name: str = 'kld', weight: float = 1.):
-        super().__init__(name=name)
-        self.weight = weight
-
-    def call(self, inputs):
-        mean, log_var = inputs
-        kl_loss = - 0.5 * tf.math.reduce_sum(
-            1 + log_var - tf.math.square(mean) - tf.math.exp(log_var)
-        )
-        self.add_loss(self.weight * kl_loss)
-        self.add_metric(self.weight * kl_loss, name=f'{self.name}_loss')
-        return inputs
 
 
 # Critic layers

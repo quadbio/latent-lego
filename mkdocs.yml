@@ -14,6 +14,20 @@ nav:
         Autoencoder: api/models/Autoencoder.md
         PoissonAutoencoder: api/models/PoissonAutoencoder.md
         NegativeBinomialAutoencoder: api/models/NegativeBinomialAutoencoder.md
+        ZINBAutoencoder: api/models/ZINBAutoencoder.md
+        TopologicalAutoencoder: api/models/TopologicalAutoencoder.md
+      activations:
+        clipped_exp: api/activations/clipped_exp.md
+        clipped_softplus: api/activations/clipped_softplus.md
+        get: api/activations/get.md
+      layers:
+        DenseBlock: api/layers/DenseBlock.md
+        DenseStack: api/layers/DenseStack.md
+        ColwiseMult: api/layers/ColwiseMult.md
+        # Sampling: api/layers/Sampling.md
+        SharedDispersion: api/layers/SharedDispersion.md
+        Constant: api/layers/Constant.md
+        PseudoInputs: api/layers/PseudoInputs.md
 plugins:
   - search
   - mkdocstrings:

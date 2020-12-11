@@ -8,7 +8,8 @@ from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZIN
 
 
 class Autoencoder(keras.Model):
-    """Autoencoder base class. This model stacks together an encoder and a decoder model to produce an autoencoder which compresses input data in a 'latent space' by
+    """Autoencoder base class. This model stacks together an encoder and a decoder model
+    to produce an autoencoder which compresses input data in a 'latent space' by
     minimizing the reconstruction error.
     """
     def __init__(
@@ -29,11 +30,11 @@ class Autoencoder(keras.Model):
 
         Arguments:
             encoder: Keras/tensorflow model object that inputs the data and outputs the
-                latent space. If not provided, a default model will be constructed from the
-                arguments.
-            decoder: Keras/tensorflow model object that inputs the latent space and outputs
-                the reconstructed data. If not provided, a default model will be constructed
-                from the arguments.
+                latent space. If not provided, a default model will be constructed from
+                the arguments.
+            decoder: Keras/tensorflow model object that inputs the latent space and
+                outputs the reconstructed data. If not provided, a default model will be
+                constructed from the arguments.
             name: String indicating the name of the model.
             x_dim: Integer indicating the number of features in the input data.
             latent_dim: Integer indicating the number of dimensions in the latent space.
@@ -46,7 +47,8 @@ class Autoencoder(keras.Model):
                 added later by calling `compile()`.
             use_conditions: Boolean, whether to force the unpacking of conditions from the
                 inputs.
-            **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/decoder networks.
+            **kwargs: Other arguments passed on to `DenseBlock` for constructung encoder/
+                decoder networks.
         """
         super().__init__(name=name)
         self.latent_dim = int(latent_dim)
@@ -176,8 +178,8 @@ class PoissonAutoencoder(Autoencoder):
 
         Arguments:
             encoder: Keras/tensorflow model object that inputs the data and outputs the
-                latent space. If not provided, a default model will be constructed from the
-                arguments.
+                latent space. If not provided, a default model will be constructed from
+                the arguments.
             name: String indicating the name of the model.
             x_dim: Integer indicating the number of features in the input data.
             latent_dim: Integer indicating the number of dimensions in the latent space.
@@ -187,7 +189,8 @@ class PoissonAutoencoder(Autoencoder):
                 layers. Only used if `decoder` is not provided.
             use_conditions: Boolean, whether to force the unpacking of conditions from the
                 inputs.
-            **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/decoder networks.
+            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+                encoder/decoder networks.
         """
         poisson_decoder = PoissonDecoder(
             x_dim=x_dim,
@@ -206,53 +209,176 @@ class PoissonAutoencoder(Autoencoder):
         )
 
 
-
 class NegativeBinomialAutoencoder(Autoencoder):
     """Autoencoder with fixed negative binomial decoder and reconstruction loss."""
     def __init__(
         self,
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'gene',
+        encoder: keras.Model = None,
+        name: str = 'nb_autoencoder',
+        x_dim: int = None,
+        latent_dim: int = 50,
+        encoder_units: Iterable[int] = [128, 128],
+        decoder_units: Iterable[int] = [128, 128],
+        use_conditions: bool = False,
+        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'constant',
         **kwargs
     ):
-        super().__init__(**kwargs)
+        """
+        Initializes `NegativeBinomialAutoencoder` class
+
+        Arguments:
+            encoder: Keras/tensorflow model object that inputs the data and outputs the
+                latent space. If not provided, a default model will be constructed from
+                the arguments.
+            name: String indicating the name of the model.
+            x_dim: Integer indicating the number of features in the input data.
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            encoder_units: Integer list indicating the number of units of the encoder
+                layers. Only used if `encoder` is not provided.
+            decoder_units: An integer list indicating the number of units of the decoder
+                layers. Only used if `decoder` is not provided.
+            use_conditions: Boolean, whether to force the unpacking of conditions from the
+                inputs.
+            dispersion:
+                One of the following:\n
+                * `'gene'` - dispersion parameter of NB is constant per gene across
+                    cells
+                * `'cell-gene'` - dispersion can differ for every gene in every cell
+                * `'constant'` - dispersion is constant across all genes and cells
+                * `float` - numeric value of fixed dispersion parameter
+            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+                encoder/decoder networks.
+        """
         self.dispersion = dispersion
-        self.decoder = NegativeBinomialDecoder(
+        nb_decoder = NegativeBinomialDecoder(
             x_dim=self.x_dim,
             dispersion=self.dispersion,
             hidden_units=self.decoder_units,
             **self.net_kwargs
+        )
+        super().__init__(
+            encoder=encoder,
+            decoder=nb_decoder,
+            name=name,
+            x_dim=x_dim,
+            latent_dim=latent_dim,
+            encoder_units=encoder_units,
+            use_conditions=use_conditions,
+            **kwargs
         )
 
 
 class ZINBAutoencoder(Autoencoder):
-    """Autoencoder with ZINB loss for count data"""
+    """Autoencoder with zero-inflated negative binomial (ZINB) decoder and reconstruction
+    loss.
+    """
     def __init__(
         self,
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'gene',
+        encoder: keras.Model = None,
+        name: str = 'zinb_autoencoder',
+        x_dim: int = None,
+        latent_dim: int = 50,
+        encoder_units: Iterable[int] = [128, 128],
+        decoder_units: Iterable[int] = [128, 128],
+        use_conditions: bool = False,
+        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'constant',
         **kwargs
     ):
-        super().__init__(**kwargs)
+        """
+        Initializes `ZINBAutoencoder` class
+
+        Arguments:
+            encoder: Keras/tensorflow model object that inputs the data and outputs the
+                latent space. If not provided, a default model will be constructed from
+                the arguments.
+            name: String indicating the name of the model.
+            x_dim: Integer indicating the number of features in the input data.
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            encoder_units: Integer list indicating the number of units of the encoder
+                layers. Only used if `encoder` is not provided.
+            decoder_units: An integer list indicating the number of units of the decoder
+                layers. Only used if `decoder` is not provided.
+            use_conditions: Boolean, whether to force the unpacking of conditions from the
+                inputs.
+            dispersion:
+                One of the following:\n
+                * `'gene'` - dispersion parameter of NB is constant per gene across
+                    cells
+                * `'cell-gene'` - dispersion can differ for every gene in every cell
+                * `'constant'` - dispersion is constant across all genes and cells
+                * `float` - numeric value of fixed dispersion parameter
+            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+                encoder/decoder networks.
+        """
         self.dispersion = dispersion
-        self.decoder = ZINBDecoder(
+        zinb_decoder = ZINBDecoder(
             x_dim=self.x_dim,
             dispersion=self.dispersion,
             hidden_units=self.decoder_units,
             **self.net_kwargs
         )
+        super().__init__(
+            encoder=encoder,
+            decoder=zinb_decoder,
+            name=name,
+            x_dim=x_dim,
+            latent_dim=latent_dim,
+            encoder_units=encoder_units,
+            use_conditions=use_conditions,
+            **kwargs
+        )
 
 
 class TopologicalAutoencoder(Autoencoder):
-    """Autoencoder model with topological loss on latent space"""
-    def __init__(self, topo_weight: float = 1., **kwargs):
-        super().__init__(**kwargs)
-        self.topo_weight = topo_weight
+    """Autoencoder with fixed encoder adding topological loss on latent space"""
+    def __init__(
+        self,
+        decoder: keras.Model = None,
+        name: str = 'topological_autoencoder',
+        x_dim: int = None,
+        latent_dim: int = 50,
+        encoder_units: Iterable[int] = [128, 128],
+        decoder_units: Iterable[int] = [128, 128],
+        use_conditions: bool = False,
+        topo_weight: float = 1.,
+        **kwargs
+    ):
+        """
+        Initializes `TopologicalAutoencoder` class
 
-        # Define components
-        self.encoder = TopologicalEncoder(
+        Arguments:
+            decoder: Keras/tensorflow model object that inputs the data and outputs the
+                latent space. If not provided, a default model will be constructed from
+                the arguments.
+            name: String indicating the name of the model.
+            x_dim: Integer indicating the number of features in the input data.
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            encoder_units: Integer list indicating the number of units of the encoder
+                layers. Only used if `encoder` is not provided.
+            decoder_units: An integer list indicating the number of units of the decoder
+                layers. Only used if `decoder` is not provided.
+            use_conditions: Boolean, whether to force the unpacking of conditions from the
+                inputs.
+            topo_weight: Float indicating the weight of the topological loss.
+            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+                encoder/decoder networks.
+        """
+        self.topo_weight = topo_weight
+        topo_encoder = TopologicalEncoder(
             topo_weight=self.topo_weight,
             latent_dim=self.latent_dim,
             hidden_units=self.decoder_units,
             **self.net_kwargs
+        )
+        super().__init__(
+            encoder=topo_encoder,
+            decoder=decoder,
+            name=name,
+            x_dim=x_dim,
+            latent_dim=latent_dim,
+            encoder_units=encoder_units,
+            use_conditions=use_conditions,
+            **kwargs
         )
 
 
