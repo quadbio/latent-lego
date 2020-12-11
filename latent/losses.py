@@ -1,10 +1,9 @@
 """Tensorflow implementations of losses for autoencoders"""
 
 import tensorflow as tf
-from tensorflow.keras import backend as K
 import tensorflow.keras.losses as losses
 
-from .utils import ms_rbf_kernel, rbf_kernel, persistent_homology, slice_matrix
+from .utils import ms_rbf_kernel, persistent_homology, slice_matrix
 from .utils import l2_norm, nan2zero, KERNELS, OT_DIST
 
 
@@ -21,8 +20,8 @@ class MaximumMeanDiscrepancy(losses.Loss):
     """MMD loss function between conditions"""
     def __init__(
         self,
-        n_conditions = 2,
-        kernel_method = 'ms_rbf',
+        n_conditions=2,
+        kernel_method='ms_rbf',
         **kwargs
     ):
         super().__init__()
@@ -49,14 +48,14 @@ class MaximumMeanDiscrepancy(losses.Loss):
         labels = tf.reshape(tf.cast(labels, tf.int32), (-1,))
         conditions = tf.dynamic_partition(
             y_pred, labels,
-            num_partitions = self.n_conditions
+            num_partitions=self.n_conditions
         )
         result = []
         for i in range(len(conditions)):
             for j in range(i):
                 res = maximum_mean_discrepancy(
                     conditions[i], conditions[j],
-                    kernel = self.kernel
+                    kernel=self.kernel
                 )
                 result.append(res)
         # Empty conditions will produce nan values
@@ -118,11 +117,11 @@ class TopologicalSignatureDistance(losses.Loss):
     """Distance between topological signatures."""
     def __init__(
         self,
-        sort_selected = False,
-        use_cycles = False,
-        match_edges = None,
-        return_additional_metrics = False,
-        eps = 1e-8,
+        sort_selected=False,
+        use_cycles=False,
+        match_edges=None,
+        return_additional_metrics=False,
+        eps=1e-8,
         **kwargs
     ):
         """Topological signature computation.
@@ -243,8 +242,8 @@ class GromovWassersteinDistance(losses.Loss):
     """Gromov-Wasserstein distance with POT"""
     def __init__(
         self,
-        method = 'gw',
-        eps = 1e-8,
+        method='gw',
+        eps=1e-8,
         **kwargs
     ):
         super().__init__(**kwargs)
