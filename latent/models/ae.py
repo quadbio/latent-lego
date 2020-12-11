@@ -9,7 +9,7 @@ from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZIN
 
 class Autoencoder(keras.Model):
     """Autoencoder base class. This model stacks together an encoder and a decoder model
-    to produce an autoencoder which compresses input data in a 'latent space' by
+    to produce an autoencoder which compresses input data in a latent space by
     minimizing the reconstruction error.
     """
     def __init__(
@@ -26,8 +26,6 @@ class Autoencoder(keras.Model):
         **kwargs
     ):
         """
-        Initializes `Autoencoder` class
-
         Arguments:
             encoder: Keras/tensorflow model object that inputs the data and outputs the
                 latent space. If not provided, a default model will be constructed from
@@ -47,7 +45,7 @@ class Autoencoder(keras.Model):
                 added later by calling `compile()`.
             use_conditions: Boolean, whether to force the unpacking of conditions from the
                 inputs.
-            **kwargs: Other arguments passed on to `DenseBlock` for constructung encoder/
+            **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
                 decoder networks.
         """
         super().__init__(name=name)
@@ -174,8 +172,6 @@ class PoissonAutoencoder(Autoencoder):
         **kwargs
     ):
         """
-        Initializes `PoissonAutoencoder` class
-
         Arguments:
             encoder: Keras/tensorflow model object that inputs the data and outputs the
                 latent space. If not provided, a default model will be constructed from
@@ -189,7 +185,7 @@ class PoissonAutoencoder(Autoencoder):
                 layers. Only used if `decoder` is not provided.
             use_conditions: Boolean, whether to force the unpacking of conditions from the
                 inputs.
-            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+            **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
         poisson_decoder = PoissonDecoder(
@@ -224,8 +220,6 @@ class NegativeBinomialAutoencoder(Autoencoder):
         **kwargs
     ):
         """
-        Initializes `NegativeBinomialAutoencoder` class
-
         Arguments:
             encoder: Keras/tensorflow model object that inputs the data and outputs the
                 latent space. If not provided, a default model will be constructed from
@@ -246,7 +240,7 @@ class NegativeBinomialAutoencoder(Autoencoder):
                 * `'cell-gene'` - dispersion can differ for every gene in every cell
                 * `'constant'` - dispersion is constant across all genes and cells
                 * `float` - numeric value of fixed dispersion parameter
-            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+            **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
         self.dispersion = dispersion
@@ -285,8 +279,6 @@ class ZINBAutoencoder(Autoencoder):
         **kwargs
     ):
         """
-        Initializes `ZINBAutoencoder` class
-
         Arguments:
             encoder: Keras/tensorflow model object that inputs the data and outputs the
                 latent space. If not provided, a default model will be constructed from
@@ -307,7 +299,7 @@ class ZINBAutoencoder(Autoencoder):
                 * `'cell-gene'` - dispersion can differ for every gene in every cell
                 * `'constant'` - dispersion is constant across all genes and cells
                 * `float` - numeric value of fixed dispersion parameter
-            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+            **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
         self.dispersion = dispersion
@@ -330,7 +322,7 @@ class ZINBAutoencoder(Autoencoder):
 
 
 class TopologicalAutoencoder(Autoencoder):
-    """Autoencoder with fixed encoder adding topological loss on latent space"""
+    """Autoencoder with fixed encoder adding topological loss on latent space."""
     def __init__(
         self,
         decoder: keras.Model = None,
@@ -344,8 +336,6 @@ class TopologicalAutoencoder(Autoencoder):
         **kwargs
     ):
         """
-        Initializes `TopologicalAutoencoder` class
-
         Arguments:
             decoder: Keras/tensorflow model object that inputs the data and outputs the
                 latent space. If not provided, a default model will be constructed from
@@ -360,7 +350,7 @@ class TopologicalAutoencoder(Autoencoder):
             use_conditions: Boolean, whether to force the unpacking of conditions from the
                 inputs.
             topo_weight: Float indicating the weight of the topological loss.
-            **kwargs: Other arguments passed on to `DenseBlock` for constructung
+            **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
         self.topo_weight = topo_weight

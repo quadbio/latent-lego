@@ -33,8 +33,6 @@ class DenseBlock(layers.Layer):
         initializer: Union[str, Callable] = 'glorot_normal'
     ):
         """
-        Initializes `DenseBlock` instance
-
         Arguments:
             units: Positive integer, dimensionality of the output space.
             name: String indicating the name of the layer.
@@ -90,8 +88,6 @@ class DenseStack(layers.Layer):
         **kwargs
     ):
         """
-        Initializes `DenseStack` instance
-
         Arguments:
             name: String indicating the name of the layer.
             hidden_units: Iterable of number hidden units per layer. All layers are fully
@@ -142,8 +138,6 @@ class ColwiseMult(layers.Layer):
     """Performs column-wise multiplication between input vectors."""
     def __init__(self, name: str = 'colwise_mult'):
         """
-        Initializes `ColwiseMult` instance
-
         Arguments:
             name: String indicating the name of the layer.
         """
@@ -157,8 +151,6 @@ class Sampling(layers.Layer):
     """Uses inputs (z_mean, log_var) to sample z."""
     def __init__(self, name: str = 'sampling'):
         """
-        Initializes `Sampling` class
-
         Arguments:
             name: String indicating the name of the layer.
         """
@@ -180,8 +172,6 @@ class SharedDispersion(layers.Layer):
         initializer: Union[str, Callable] = 'glorot_normal'
     ):
         """
-        Initializes `SharedDispersion` instance
-
         Arguments:
             units: Positive integer, dimensionality of the output space.
             name: String indicating the name of the layer.
@@ -221,8 +211,6 @@ class Constant(layers.Layer):
         activation: Union[str, Callable] = 'clipped_exp'
     ):
         """
-        Initializes `SharedDispersion` instance
-
         Arguments:
             units: Positive integer, dimensionality of the output space.
             name: String indicating the name of the layer.
@@ -259,8 +247,6 @@ class PseudoInputs(layers.Layer):
         initializer: Union[str, Callable] = None
     ):
         """
-        Initializes `PseudoInputs` layer instance
-
         Arguments:
             n_inputs: Positive integer, number of pseudo-inputs.
             name: String indicating the name of the layer.

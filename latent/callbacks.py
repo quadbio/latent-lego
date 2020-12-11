@@ -5,14 +5,20 @@ import tensorflow.keras.callbacks as callbacks
 
 
 class IncreaseKLDOnEpoch(callbacks.Callback):
-    """Increase VAE KLD loss during training"""
+    """Increase Kullback-Leibler Divergence loss of VAEs during training."""
     def __init__(
         self,
         factor: float = 1.5,
         max_val: float = 1.,
         **kwargs
     ):
-        super().__init__()
+        """
+        Arguments:
+            factor: Positive float. Factor by which the KLD will be increased each epoch.
+            max_val: Positive float. Maximum value of KLD.
+            **kwargs: Other parameters passed to `keras.callbacks.Callback`.
+        """
+        super().__init__(**kwargs)
         self.factor = factor
         self.max_val = max_val
 
@@ -28,12 +34,18 @@ class IncreaseKLDOnEpoch(callbacks.Callback):
 
 
 class KLDivergenceScheduler(callbacks.Callback):
-    """Schedule VAE KLD loss during training"""
+    """Schedule Kullback-Leibler Divergence loss of VAEs during training."""
     def __init__(
         self,
         schedule,
         **kwargs
     ):
+        """
+        Arguments:
+            schedule: a function that takes an epoch index (integer, indexed from 0) and
+                current KLD (float) as inputs and returns a new KLD as output (float).
+            **kwargs: Other parameters passed to `keras.callbacks.Callback`.
+        """
         super().__init__()
         self.schedule = schedule
 

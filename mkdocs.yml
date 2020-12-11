@@ -33,6 +33,9 @@ nav:
         ZINB: api/losses/ZINB.md
         MaximumMeanDiscrepancy: api/losses/MaximumMeanDiscrepancy.md
         TopologicalSignatureDistance: api/losses/TopologicalSignatureDistance.md
+      callbacks:
+        IncreaseKLDOnEpoch: api/callbacks/IncreaseKLDOnEpoch.md
+        KLDivergenceScheduler: api/callbacks/KLDivergenceScheduler.md
 plugins:
   - search
   - mkdocstrings:
