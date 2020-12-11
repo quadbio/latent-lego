@@ -8,33 +8,8 @@ from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZIN
 
 
 class Autoencoder(keras.Model):
-    """Autoencoder base class
-
-    This model stacks together an encoder and a decoder model to produce an autoencoder
-    which compresses input data in a 'latent space' by minimizing the reconstruction
-    error.
-
-    Arguments:
-        encoder: Keras/tensorflow model object that inputs the data and outputs the
-            latent space. If not provided, a default model will be constructed from the
-            arguments.
-        decoder: Keras/tensorflow model object that inputs the latent space and outputs
-            the reconstructed data. If not provided, a default model will be constructed
-            from the arguments.
-        name: String indicating the name of the model.
-        x_dim: Integer indicating the number of features in the input data.
-        latent_dim: Integer indicating the number of dimensions in the latent space.
-        encoder_units: Integer list indicating the number of units of the encoder
-            layers. Only used if `encoder` is not provided.
-        decoder_units: An integer list indicating the number of units of the decoder
-            layers. Only used if `decoder` is not provided.
-        reconstruction_loss: Loss function applied to the reconstructed data and to be
-            added by the decoder. Only used if `decoder` is not provided. Can also be
-            added later by calling `compile()`.
-        use_conditions: Boolean, whether to force the unpacking of conditions from the
-            inputs.
-        **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
-            decoder networks.
+    """Autoencoder base class. This model stacks together an encoder and a decoder model to produce an autoencoder which compresses input data in a 'latent space' by
+    minimizing the reconstruction error.
     """
     def __init__(
         self,
@@ -49,6 +24,30 @@ class Autoencoder(keras.Model):
         use_conditions: bool = False,
         **kwargs
     ):
+        """
+        Initializes `Autoencoder` class
+
+        Arguments:
+            encoder: Keras/tensorflow model object that inputs the data and outputs the
+                latent space. If not provided, a default model will be constructed from the
+                arguments.
+            decoder: Keras/tensorflow model object that inputs the latent space and outputs
+                the reconstructed data. If not provided, a default model will be constructed
+                from the arguments.
+            name: String indicating the name of the model.
+            x_dim: Integer indicating the number of features in the input data.
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            encoder_units: Integer list indicating the number of units of the encoder
+                layers. Only used if `encoder` is not provided.
+            decoder_units: An integer list indicating the number of units of the decoder
+                layers. Only used if `decoder` is not provided.
+            reconstruction_loss: Loss function applied to the reconstructed data and to be
+                added by the decoder. Only used if `decoder` is not provided. Can also be
+                added later by calling `compile()`.
+            use_conditions: Boolean, whether to force the unpacking of conditions from the
+                inputs.
+            **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/decoder networks.
+        """
         super().__init__(name=name)
         self.latent_dim = int(latent_dim)
         self.x_dim = int(x_dim)
@@ -106,7 +105,6 @@ class Autoencoder(keras.Model):
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
-        """Compile model with default loss and optimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):
@@ -161,18 +159,56 @@ class Autoencoder(keras.Model):
 
 
 class PoissonAutoencoder(Autoencoder):
-    """Poisson autoencoder for count data"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.decoder = PoissonDecoder(
-            x_dim=self.x_dim,
-            hidden_units=self.decoder_units,
-            **self.net_kwargs
+    """Autoencoder with fixed poisson decoder and reconstruction loss."""
+    def __init__(
+        self,
+        encoder: keras.Model = None,
+        name: str = 'poisson_autoencoder',
+        x_dim: int = None,
+        latent_dim: int = 50,
+        encoder_units: Iterable[int] = [128, 128],
+        decoder_units: Iterable[int] = [128, 128],
+        use_conditions: bool = False,
+        **kwargs
+    ):
+        """
+        Initializes `PoissonAutoencoder` class
+
+        Arguments:
+            encoder: Keras/tensorflow model object that inputs the data and outputs the
+                latent space. If not provided, a default model will be constructed from the
+                arguments.
+            name: String indicating the name of the model.
+            x_dim: Integer indicating the number of features in the input data.
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            encoder_units: Integer list indicating the number of units of the encoder
+                layers. Only used if `encoder` is not provided.
+            decoder_units: An integer list indicating the number of units of the decoder
+                layers. Only used if `decoder` is not provided.
+            use_conditions: Boolean, whether to force the unpacking of conditions from the
+                inputs.
+            **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/decoder networks.
+        """
+        poisson_decoder = PoissonDecoder(
+            x_dim=x_dim,
+            hidden_units=decoder_units,
+            **kwargs
+        )
+        super().__init__(
+            encoder=encoder,
+            decoder=poisson_decoder,
+            name=name,
+            x_dim=x_dim,
+            latent_dim=latent_dim,
+            encoder_units=encoder_units,
+            use_conditions=use_conditions,
+            **kwargs
         )
 
 
+
 class NegativeBinomialAutoencoder(Autoencoder):
-    """Autoencoder with negative binomial loss for count data"""
+    """Autoencoder with fixed negative binomial decoder and reconstruction loss."""
     def __init__(
         self,
         dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'gene',

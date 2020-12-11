@@ -1,0 +1,27 @@
+---
+site_name: Latent Lego
+repo_name: quadbiolab/latent_lego
+theme:
+  name: 'material'
+  palette:
+    scheme: default
+    primary: amber
+    accent: amber
+nav:
+  - Home: index.md
+  - API Reference:
+      models:
+        Autoencoder: api/models/Autoencoder.md
+        PoissonAutoencoder: api/models/PoissonAutoencoder.md
+        NegativeBinomialAutoencoder: api/models/NegativeBinomialAutoencoder.md
+plugins:
+  - search
+  - mkdocstrings:
+      watch:
+        - latent
+      handlers:
+        python:
+          inherited_members: true
+          rendering:
+            show_root_heading: true
+            heading_level: 3
