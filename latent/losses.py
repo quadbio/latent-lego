@@ -2,12 +2,14 @@
 
 import tensorflow as tf
 import tensorflow.keras.losses as losses
+from typing import Literal
 
 from .utils import ms_rbf_kernel, persistent_homology, slice_matrix
 from .utils import l2_norm, nan2zero, KERNELS, OT_DIST
 
 
 def maximum_mean_discrepancy(x, y, kernel=ms_rbf_kernel):
+    """Calculates maximum mean discrepancy."""
     x = tf.cast(x, tf.float32)
     y = tf.cast(y, tf.float32)
     x_kernel = tf.math.reduce_mean(kernel(x, x))
@@ -17,14 +19,27 @@ def maximum_mean_discrepancy(x, y, kernel=ms_rbf_kernel):
 
 
 class MaximumMeanDiscrepancy(losses.Loss):
-    """MMD loss function between conditions"""
+    """Computes Maximum Mean Discrepancy (MMD) loss between conditions (`y_true`)
+    in `y_pred`.
+    """
     def __init__(
         self,
         n_conditions=2,
         kernel_method='ms_rbf',
         **kwargs
     ):
-        super().__init__()
+        """
+        Arguments:
+            n_conditions: Positive integer indicating number of conditions.
+            kernel_method:
+                Name of kernel method to use. Can be one of the following:\n
+                * `'ms_rbf'` Multi-scale RBF kernel
+                    ([Lotfollahi 2019](https://arxiv.org/abs/1910.01791))
+                * `'rbf'` Basic RBF kernel
+                * `'rq'` Rational Quadratic kernel
+            **kwargs: Other arguments passed to `keras.losses.Loss`.
+        """
+        super().__init__(**kwargs)
         self.n_conditions = n_conditions
         if isinstance(kernel_method, str):
             self.kernel = KERNELS.get(kernel_method, ms_rbf_kernel)
@@ -64,8 +79,16 @@ class MaximumMeanDiscrepancy(losses.Loss):
 
 # Implementation adapted from https://github.com/theislab/dca
 class NegativeBinomial(losses.Loss):
-    """Negative binomial loss"""
+    """Computes negative binomial loss between `y_true` and `y_pred` given a dispersion
+    parameter (`theta`).
+    """
     def __init__(self, theta, eps=1e-8, **kwargs):
+        """
+        Arguments:
+            theta: Positive float. Dispersion parameter.
+            eps: Positive float. Clipping value for numerical stability.
+            **kwargs: Other arguments passed to `keras.losses.Loss`.
+        """
         super().__init__(**kwargs)
         self.eps = tf.cast(eps, tf.float32)
         self.theta = tf.cast(theta, tf.float32)
@@ -91,8 +114,17 @@ class NegativeBinomial(losses.Loss):
 
 # Implementation adapted from https://github.com/theislab/dca
 class ZINB(losses.Loss):
-    """Zero-inflated negative binomial loss"""
+    """Computes zero-inflated negative binomial loss between `y_true` and `y_pred` given
+    a dispersion parameter (`theta`) and dropout rate (`pi`).
+    """
     def __init__(self, pi, theta, eps=1e-8, **kwargs):
+        """
+        Arguments:
+            theta: Positive float. Dispersion parameter.
+            pi: Positive float between 0 and 1. Dropout rate.
+            eps: Positive float. Clipping value for numerical stability.
+            **kwargs: Other arguments passed to `keras.losses.Loss`.
+        """
         super().__init__(**kwargs)
         self.eps = tf.cast(eps, tf.float32)
         self.theta = tf.cast(theta, tf.float32)
@@ -114,22 +146,26 @@ class ZINB(losses.Loss):
 
 # Implementation adapted from https://github.com/BorgwardtLab/topological-autoencoders
 class TopologicalSignatureDistance(losses.Loss):
-    """Distance between topological signatures."""
+    """Computes distance between topological signatures
+    ([Moor 2019](https://arxiv.org/abs/1906.00722)).
+    """
     def __init__(
         self,
-        sort_selected=False,
-        use_cycles=False,
-        match_edges=None,
-        return_additional_metrics=False,
-        eps=1e-8,
+        match_edges: Literal['symmetric', 'random'] = None,
+        eps: float = 1e-8,
+        return_additional_metrics: bool = False,
         **kwargs
     ):
-        """Topological signature computation.
-
-        Args:
-            p: Order of norm used for distance computation
-            use_cycles: Flag to indicate whether cycles should be used
-                or not.
+        """
+        Arguments:
+            match_edges:
+                One of the following:\n
+                * `'symmetric'` Match edged between signatures symmetrically
+                * `'random'` Match edged between signatures randomly
+                * `None` Don't match edges
+            eps: Positive float. Clipping value for numerical stability.
+            return_additional_metrics: Boolean, whether to return additional metrics.
+            **kwargs: Other arguments passed to `keras.losses.Loss`.
         """
         super().__init__(**kwargs)
         self.match_edges = match_edges

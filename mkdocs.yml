@@ -28,6 +28,11 @@ nav:
         SharedDispersion: api/layers/SharedDispersion.md
         Constant: api/layers/Constant.md
         PseudoInputs: api/layers/PseudoInputs.md
+      losses:
+        NegativeBinomial: api/losses/NegativeBinomial.md
+        ZINB: api/losses/ZINB.md
+        MaximumMeanDiscrepancy: api/losses/MaximumMeanDiscrepancy.md
+        TopologicalSignatureDistance: api/losses/TopologicalSignatureDistance.md
 plugins:
   - search
   - mkdocstrings:
