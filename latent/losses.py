@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 import tensorflow.keras.losses as losses
-from typing import Literal
+from typing import Literal, Union
 
 from .utils import ms_rbf_kernel, persistent_homology, slice_matrix
 from .utils import l2_norm, nan2zero, KERNELS, OT_DIST
@@ -24,8 +24,8 @@ class MaximumMeanDiscrepancy(losses.Loss):
     """
     def __init__(
         self,
-        n_conditions=2,
-        kernel_method='ms_rbf',
+        n_conditions: int = 2,
+        kernel_method: str = 'ms_rbf',
         **kwargs
     ):
         """
@@ -82,7 +82,7 @@ class NegativeBinomial(losses.Loss):
     """Computes negative binomial loss between `y_true` and `y_pred` given a dispersion
     parameter (`theta`).
     """
-    def __init__(self, theta, eps=1e-8, **kwargs):
+    def __init__(self, theta: Union[tf.Tensor, float], eps: float = 1e-8, **kwargs):
         """
         Arguments:
             theta: Positive float. Dispersion parameter.
@@ -117,7 +117,13 @@ class ZINB(losses.Loss):
     """Computes zero-inflated negative binomial loss between `y_true` and `y_pred` given
     a dispersion parameter (`theta`) and dropout rate (`pi`).
     """
-    def __init__(self, pi, theta, eps=1e-8, **kwargs):
+    def __init__(
+        self,
+        pi: Union[tf.Tensor, float],
+        theta: Union[tf.Tensor, float],
+        eps: float = 1e-8,
+        **kwargs
+    ):
         """
         Arguments:
             theta: Positive float. Dispersion parameter.

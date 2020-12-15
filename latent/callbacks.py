@@ -2,6 +2,7 @@
 
 import tensorflow.keras.backend as K
 import tensorflow.keras.callbacks as callbacks
+from typing import Callable
 
 
 class IncreaseKLDOnEpoch(callbacks.Callback):
@@ -37,7 +38,7 @@ class KLDivergenceScheduler(callbacks.Callback):
     """Schedule Kullback-Leibler Divergence loss of VAEs during training."""
     def __init__(
         self,
-        schedule,
+        schedule: Callable,
         **kwargs
     ):
         """
