@@ -1,5 +1,6 @@
 """Tensorflow Twin (Variational) Autoencoder Models"""
 
+import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 from typing import Union, Tuple
@@ -12,11 +13,21 @@ class TwinAutoencoder(keras.Model):
     def __init__(
         self,
         models: Tuple[keras.Model, keras.Model],
-        critic: Union[str, keras.Model] = 'mmd',
+        critic: Union[str, keras.layers.Layer] = 'mmd',
         critic_weight: float = 1.,
         n_conditions: int = None,
         **kwargs
     ):
+        """
+        Arguments:
+            models: A list of size two with `keras.Model` autoencoder models.
+            critic: A `keras.Layer` object thats add a loss based on the
+                discrimination of latent representations.
+            critic_weight: Positive float indicating the weight of the critic loss.
+            n_conditions: Number of conditions to match between the inputs. If
+                given, the citic loss is calculated within conditions.
+            **kwargs: Additional arguments passed to the critic
+        """
         super().__init__()
         self.critic_weight = tf.Variable(critic_weight, trainable=False)
         self.n_conditions = n_conditions
@@ -82,7 +93,17 @@ class TwinAutoencoder(keras.Model):
         out2 = self.ae2.decode(in2, latent2)
         return out1, out2
 
-    def transform(self, inputs, join_output=True):
+    def transform(self, inputs, join_output=True) -> np.ndarray:
+        """
+        Map data (x) to latent space (z).
+
+        Arguments:
+            inputs: A numpy array with input data.
+            join_output: Boolean, whether to concatenate outputs.
+
+        Returns:
+            A numpy array with the coordinates of the input data in latent space.
+        """
         x1, x2 = inputs
         # Map to latent
         latent1 = self.ae1.encoder(x1)
@@ -100,5 +121,4 @@ class TwinAutoencoder(keras.Model):
             return outputs.numpy()
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
-        """Compile model with default loss and optimizer"""
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)

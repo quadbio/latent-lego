@@ -23,6 +23,8 @@ nav:
           NegativeBinomialVAE: api/models/NegativeBinomialVAE.md
           ZINBVAE: api/models/ZINBVAE.md
           TopologicalVariationalAutoencoder: api/models/TopologicalVariationalAutoencoder.md
+        twae:
+          TwinAutoencoder: api/models/TwinAutoencoder.md
       modules:
         encoder:
           Encoder: api/modules/Encoder.md
