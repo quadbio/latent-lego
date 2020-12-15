@@ -1,6 +1,6 @@
-# TopologicalVariationalEncoder
+# Decoder
 
-::: latent.modules.VariationalEncoder
+::: latent.modules.Decoder
     selection:
         inherited_members: true
         members:

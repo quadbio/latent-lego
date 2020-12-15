@@ -1,6 +1,6 @@
-# TopologicalVariationalEncoder
+# PoissonDecoder
 
-::: latent.modules.VariationalEncoder
+::: latent.modules.PoissonDecoder
     selection:
         inherited_members: true
         members:

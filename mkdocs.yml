@@ -31,6 +31,9 @@ nav:
           TopologicalVariationalEncoder: api/modules/TopologicalVariationalEncoder.md
         decoder:
           Decoder: api/modules/Decoder.md
+          PoissonDecoder: api/modules/PoissonDecoder.md
+          NegativeBinomialDecoder: api/modules/NegativeBinomialDecoder.md
+          ZINBDecoder: api/modules/ZINBDecoder.md
       activations:
         clipped_exp: api/activations/clipped_exp.md
         clipped_softplus: api/activations/clipped_softplus.md
@@ -48,6 +51,7 @@ nav:
         ZINB: api/losses/ZINB.md
         MaximumMeanDiscrepancy: api/losses/MaximumMeanDiscrepancy.md
         TopologicalSignatureDistance: api/losses/TopologicalSignatureDistance.md
+        get: api/losses/get.md
       callbacks:
         IncreaseKLDOnEpoch: api/callbacks/IncreaseKLDOnEpoch.md
         KLDivergenceScheduler: api/callbacks/KLDivergenceScheduler.md

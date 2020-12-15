@@ -1,6 +1,6 @@
 # VariationalEncoder
 
-::: latent.models.VariationalEncoder
+::: latent.modules.VariationalEncoder
     selection:
         inherited_members: true
         members:

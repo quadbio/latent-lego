@@ -1,6 +1,6 @@
-# TopologicalVariationalEncoder
+# NegativeBinomialDecoder
 
-::: latent.modules.VariationalEncoder
+::: latent.modules.NegativeBinomialDecoder
     selection:
         inherited_members: true
         members:

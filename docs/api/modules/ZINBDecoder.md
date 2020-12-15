@@ -1,6 +1,6 @@
-# TopologicalVariationalEncoder
+# ZINBDecoder
 
-::: latent.modules.VariationalEncoder
+::: latent.modules.ZINBDecoder
     selection:
         inherited_members: true
         members:

@@ -1,6 +1,6 @@
 # Encoder
 
-::: latent.models.Encoder
+::: latent.modules.Encoder
     selection:
         inherited_members: true
         members:
