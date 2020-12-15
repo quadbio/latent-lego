@@ -1,5 +1,6 @@
 """Tensorflow Autoencoder Models"""
 
+import tensorflow as tf
 import tensorflow.keras as keras
 from typing import Iterable, Literal, Union, Callable
 
@@ -245,10 +246,10 @@ class NegativeBinomialAutoencoder(Autoencoder):
         """
         self.dispersion = dispersion
         nb_decoder = NegativeBinomialDecoder(
-            x_dim=self.x_dim,
+            x_dim=x_dim,
+            hidden_units=decoder_units,
             dispersion=self.dispersion,
-            hidden_units=self.decoder_units,
-            **self.net_kwargs
+            **kwargs
         )
         super().__init__(
             encoder=encoder,
@@ -304,10 +305,10 @@ class ZINBAutoencoder(Autoencoder):
         """
         self.dispersion = dispersion
         zinb_decoder = ZINBDecoder(
-            x_dim=self.x_dim,
+            x_dim=x_dim,
+            hidden_units=decoder_units,
             dispersion=self.dispersion,
-            hidden_units=self.decoder_units,
-            **self.net_kwargs
+            **kwargs
         )
         super().__init__(
             encoder=encoder,
@@ -322,7 +323,8 @@ class ZINBAutoencoder(Autoencoder):
 
 
 class TopologicalAutoencoder(Autoencoder):
-    """Autoencoder with fixed encoder adding topological loss on latent space."""
+    """Autoencoder with fixed encoder adding topological loss on latent
+    space ([Moor 2019](https://arxiv.org/abs/1906.00722))."""
     def __init__(
         self,
         decoder: keras.Model = None,
@@ -353,12 +355,12 @@ class TopologicalAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
-        self.topo_weight = topo_weight
+        self.topo_weight = tf.Variable(topo_weight, trainable=False)
         topo_encoder = TopologicalEncoder(
+            latent_dim=latent_dim,
+            hidden_units=decoder_units,
             topo_weight=self.topo_weight,
-            latent_dim=self.latent_dim,
-            hidden_units=self.decoder_units,
-            **self.net_kwargs
+            **kwargs
         )
         super().__init__(
             encoder=topo_encoder,
@@ -370,18 +372,3 @@ class TopologicalAutoencoder(Autoencoder):
             use_conditions=use_conditions,
             **kwargs
         )
-
-
-class PoissonTopoAE(PoissonAutoencoder, TopologicalAutoencoder):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-class NegativeBinomialTopoAE(NegativeBinomialAutoencoder, TopologicalAutoencoder):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-class ZINBTopoAE(ZINBAutoencoder, TopologicalAutoencoder):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
