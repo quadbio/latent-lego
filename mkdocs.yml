@@ -23,6 +23,14 @@ nav:
           NegativeBinomialVAE: api/models/NegativeBinomialVAE.md
           ZINBVAE: api/models/ZINBVAE.md
           TopologicalVariationalAutoencoder: api/models/TopologicalVariationalAutoencoder.md
+      modules:
+        encoder:
+          Encoder: api/modules/Encoder.md
+          VariationalEncoder: api/modules/VariationalEncoder.md
+          TopologicalEncoder: api/modules/TopologicalEncoder.md
+          TopologicalVariationalEncoder: api/modules/TopologicalVariationalEncoder.md
+        decoder:
+          Decoder: api/modules/Decoder.md
       activations:
         clipped_exp: api/activations/clipped_exp.md
         clipped_softplus: api/activations/clipped_softplus.md

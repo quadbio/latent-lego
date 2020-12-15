@@ -15,8 +15,9 @@ tfb = tfp.bijectors
 
 
 class Encoder(keras.Model):
-    """Encoder base class. This model compresses input data in a latent space through
-    passing it through a `DenseStack`."""
+    """Encoder base class. This model compresses input data in a latent space
+    with `latent_dim` dimensions by through passing it through a `DenseStack`.
+    """
     def __init__(
         self,
         latent_dim: int = 50,
@@ -57,7 +58,7 @@ class Encoder(keras.Model):
 
 
 class TopologicalEncoder(Encoder):
-    """Encoder model with topological regularization loss on latent space.
+    """Encoder model with topological regularization loss on latent space
     ([Moor 2019](https://arxiv.org/abs/1906.00722)).
     """
     def __init__(
