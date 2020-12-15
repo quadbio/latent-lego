@@ -96,11 +96,9 @@ class TwinAutoencoder(keras.Model):
     def transform(self, inputs, join_output=True) -> np.ndarray:
         """
         Map data (x) to latent space (z).
-
         Arguments:
             inputs: A numpy array with input data.
             join_output: Boolean, whether to concatenate outputs.
-
         Returns:
             A numpy array with the coordinates of the input data in latent space.
         """

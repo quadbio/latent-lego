@@ -114,7 +114,13 @@ class Autoencoder(keras.Model):
         return super().fit(x, y, **kwargs)
 
     def transform(self, inputs):
-        """Map data (x) to latent space (z)"""
+        """
+        Map data (x) to latent space (z).
+        Arguments:
+            inputs: A numpy array with input data.
+        Returns:
+            A numpy array with the coordinates of the input data in latent space.
+        """
         return self.encoder.predict(inputs)
 
     def unpack_inputs(self, inputs):
