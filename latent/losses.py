@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 import tensorflow.keras.losses as losses
-from typing import Literal, Union
+from typing import Literal, Union, Callable
 
 from .utils import ms_rbf_kernel, persistent_homology, slice_matrix
 from .utils import l2_norm, nan2zero, KERNELS, OT_DIST
@@ -313,3 +313,28 @@ class GromovWassersteinDistance(losses.Loss):
         distances2 = self._compute_distance_matrix(y_pred)
         distances2 = distances2 / tf.math.reduce_max(distances2)
         return self.dist_func(distances1, distances2)
+
+
+LOSSES = {
+    'negative_binomial': NegativeBinomial,
+    'zinb': ZINB,
+    'topological': TopologicalSignatureDistance,
+    'mmd': MaximumMeanDiscrepancy
+}
+
+
+def get(identifier: Union[Callable, str]) -> Callable:
+    """Returns loss function
+    Arguments:
+        identifier: Function or string
+    Returns:
+        Function corresponding to the input string or input function.
+    """
+    if identifier is None:
+        return None
+    elif callable(identifier):
+        return identifier
+    elif identifier in LOSSES.keys():
+        return LOSSES.get(identifier)
+    else:
+        return losses.get(identifier)

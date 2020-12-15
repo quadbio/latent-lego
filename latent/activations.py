@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import ReLU, LeakyReLU, PReLU, Activation
 import tensorflow.keras.activations as activations
-from typing import Callable
+from typing import Callable, Union
 
 
 def clipped_exp(x: tf.Tensor) -> tf.Tensor:
@@ -38,14 +38,18 @@ ACTIVATIONS = {
 }
 
 
-def get(identifier: str) -> Callable:
+def get(identifier: Union[Callable, str]) -> Callable:
     """Returns activation function
     Arguments:
         identifier: Function or string
     Returns:
         Function corresponding to the input string or input function.
     """
-    if identifier in ACTIVATIONS.keys():
+    if identifier is None:
+        return None
+    elif callable(identifier):
+        return identifier
+    elif identifier in ACTIVATIONS.keys():
         return ACTIVATIONS.get(identifier)
     else:
         return activations.get(identifier)
