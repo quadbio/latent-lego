@@ -1,5 +1,6 @@
 """Tensorflow implementations of decoder models"""
 
+import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
 
@@ -42,7 +43,7 @@ class Decoder(keras.Model):
         super().__init__(name=name)
         self.x_dim = x_dim
         self.hidden_units = hidden_units
-        self.reconstruction_loss = get_loss(reconstruction_loss)()
+        self.reconstruction_loss = get_loss(reconstruction_loss)
         self.loss_name = loss_name
         self.initializer = keras.initializers.get(initializer)
         # Set use_sf to False because this base model only expects one input
@@ -78,7 +79,7 @@ class Decoder(keras.Model):
     def add_reconstruction_loss(self, x, output):
         """Adds reconstruction loss to final model loss"""
         if self.reconstruction_loss:
-            rec_loss = self.reconstruction_loss(x, output)
+            rec_loss = tf.math.reduce_mean(self.reconstruction_loss(x, output))
             self.add_loss(rec_loss)
             self.add_metric(rec_loss, name=self.loss_name)
 

@@ -318,8 +318,8 @@ class GromovWassersteinDistance(losses.Loss):
 LOSSES = {
     'negative_binomial': NegativeBinomial,
     'zinb': ZINB,
-    'topological': TopologicalSignatureDistance,
-    'mmd': MaximumMeanDiscrepancy
+    'topological': TopologicalSignatureDistance(),
+    'mmd': MaximumMeanDiscrepancy()
 }
 
 

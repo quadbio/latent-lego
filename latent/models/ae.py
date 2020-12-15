@@ -90,7 +90,7 @@ class Autoencoder(keras.Model):
         if self._use_sf() and not self._conditional_decoder():
             return self.decoder([inputs['x'], latent, inputs['sf']])
         if not self._use_sf() and not self._conditional_decoder():
-            return self.decoder([inputs['x'], latent, inputs['sf']])
+            return self.decoder([inputs['x'], latent])
         if self._use_sf() and self._conditional_decoder():
             latent = [latent, *inputs['cond']]
             return self.decoder([inputs['x'], latent, inputs['sf']])
