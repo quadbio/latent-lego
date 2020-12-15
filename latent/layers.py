@@ -19,7 +19,9 @@ tfb = tfp.bijectors
 
 # Core layers and stacks
 class DenseBlock(layers.Layer):
-    """Basic dense layer block"""
+    """Basic dense layer block with regularization, dropout, and batch-/layernorm
+    functionality.
+    """
     def __init__(
         self,
         units: int,
@@ -79,7 +81,7 @@ class DenseBlock(layers.Layer):
 
 
 class DenseStack(layers.Layer):
-    """Core dense layer stack of encoders and decoders"""
+    """A stack of `DenseBlock` layers."""
     def __init__(
         self,
         name: str = 'dense_stack',

@@ -1,4 +1,4 @@
-# Negative Binomial Autoencoder
+# NegativeBinomialAutoencoder
 
 ::: latent.models.NegativeBinomialAutoencoder
 	selection:

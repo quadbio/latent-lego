@@ -1,4 +1,4 @@
-# Topological Autoencoder
+# TopologicalAutoencoder
 
 ::: latent.models.TopologicalAutoencoder
 	selection:

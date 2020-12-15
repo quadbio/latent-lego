@@ -1,4 +1,4 @@
-# Poisson Autoencoder
+# PoissonAutoencoder
 
 ::: latent.models.PoissonAutoencoder
 	selection:

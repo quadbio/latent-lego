@@ -11,7 +11,7 @@ from .ae import Autoencoder
 
 class VariationalAutoencoder(Autoencoder):
     """Variational Autoencoder base class. This model uses a fixed variational encoder
-    to fit a posterior distribution in the latent space trough regularization
+    to fit a posterior distribution as the latent space trough regularization
     by a Kullback-Leibler Divergence loss.
     """
     def __init__(
@@ -379,8 +379,7 @@ class ZINBVAE(Autoencoder):
         )
 
 
-
-class TopologicalVariationalAutoencoder(VariationalAutoencoder):
+class TopologicalVariationalAutoencoder(Autoencoder):
     """Variational autoencoder model with topological loss on latent space"""
     def __init__(
         self,

@@ -11,11 +11,18 @@ nav:
   - Home: index.md
   - API Reference:
       models:
-        Autoencoder: api/models/Autoencoder.md
-        PoissonAutoencoder: api/models/PoissonAutoencoder.md
-        NegativeBinomialAutoencoder: api/models/NegativeBinomialAutoencoder.md
-        ZINBAutoencoder: api/models/ZINBAutoencoder.md
-        TopologicalAutoencoder: api/models/TopologicalAutoencoder.md
+        ae:
+          Autoencoder: api/models/Autoencoder.md
+          PoissonAutoencoder: api/models/PoissonAutoencoder.md
+          NegativeBinomialAutoencoder: api/models/NegativeBinomialAutoencoder.md
+          ZINBAutoencoder: api/models/ZINBAutoencoder.md
+          TopologicalAutoencoder: api/models/TopologicalAutoencoder.md
+        vae:
+          VariationalAutoencoder: api/models/VariationalAutoencoder.md
+          PoissonVAE: api/models/PoissonVAE.md
+          NegativeBinomialVAE: api/models/NegativeBinomialVAE.md
+          ZINBVAE: api/models/ZINBVAE.md
+          TopologicalVariationalAutoencoder: api/models/TopologicalVariationalAutoencoder.md
       activations:
         clipped_exp: api/activations/clipped_exp.md
         clipped_softplus: api/activations/clipped_softplus.md
