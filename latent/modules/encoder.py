@@ -15,7 +15,8 @@ tfb = tfp.bijectors
 
 
 class Encoder(keras.Model):
-    """Encoder base model"""
+    """Encoder base class. This model compresses input data in a latent space through
+    passing it through a `DenseStack`."""
     def __init__(
         self,
         latent_dim: int = 50,
@@ -23,6 +24,14 @@ class Encoder(keras.Model):
         initializer: Union[str, Callable] = 'glorot_normal',
         **kwargs
     ):
+        """
+        Arguments:
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            name: String indicating the name of the model.
+            initializer: Initializer for the kernel weights matrix (see
+                `keras.initializers`)
+            **kwargs: Other arguments passed on to `DenseStack`
+        """
         super().__init__(name=name)
         self.latent_dim = latent_dim
         self.initializer = keras.initializers.get(initializer)
@@ -48,16 +57,34 @@ class Encoder(keras.Model):
 
 
 class TopologicalEncoder(Encoder):
-    """Encoder model with topological loss on latent space"""
+    """Encoder model with topological regularization loss on latent space.
+    ([Moor 2019](https://arxiv.org/abs/1906.00722)).
+    """
     def __init__(
         self,
+        latent_dim: int = 50,
         name: str = 'topological_encoder',
+        initializer: Union[str, Callable] = 'glorot_normal',
         topo_weight: float = 1.,
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        """
+        Arguments:
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            name: String indicating the name of the model.
+            initializer: Initializer for the kernel weights matrix (see
+                `keras.initializers`)
+            topo_weight: Float indicating the weight of the topological loss.
+            **kwargs: Other arguments passed on to `DenseStack`
+        """
         self.topo_weight = topo_weight
         self.topo_regularizer = TopologicalSignatureDistance()
+        super().__init__(
+            latent_dim=latent_dim,
+            name=name,
+            initializer=initializer,
+            **kwargs
+        )
 
     def call(self, inputs):
         """Full forward pass through model"""
@@ -74,10 +101,13 @@ class TopologicalEncoder(Encoder):
 
 
 class VariationalEncoder(Encoder):
-    """Variational encoder"""
+    """Variational encoder. This model compresses input data by parameterizing a latent
+    distribution that is regularized through a KL Divergence loss."""
     def __init__(
         self,
+        latent_dim: int = 50,
         name: str = 'variational_encoder',
+        initializer: Union[str, Callable] = 'glorot_normal',
         kld_weight: float = 1e-4,
         prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
         latent_dist: Literal['independent', 'multivariate'] = 'independent',
@@ -85,12 +115,42 @@ class VariationalEncoder(Encoder):
         n_pseudoinputs: int = 200,
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        """
+        Arguments:
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            name: String indicating the name of the model.
+            initializer: Initializer for the kernel weights matrix (see
+                `keras.initializers`)
+            kld_weight: Float indicating the weight of the KL Divergence
+                regularization loss.
+            prior: The choice of prior distribution. One of the following:\n
+                * `'normal'` - A unit gaussian (normal) distribution.
+                * `'iaf'` - A unit gaussian with a Inverse Autoregressive Flows bijector
+                    ([Kingma 2016](https://arxiv.org/abs/1606.04934))
+                * `'vamp'` - A variational mixture of posteriors (VAMP) prior
+                    ([Tomczak 2017](https://arxiv.org/abs/1705.07120))
+            latent_dist: The choice of latent distribution. One of the following:\n
+                * `'independent'` - A independent normal produced by
+                    `tfpl.IndependentNormal`.
+                * `'multivariate'` - A multivariate normal produced by
+                    `tfpl.MultivariateNormalTriL`.
+            iaf_units: Integer list indicating the units in the IAF bijector network.
+                Only used if `prior = 'iaf'`.
+            n_pseudoinputs: Integer indicating the number of pseudoinputs for the VAMP
+                prior. Only used if `prior = 'vamp'`.
+            **kwargs: Other arguments passed on to `DenseStack`.
+        """
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
         self.n_pseudoinputs = n_pseudoinputs
         self.latent_dist = latent_dist
+        super().__init__(
+            latent_dim=latent_dim,
+            name=name,
+            initializer=initializer,
+            **kwargs
+        )
 
         # Define components
         self.latent_dist_layer = DISTRIBUTIONS.get(latent_dist, tfpl.IndependentNormal)
@@ -173,13 +233,60 @@ class VariationalEncoder(Encoder):
 
 
 class TopologicalVariationalEncoder(VariationalEncoder, TopologicalEncoder):
-    """Variational encoder model with topological loss on latent space"""
+    """Variational encoder model with topological regularization loss on latent space
+    ([Moor 2019](https://arxiv.org/abs/1906.00722)).
+    """
     def __init__(
         self,
-        name: str = 'topological_variational_encoder',
+        latent_dim: int = 50,
+        name: str = 'topo_variational_encoder',
+        initializer: Union[str, Callable] = 'glorot_normal',
+        kld_weight: float = 1e-4,
+        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
+        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        iaf_units: Iterable[int] = [256, 256],
+        n_pseudoinputs: int = 200,
+        topo_weight: float = 1.,
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        """
+        Arguments:
+            latent_dim: Integer indicating the number of dimensions in the latent space.
+            name: String indicating the name of the model.
+            initializer: Initializer for the kernel weights matrix (see
+                `keras.initializers`)
+            kld_weight: Float indicating the weight of the KL Divergence
+                regularization loss.
+            prior: The choice of prior distribution. One of the following:\n
+                * `'normal'` - A unit gaussian (normal) distribution.
+                * `'iaf'` - A unit gaussian with a Inverse Autoregressive Flows bijector
+                    ([Kingma 2016](https://arxiv.org/abs/1606.04934))
+                * `'vamp'` - A variational mixture of posteriors (VAMP) prior
+                    ([Tomczak 2017](https://arxiv.org/abs/1705.07120))
+            latent_dist: The choice of latent distribution. One of the following:\n
+                * `'independent'` - A independent normal produced by
+                    `tfpl.IndependentNormal`.
+                * `'multivariate'` - A multivariate normal produced by
+                    `tfpl.MultivariateNormalTriL`.
+            iaf_units: Integer list indicating the units in the IAF bijector network.
+                Only used if `prior = 'iaf'`.
+            n_pseudoinputs: Integer indicating the number of pseudoinputs for the VAMP
+                prior. Only used if `prior = 'vamp'`.
+            topo_weight: Float indicating the weight of the topological loss.
+            **kwargs: Other arguments passed on to `DenseStack`.
+        """
+        super().__init__(
+            latent_dim=latent_dim,
+            name=name,
+            initializer=initializer,
+            kld_weight=kld_weight,
+            prior=prior,
+            latent_dist=latent_dist,
+            iaf_units=iaf_units,
+            n_pseudoinputs=n_pseudoinputs,
+            topo_weight=topo_weight,
+            **kwargs
+        )
 
     def call(self, inputs):
         """Full forward pass through model"""
