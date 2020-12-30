@@ -43,8 +43,8 @@ class TwinAutoencoder(keras.Model):
         self.use_conditions = self.n_conditions is not None
         # Set condition usage in components is not already set
         if self.use_conditions and not has_cond_components:
-            rna_ae.use_conditions = True
-            atac_ae.use_conditions = True
+            self.ae1.use_conditions = True
+            self.ae2.use_conditions = True
 
         if isinstance(critic, str):
             critic = CRITICS.get(critic, MMDCritic)

@@ -3,9 +3,11 @@ site_name: Latent Lego
 repo_name: quadbiolab/latent_lego
 theme:
   name: 'material'
+  logo: assets/images/logo.svg
+  favicon: assets/images/favicon.png
   palette:
     scheme: default
-    primary: amber
+    primary: white
     accent: amber
 nav:
   - Home: index.md
@@ -68,3 +70,4 @@ plugins:
           rendering:
             show_root_heading: true
             heading_level: 3
+            show_source: false

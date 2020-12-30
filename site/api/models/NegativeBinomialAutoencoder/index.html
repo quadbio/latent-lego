@@ -1,0 +1,1861 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.1.7">
+    
+    
+      
+        <title>NegativeBinomialAutoencoder - Latent Lego</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.19753c6b.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.196e0c26.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#ffffff">
+        
+      
+    
+    
+    
+      
+        
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="amber">
+      
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#negativebinomialautoencoder" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="../../.." title="Latent Lego" class="md-header-nav__button md-logo" aria-label="Latent Lego">
+      
+  <img src="../../../assets/images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Latent Lego
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              NegativeBinomialAutoencoder
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Latent Lego" class="md-nav__button md-logo" aria-label="Latent Lego">
+      
+  <img src="../../../assets/images/logo.svg" alt="logo">
+
+    </a>
+    Latent Lego
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../.." class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    <label class="md-nav__link" for="nav-2">
+      API Reference
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        <span class="md-nav__icon md-icon"></span>
+        API Reference
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1" checked>
+    <label class="md-nav__link" for="nav-2-1">
+      models
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="models" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-1">
+        <span class="md-nav__icon md-icon"></span>
+        models
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-1" type="checkbox" id="nav-2-1-1" checked>
+    <label class="md-nav__link" for="nav-2-1-1">
+      ae
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="ae" data-md-level="3">
+      <label class="md-nav__title" for="nav-2-1-1">
+        <span class="md-nav__icon md-icon"></span>
+        ae
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../Autoencoder/" class="md-nav__link">
+      Autoencoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../PoissonAutoencoder/" class="md-nav__link">
+      PoissonAutoencoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        NegativeBinomialAutoencoder
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+    
+    <a href="./" class="md-nav__link md-nav__link--active">
+      NegativeBinomialAutoencoder
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder" class="md-nav__link">
+    NegativeBinomialAutoencoder
+  </a>
+  
+    <nav class="md-nav" aria-label="NegativeBinomialAutoencoder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.call" class="md-nav__link">
+    call()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.compile" class="md-nav__link">
+    compile()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.fit" class="md-nav__link">
+    fit()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.transform" class="md-nav__link">
+    transform()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../ZINBAutoencoder/" class="md-nav__link">
+      ZINBAutoencoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../TopologicalAutoencoder/" class="md-nav__link">
+      TopologicalAutoencoder
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-2" type="checkbox" id="nav-2-1-2" >
+    <label class="md-nav__link" for="nav-2-1-2">
+      vae
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="vae" data-md-level="3">
+      <label class="md-nav__title" for="nav-2-1-2">
+        <span class="md-nav__icon md-icon"></span>
+        vae
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../VariationalAutoencoder/" class="md-nav__link">
+      VariationalAutoencoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../PoissonVAE/" class="md-nav__link">
+      PoissonVAE
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../NegativeBinomialVAE/" class="md-nav__link">
+      NegativeBinomialVAE
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../ZINBVAE/" class="md-nav__link">
+      ZINBVAE
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../TopologicalVariationalAutoencoder/" class="md-nav__link">
+      TopologicalVariationalAutoencoder
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-3" type="checkbox" id="nav-2-1-3" >
+    <label class="md-nav__link" for="nav-2-1-3">
+      twae
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="twae" data-md-level="3">
+      <label class="md-nav__title" for="nav-2-1-3">
+        <span class="md-nav__icon md-icon"></span>
+        twae
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../TwinAutoencoder/" class="md-nav__link">
+      TwinAutoencoder
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2" type="checkbox" id="nav-2-2" >
+    <label class="md-nav__link" for="nav-2-2">
+      modules
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="modules" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-2">
+        <span class="md-nav__icon md-icon"></span>
+        modules
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-1" type="checkbox" id="nav-2-2-1" >
+    <label class="md-nav__link" for="nav-2-2-1">
+      encoder
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="encoder" data-md-level="3">
+      <label class="md-nav__title" for="nav-2-2-1">
+        <span class="md-nav__icon md-icon"></span>
+        encoder
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/Encoder/" class="md-nav__link">
+      Encoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/VariationalEncoder/" class="md-nav__link">
+      VariationalEncoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/TopologicalEncoder/" class="md-nav__link">
+      TopologicalEncoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/TopologicalVariationalEncoder/" class="md-nav__link">
+      TopologicalVariationalEncoder
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-2" type="checkbox" id="nav-2-2-2" >
+    <label class="md-nav__link" for="nav-2-2-2">
+      decoder
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="decoder" data-md-level="3">
+      <label class="md-nav__title" for="nav-2-2-2">
+        <span class="md-nav__icon md-icon"></span>
+        decoder
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/Decoder/" class="md-nav__link">
+      Decoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/PoissonDecoder/" class="md-nav__link">
+      PoissonDecoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/NegativeBinomialDecoder/" class="md-nav__link">
+      NegativeBinomialDecoder
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../modules/ZINBDecoder/" class="md-nav__link">
+      ZINBDecoder
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-3" type="checkbox" id="nav-2-3" >
+    <label class="md-nav__link" for="nav-2-3">
+      activations
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="activations" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-3">
+        <span class="md-nav__icon md-icon"></span>
+        activations
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../activations/clipped_exp/" class="md-nav__link">
+      clipped_exp
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../activations/clipped_softplus/" class="md-nav__link">
+      clipped_softplus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../activations/get/" class="md-nav__link">
+      get
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4" >
+    <label class="md-nav__link" for="nav-2-4">
+      layers
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="layers" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-4">
+        <span class="md-nav__icon md-icon"></span>
+        layers
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../layers/DenseBlock/" class="md-nav__link">
+      DenseBlock
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../layers/DenseStack/" class="md-nav__link">
+      DenseStack
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../layers/ColwiseMult/" class="md-nav__link">
+      ColwiseMult
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../layers/SharedDispersion/" class="md-nav__link">
+      SharedDispersion
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../layers/Constant/" class="md-nav__link">
+      Constant
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../layers/PseudoInputs/" class="md-nav__link">
+      PseudoInputs
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-5" type="checkbox" id="nav-2-5" >
+    <label class="md-nav__link" for="nav-2-5">
+      losses
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="losses" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-5">
+        <span class="md-nav__icon md-icon"></span>
+        losses
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../losses/NegativeBinomial/" class="md-nav__link">
+      NegativeBinomial
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../losses/ZINB/" class="md-nav__link">
+      ZINB
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../losses/MaximumMeanDiscrepancy/" class="md-nav__link">
+      MaximumMeanDiscrepancy
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../losses/TopologicalSignatureDistance/" class="md-nav__link">
+      TopologicalSignatureDistance
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../losses/get/" class="md-nav__link">
+      get
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6" >
+    <label class="md-nav__link" for="nav-2-6">
+      callbacks
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="callbacks" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-6">
+        <span class="md-nav__icon md-icon"></span>
+        callbacks
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../callbacks/IncreaseKLDOnEpoch/" class="md-nav__link">
+      IncreaseKLDOnEpoch
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../callbacks/KLDivergenceScheduler/" class="md-nav__link">
+      KLDivergenceScheduler
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder" class="md-nav__link">
+    NegativeBinomialAutoencoder
+  </a>
+  
+    <nav class="md-nav" aria-label="NegativeBinomialAutoencoder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.call" class="md-nav__link">
+    call()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.compile" class="md-nav__link">
+    compile()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.fit" class="md-nav__link">
+    fit()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latent.models.ae.NegativeBinomialAutoencoder.transform" class="md-nav__link">
+    transform()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="negativebinomialautoencoder">NegativeBinomialAutoencoder</h1>
+<div class="doc doc-object doc-class">
+<h3 class="doc doc-heading" id="latent.models.ae.NegativeBinomialAutoencoder">
+
+        <code>latent.models.ae.NegativeBinomialAutoencoder</code>
+
+
+      </h3>
+<div class="doc doc-contents first">
+<p>Autoencoder with fixed negative binomial decoder and reconstruction loss.</p>
+<div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h4 class="doc doc-heading" id="latent.models.ae.NegativeBinomialAutoencoder.__init__">
+
+        <code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'nb_autoencoder'</span><span class="p">,</span> <span class="n">x_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">encoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">decoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">use_conditions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dispersion</span><span class="o">=</span><span class="s1">'constant'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+      </h4>
+<div class="doc doc-contents ">
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>encoder</code></td>
+<td><code>Model</code></td>
+<td>
+<p>Keras/tensorflow model object that inputs the data and outputs the
+latent space. If not provided, a default model will be constructed from
+the arguments.</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>str</code></td>
+<td>
+<p>String indicating the name of the model.</p>
+</td>
+<td><code>'nb_autoencoder'</code></td>
+</tr>
+<tr>
+<td><code>x_dim</code></td>
+<td><code>int</code></td>
+<td>
+<p>Integer indicating the number of features in the input data.</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>latent_dim</code></td>
+<td><code>int</code></td>
+<td>
+<p>Integer indicating the number of dimensions in the latent space.</p>
+</td>
+<td><code>50</code></td>
+</tr>
+<tr>
+<td><code>encoder_units</code></td>
+<td><code>Iterable[int]</code></td>
+<td>
+<p>Integer list indicating the number of units of the encoder
+layers. Only used if <code>encoder</code> is not provided.</p>
+</td>
+<td><code>[128, 128]</code></td>
+</tr>
+<tr>
+<td><code>decoder_units</code></td>
+<td><code>Iterable[int]</code></td>
+<td>
+<p>An integer list indicating the number of units of the decoder
+layers. Only used if <code>decoder</code> is not provided.</p>
+</td>
+<td><code>[128, 128]</code></td>
+</tr>
+<tr>
+<td><code>use_conditions</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Boolean, whether to force the unpacking of conditions from the
+inputs.</p>
+</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>dispersion</code></td>
+<td><code>Union[Literal['gene', 'cell-gene', 'constant'], float]</code></td>
+<td>
+<p>One of the following:</p>
+<ul>
+<li><code>'gene'</code> - dispersion parameter of NB is constant per gene across
+    cells</li>
+<li><code>'cell-gene'</code> - dispersion can differ for every gene in every cell</li>
+<li><code>'constant'</code> - dispersion is constant across all genes and cells</li>
+<li><code>float</code> - numeric value of fixed dispersion parameter</li>
+</ul>
+</td>
+<td><code>'constant'</code></td>
+</tr>
+<tr>
+<td><code>**kwargs</code></td>
+<td><code></code></td>
+<td>
+<p>Other arguments passed on to <code>DenseStack</code> for constructung
+encoder/decoder networks.</p>
+</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h4 class="doc doc-heading" id="latent.models.ae.NegativeBinomialAutoencoder.call">
+
+        <code class="highlight language-python">
+call<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>        </code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
+  </span>
+
+      </h4>
+<div class="doc doc-contents ">
+<p>Full forward pass through model</p>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h4 class="doc doc-heading" id="latent.models.ae.NegativeBinomialAutoencoder.compile">
+
+        <code class="highlight language-python">
+compile<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">'adam'</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
+  </span>
+
+      </h4>
+<div class="doc doc-contents ">
+<p>Configures the model for training.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>optimizer</code></td>
+<td><code></code></td>
+<td>
+<p>String (name of optimizer) or optimizer instance. See
+<code>tf.keras.optimizers</code>.</p>
+</td>
+<td><code>'adam'</code></td>
+</tr>
+<tr>
+<td><code>loss</code></td>
+<td><code></code></td>
+<td>
+<p>String (name of objective function), objective function or
+<code>tf.keras.losses.Loss</code> instance. See <code>tf.keras.losses</code>. An objective
+function is any callable with the signature <code>loss = fn(y_true,
+y_pred)</code>, where y_true = ground truth values with shape =
+<code>[batch_size, d0, .. dN]</code>, except sparse loss functions such as sparse
+categorical crossentropy where shape = <code>[batch_size, d0, .. dN-1]</code>.
+y_pred = predicted values with shape = <code>[batch_size, d0, .. dN]</code>. It
+returns a weighted loss float tensor. If a custom <code>Loss</code> instance is
+used and reduction is set to NONE, return value has the shape
+[batch_size, d0, .. dN-1] ie. per-sample or per-timestep loss values;
+otherwise, it is a scalar. If the model has multiple outputs, you can
+use a different loss on each output by passing a dictionary or a list
+of losses. The loss value that will be minimized by the model will
+then be the sum of all individual losses.</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>metrics</code></td>
+<td><code></code></td>
+<td>
+<p>List of metrics to be evaluated by the model during training
+and testing. Each of this can be a string (name of a built-in
+function), function or a <code>tf.keras.metrics.Metric</code> instance. See
+<code>tf.keras.metrics</code>. Typically you will use <code>metrics=['accuracy']</code>. A
+function is any callable with the signature <code>result = fn(y_true,
+y_pred)</code>. To specify different metrics for different outputs of a
+multi-output model, you could also pass a dictionary, such as
+<code>metrics={'output_a': 'accuracy', 'output_b': ['accuracy', 'mse']}</code>.
+  You can also pass a list (len = len(outputs)) of lists of metrics
+  such as <code>metrics=[['accuracy'], ['accuracy', 'mse']]</code> or
+  <code>metrics=['accuracy', ['accuracy', 'mse']]</code>. When you pass the
+  strings 'accuracy' or 'acc', we convert this to one of
+  <code>tf.keras.metrics.BinaryAccuracy</code>,
+  <code>tf.keras.metrics.CategoricalAccuracy</code>,
+  <code>tf.keras.metrics.SparseCategoricalAccuracy</code> based on the loss
+  function used and the model output shape. We do a similar
+  conversion for the strings 'crossentropy' and 'ce' as well.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>loss_weights</code></td>
+<td><code></code></td>
+<td>
+<p>Optional list or dictionary specifying scalar coefficients
+(Python floats) to weight the loss contributions of different model
+outputs. The loss value that will be minimized by the model will then
+be the <em>weighted sum</em> of all individual losses, weighted by the
+<code>loss_weights</code> coefficients.
+If a list, it is expected to have a 1:1 mapping to the model's
+  outputs. If a dict, it is expected to map output names (strings)
+  to scalar coefficients.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>weighted_metrics</code></td>
+<td><code></code></td>
+<td>
+<p>List of metrics to be evaluated and weighted by
+sample_weight or class_weight during training and testing.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>run_eagerly</code></td>
+<td><code></code></td>
+<td>
+<p>Bool. Defaults to <code>False</code>. If <code>True</code>, this <code>Model</code>'s
+logic will not be wrapped in a <code>tf.function</code>. Recommended to leave
+this as <code>None</code> unless your <code>Model</code> cannot be run inside a
+<code>tf.function</code>.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>**kwargs</code></td>
+<td><code></code></td>
+<td>
+<p>Any additional arguments. Supported arguments:
+- <code>experimental_steps_per_execution</code>: Int. The number of batches to
+  run during each <code>tf.function</code> call. Running multiple batches
+  inside a single <code>tf.function</code> call can greatly improve performance
+  on TPUs or small models with a large Python overhead. Note that if
+  this value is set to <code>N</code>, <code>Callback.on_batch</code> methods will only be
+  called every <code>N</code> batches. This currently defaults to <code>1</code>. At most,
+  one full epoch will be run each execution. If a number larger than
+  the size of the epoch is passed, the execution will be truncated
+  to the size of the epoch.
+- <code>sample_weight_mode</code> for backward compatibility.</p>
+</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exceptions:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ValueError</code></td>
+<td>
+<p>In case of invalid arguments for
+<code>optimizer</code>, <code>loss</code> or <code>metrics</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h4 class="doc doc-heading" id="latent.models.ae.NegativeBinomialAutoencoder.fit">
+
+        <code class="highlight language-python">
+fit<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
+  </span>
+
+      </h4>
+<div class="doc doc-contents ">
+<p>Trains the model for a fixed number of epochs (iterations on a dataset).</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td><code></code></td>
+<td>
+<p>Input data. It could be:
+- A Numpy array (or array-like), or a list of arrays
+(in case the model has multiple inputs).
+- A TensorFlow tensor, or a list of tensors
+(in case the model has multiple inputs).
+- A dict mapping input names to the corresponding array/tensors,
+if the model has named inputs.
+- A <code>tf.data</code> dataset. Should return a tuple
+of either <code>(inputs, targets)</code> or
+<code>(inputs, targets, sample_weights)</code>.
+- A generator or <code>keras.utils.Sequence</code> returning <code>(inputs, targets)</code>
+or <code>(inputs, targets, sample_weights)</code>.
+A more detailed description of unpacking behavior for iterator types
+(Dataset, generator, Sequence) is given below.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td><code></code></td>
+<td>
+<p>Target data. Like the input data <code>x</code>,
+it could be either Numpy array(s) or TensorFlow tensor(s).
+It should be consistent with <code>x</code> (you cannot have Numpy inputs and
+tensor targets, or inversely). If <code>x</code> is a dataset, generator,
+or <code>keras.utils.Sequence</code> instance, <code>y</code> should
+not be specified (since targets will be obtained from <code>x</code>).</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>batch_size</code></td>
+<td><code></code></td>
+<td>
+<p>Integer or <code>None</code>.
+Number of samples per gradient update.
+If unspecified, <code>batch_size</code> will default to 32.
+Do not specify the <code>batch_size</code> if your data is in the
+form of datasets, generators, or <code>keras.utils.Sequence</code> instances
+(since they generate batches).</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>epochs</code></td>
+<td><code></code></td>
+<td>
+<p>Integer. Number of epochs to train the model.
+An epoch is an iteration over the entire <code>x</code> and <code>y</code>
+data provided.
+Note that in conjunction with <code>initial_epoch</code>,
+<code>epochs</code> is to be understood as "final epoch".
+The model is not trained for a number of iterations
+given by <code>epochs</code>, but merely until the epoch
+of index <code>epochs</code> is reached.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td><code></code></td>
+<td>
+<p>0, 1, or 2. Verbosity mode.
+0 = silent, 1 = progress bar, 2 = one line per epoch.
+Note that the progress bar is not particularly useful when
+logged to a file, so verbose=2 is recommended when not running
+interactively (eg, in a production environment).</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>callbacks</code></td>
+<td><code></code></td>
+<td>
+<p>List of <code>keras.callbacks.Callback</code> instances.
+List of callbacks to apply during training.
+See <code>tf.keras.callbacks</code>.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>validation_split</code></td>
+<td><code></code></td>
+<td>
+<p>Float between 0 and 1.
+Fraction of the training data to be used as validation data.
+The model will set apart this fraction of the training data,
+will not train on it, and will evaluate
+the loss and any model metrics
+on this data at the end of each epoch.
+The validation data is selected from the last samples
+in the <code>x</code> and <code>y</code> data provided, before shuffling. This argument is
+not supported when <code>x</code> is a dataset, generator or
+<code>keras.utils.Sequence</code> instance.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>validation_data</code></td>
+<td><code></code></td>
+<td>
+<p>Data on which to evaluate
+the loss and any model metrics at the end of each epoch.
+The model will not be trained on this data. Thus, note the fact
+that the validation loss of data provided using <code>validation_split</code>
+or <code>validation_data</code> is not affected by regularization layers like
+noise and dropuout.
+<code>validation_data</code> will override <code>validation_split</code>.
+<code>validation_data</code> could be:
+  - tuple <code>(x_val, y_val)</code> of Numpy arrays or tensors
+  - tuple <code>(x_val, y_val, val_sample_weights)</code> of Numpy arrays
+  - dataset
+For the first two cases, <code>batch_size</code> must be provided.
+For the last case, <code>validation_steps</code> could be provided.
+Note that <code>validation_data</code> does not support all the data types that
+are supported in <code>x</code>, eg, dict, generator or <code>keras.utils.Sequence</code>.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>shuffle</code></td>
+<td><code></code></td>
+<td>
+<p>Boolean (whether to shuffle the training data
+before each epoch) or str (for 'batch'). This argument is ignored
+when <code>x</code> is a generator. 'batch' is a special option for dealing
+with the limitations of HDF5 data; it shuffles in batch-sized
+chunks. Has no effect when <code>steps_per_epoch</code> is not <code>None</code>.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>class_weight</code></td>
+<td><code></code></td>
+<td>
+<p>Optional dictionary mapping class indices (integers)
+to a weight (float) value, used for weighting the loss function
+(during training only).
+This can be useful to tell the model to
+"pay more attention" to samples from
+an under-represented class.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>sample_weight</code></td>
+<td><code></code></td>
+<td>
+<p>Optional Numpy array of weights for
+the training samples, used for weighting the loss function
+(during training only). You can either pass a flat (1D)
+Numpy array with the same length as the input samples
+(1:1 mapping between weights and samples),
+or in the case of temporal data,
+you can pass a 2D array with shape
+<code>(samples, sequence_length)</code>,
+to apply a different weight to every timestep of every sample. This
+argument is not supported when <code>x</code> is a dataset, generator, or
+<code>keras.utils.Sequence</code> instance, instead provide the sample_weights
+as the third element of <code>x</code>.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>initial_epoch</code></td>
+<td><code></code></td>
+<td>
+<p>Integer.
+Epoch at which to start training
+(useful for resuming a previous training run).</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>steps_per_epoch</code></td>
+<td><code></code></td>
+<td>
+<p>Integer or <code>None</code>.
+Total number of steps (batches of samples)
+before declaring one epoch finished and starting the
+next epoch. When training with input tensors such as
+TensorFlow data tensors, the default <code>None</code> is equal to
+the number of samples in your dataset divided by
+the batch size, or 1 if that cannot be determined. If x is a
+<code>tf.data</code> dataset, and 'steps_per_epoch'
+is None, the epoch will run until the input dataset is exhausted.
+When passing an infinitely repeating dataset, you must specify the
+<code>steps_per_epoch</code> argument. This argument is not supported with
+array inputs.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>validation_steps</code></td>
+<td><code></code></td>
+<td>
+<p>Only relevant if <code>validation_data</code> is provided and
+is a <code>tf.data</code> dataset. Total number of steps (batches of
+samples) to draw before stopping when performing validation
+at the end of every epoch. If 'validation_steps' is None, validation
+will run until the <code>validation_data</code> dataset is exhausted. In the
+case of an infinitely repeated dataset, it will run into an
+infinite loop. If 'validation_steps' is specified and only part of
+the dataset will be consumed, the evaluation will start from the
+beginning of the dataset at each epoch. This ensures that the same
+validation samples are used every time.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>validation_batch_size</code></td>
+<td><code></code></td>
+<td>
+<p>Integer or <code>None</code>.
+Number of samples per validation batch.
+If unspecified, will default to <code>batch_size</code>.
+Do not specify the <code>validation_batch_size</code> if your data is in the
+form of datasets, generators, or <code>keras.utils.Sequence</code> instances
+(since they generate batches).</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>validation_freq</code></td>
+<td><code></code></td>
+<td>
+<p>Only relevant if validation data is provided. Integer
+or <code>collections_abc.Container</code> instance (e.g. list, tuple, etc.).
+If an integer, specifies how many training epochs to run before a
+new validation run is performed, e.g. <code>validation_freq=2</code> runs
+validation every 2 epochs. If a Container, specifies the epochs on
+which to run validation, e.g. <code>validation_freq=[1, 2, 10]</code> runs
+validation at the end of the 1st, 2nd, and 10th epochs.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>max_queue_size</code></td>
+<td><code></code></td>
+<td>
+<p>Integer. Used for generator or <code>keras.utils.Sequence</code>
+input only. Maximum size for the generator queue.
+If unspecified, <code>max_queue_size</code> will default to 10.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>workers</code></td>
+<td><code></code></td>
+<td>
+<p>Integer. Used for generator or <code>keras.utils.Sequence</code> input
+only. Maximum number of processes to spin up
+when using process-based threading. If unspecified, <code>workers</code>
+will default to 1. If 0, will execute the generator on the main
+thread.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>use_multiprocessing</code></td>
+<td><code></code></td>
+<td>
+<p>Boolean. Used for generator or
+<code>keras.utils.Sequence</code> input only. If <code>True</code>, use process-based
+threading. If unspecified, <code>use_multiprocessing</code> will default to
+<code>False</code>. Note that because this implementation relies on
+multiprocessing, you should not pass non-picklable arguments to
+the generator as they can't be passed easily to children processes.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<p>Unpacking behavior for iterator-like inputs:
+    A common pattern is to pass a tf.data.Dataset, generator, or
+  tf.keras.utils.Sequence to the <code>x</code> argument of fit, which will in fact
+  yield not only features (x) but optionally targets (y) and sample weights.
+  Keras requires that the output of such iterator-likes be unambiguous. The
+  iterator should return a tuple of length 1, 2, or 3, where the optional
+  second and third elements will be used for y and sample_weight
+  respectively. Any other type provided will be wrapped in a length one
+  tuple, effectively treating everything as 'x'. When yielding dicts, they
+  should still adhere to the top-level tuple structure.
+  e.g. <code>({"x0": x0, "x1": x1}, y)</code>. Keras will not attempt to separate
+  features, targets, and weights from the keys of a single dict.
+    A notable unsupported data type is the namedtuple. The reason is that
+  it behaves like both an ordered datatype (tuple) and a mapping
+  datatype (dict). So given a namedtuple of the form:
+      <code>namedtuple("example_tuple", ["y", "x"])</code>
+  it is ambiguous whether to reverse the order of the elements when
+  interpreting the value. Even worse is a tuple of the form:
+      <code>namedtuple("other_tuple", ["x", "y", "z"])</code>
+  where it is unclear if the tuple was intended to be unpacked into x, y,
+  and sample_weight or passed through as a single element to <code>x</code>. As a
+  result the data processing code will simply raise a ValueError if it
+  encounters a namedtuple. (Along with instructions to remedy the issue.)</p>
+<p><strong>Returns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code></code></td>
+<td>
+<p>A <code>History</code> object. Its <code>History.history</code> attribute is
+a record of training loss values and metrics values
+at successive epochs, as well as validation loss values
+and validation metrics values (if applicable).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exceptions:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RuntimeError</code></td>
+<td>
+<ol>
+<li>If the model was never compiled or,</li>
+</ol>
+</td>
+</tr>
+<tr>
+<td><code>ValueError</code></td>
+<td>
+<p>In case of mismatch between the provided input data
+and what the model expects.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h4 class="doc doc-heading" id="latent.models.ae.NegativeBinomialAutoencoder.transform">
+
+        <code class="highlight language-python">
+transform<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>        </code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
+  </span>
+
+      </h4>
+<div class="doc doc-contents ">
+<p>Map data (x) to latent space (z).</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inputs</code></td>
+<td><code></code></td>
+<td>
+<p>A numpy array with input data.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code></code></td>
+<td>
+<p>A numpy array with the coordinates of the input data in latent space.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../PoissonAutoencoder/" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                PoissonAutoencoder
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../ZINBAutoencoder/" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                ZINBAutoencoder
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../../assets/javascripts/vendor.0ac82a11.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.f81dfb4d.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      
+      <script>
+        app = initialize({
+          base: "../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../assets/javascripts/worker/search.4ac00218.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+    
+  </body>
+</html>
