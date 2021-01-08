@@ -53,7 +53,7 @@ class Autoencoder(keras.Model):
         self.latent_dim = int(latent_dim)
         self.x_dim = int(x_dim) if x_dim else None
         if not x_dim and not decoder:
-            raise ArgumentError('Either x_dim or decoder must be specified.')
+            raise ValueError('Either x_dim or decoder must be specified.')
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
         self.reconstruction_loss = reconstruction_loss
