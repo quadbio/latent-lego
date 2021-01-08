@@ -1,16 +1,24 @@
 ---
-site_name: Latent Lego
+site_name: LatentLego
 repo_name: quadbiolab/latent_lego
 theme:
   name: 'material'
   logo: assets/images/logo.svg
   favicon: assets/images/favicon.png
+  features:
+    - navigation.tabs
   palette:
     scheme: default
     primary: white
     accent: amber
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
 nav:
-  - Home: index.md
+  - Home:
+      - About: index.md
+      - Quickstart: quickstart.md
   - API Reference:
       models:
         ae:
