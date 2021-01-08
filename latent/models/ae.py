@@ -51,7 +51,7 @@ class Autoencoder(keras.Model):
         """
         super().__init__(name=name)
         self.latent_dim = int(latent_dim)
-        self.x_dim = int(x_dim)
+        self.x_dim = int(x_dim) if x_dim else None
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
         self.reconstruction_loss = reconstruction_loss
