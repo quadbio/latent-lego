@@ -1,6 +1,7 @@
 # Stuff
 play/
 repos/
+docs/notebooks/data/
 
 # Hidden
 .DS_Store
