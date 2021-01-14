@@ -1,7 +1,10 @@
 # Stuff
 play/
 repos/
+
+# Notebooks
 docs/notebooks/data/
+*.ipynb_checkpoints/
 
 # Hidden
 .DS_Store
