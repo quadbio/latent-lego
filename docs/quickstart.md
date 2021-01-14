@@ -42,15 +42,14 @@ The second way to define a model with LatentLego is to pick any of the provided 
 from latent.modules import VariationalEncoder, NegativeBinomialDecoder
 
 # Creates a VariationalEncoder with a standard normal prior
-encoder = VariationalEncoder(prior='normal', kld_weight=0.01)
+encoder = VariationalEncoder(latent_dim=20, prior='normal', kld_weight=0.01)
 # Creates a NegativeBinomialDecoder with a constant dispersion estimate
-decoder = NegativeBinomialDecoder(dispersion='constant', x_dim=x_train.shape[1])
+decoder = NegativeBinomialDecoder(x_dim=x_train.shape[1], dispersion='constant')
 
 # Constructs an Autoencoder object with predefined encoder and decoder
 ae = Autoencoder(
 	encoder=encoder,
-	decoder=decoder,
-	latent_dim=20
+	decoder=decoder
 )
 ae.compile()
 

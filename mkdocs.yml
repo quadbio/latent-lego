@@ -67,6 +67,8 @@ nav:
       callbacks:
         IncreaseKLDOnEpoch: api/callbacks/IncreaseKLDOnEpoch.md
         KLDivergenceScheduler: api/callbacks/KLDivergenceScheduler.md
+  - Notebooks:
+      - Integration: notebooks/integration.ipynb
 plugins:
   - search
   - mkdocstrings:
@@ -79,3 +81,6 @@ plugins:
             show_root_heading: true
             heading_level: 3
             show_source: false
+  - mknotebooks:
+      enable_default_jupyter_cell_styling: false
+      enable_default_pandas_dataframe_styling: false
