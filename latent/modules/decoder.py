@@ -22,7 +22,7 @@ class Decoder(keras.Model):
         x_dim: int,
         name: str = 'decoder',
         hidden_units: Iterable[int] = [128, 128],
-        reconstruction_loss: Callable = None,
+        reconstruction_loss: Union[Callable, str] = None,
         loss_name: str = 'rec_loss',
         initializer: Union[str, Callable] = 'glorot_normal',
         **kwargs
