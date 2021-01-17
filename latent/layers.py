@@ -138,7 +138,7 @@ class DenseStack(layers.Layer):
 # Utility layers
 class RowwiseMult(layers.Layer):
     """Performs row-wise multiplication between input vectors."""
-    def __init__(self, name: str = 'colwise_mult'):
+    def __init__(self, name: str = None):
         """
         Arguments:
             name: String indicating the name of the layer.

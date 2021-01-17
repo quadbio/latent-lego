@@ -10,18 +10,18 @@
       
       
       <link rel="shortcut icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.1.7">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.4">
     
     
       
-        <title>ZINBVAE - Latent Lego</title>
+        <title>ZINBVAE - LatentLego</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.19753c6b.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.15aa0b43.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.196e0c26.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.75751829.min.css">
         
           
           
@@ -33,12 +33,16 @@
     
       
         
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
         <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
       
     
     
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="../../../css/ansi-colours.css">
     
     
       
@@ -55,6 +59,7 @@
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="amber">
       
   
+    
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -74,7 +79,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid" aria-label="Header">
-    <a href="../../.." title="Latent Lego" class="md-header-nav__button md-logo" aria-label="Latent Lego">
+    <a href="../../.." title="LatentLego" class="md-header-nav__button md-logo" aria-label="LatentLego">
       
   <img src="../../../assets/images/logo.svg" alt="logo">
 
@@ -83,18 +88,20 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
     </label>
     <div class="md-header-nav__title" data-md-component="header-title">
-      
-        <div class="md-header-nav__ellipsis">
-          <span class="md-header-nav__topic md-ellipsis">
-            Latent Lego
+      <div class="md-header-nav__ellipsis">
+        <div class="md-header-nav__topic">
+          <span class="md-ellipsis">
+            LatentLego
           </span>
-          <span class="md-header-nav__topic md-ellipsis">
+        </div>
+        <div class="md-header-nav__topic">
+          <span class="md-ellipsis">
             
               ZINBVAE
             
           </span>
         </div>
-      
+      </div>
     </div>
     
       <label class="md-header-nav__button md-icon" for="__search">
@@ -135,24 +142,103 @@
       
       
         
+          
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        Home
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../Autoencoder/" class="md-tabs__link md-tabs__link--active">
+        API Reference
+      </a>
+    </li>
+  
+
+  
+
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../notebooks/integration/" class="md-tabs__link">
+        Notebooks
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+        
       
       <main class="md-main" data-md-component="main">
         <div class="md-main__inner md-grid">
           
             
-              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Latent Lego" class="md-nav__button md-logo" aria-label="Latent Lego">
+    <a href="../../.." title="LatentLego" class="md-nav__button md-logo" aria-label="LatentLego">
       
   <img src="../../../assets/images/logo.svg" alt="logo">
 
     </a>
-    Latent Lego
+    LatentLego
   </label>
   
   <ul class="md-nav__list" data-md-scrollfix>
@@ -162,10 +248,53 @@
       
 
 
+
+  
+  <li class="md-nav__item md-nav__item--nested">
+    
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-1" type="checkbox" id="nav-1" >
+    
+    <label class="md-nav__link" for="nav-1">
+      Home
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Home" data-md-level="1">
+      <label class="md-nav__title" for="nav-1">
+        <span class="md-nav__icon md-icon"></span>
+        Home
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+
   <li class="md-nav__item">
     <a href="../../.." class="md-nav__link">
-      Home
+      About
     </a>
+  </li>
+
+        
+          
+          
+          
+
+
+
+  <li class="md-nav__item">
+    <a href="../../../quickstart/" class="md-nav__link">
+      Quickstart
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
   </li>
 
     
@@ -173,12 +302,16 @@
       
       
 
+
   
 
 
+  
   <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
     <label class="md-nav__link" for="nav-2">
       API Reference
       <span class="md-nav__icon md-icon"></span>
@@ -195,12 +328,16 @@
           
           
 
+
   
 
 
+  
   <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1" checked>
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1" checked>
+    
     <label class="md-nav__link" for="nav-2-1">
       models
       <span class="md-nav__icon md-icon"></span>
@@ -218,9 +355,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-1" type="checkbox" id="nav-2-1-1" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-1" type="checkbox" id="nav-2-1-1" >
+    
     <label class="md-nav__link" for="nav-2-1-1">
       ae
       <span class="md-nav__icon md-icon"></span>
@@ -238,6 +379,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../Autoencoder/" class="md-nav__link">
       Autoencoder
@@ -248,6 +390,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -262,6 +405,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../NegativeBinomialAutoencoder/" class="md-nav__link">
       NegativeBinomialAutoencoder
@@ -274,6 +418,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../ZINBAutoencoder/" class="md-nav__link">
       ZINBAutoencoder
@@ -284,6 +429,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -302,12 +448,16 @@
           
           
 
+
   
 
 
+  
   <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-2" type="checkbox" id="nav-2-1-2" checked>
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-2" type="checkbox" id="nav-2-1-2" checked>
+    
     <label class="md-nav__link" for="nav-2-1-2">
       vae
       <span class="md-nav__icon md-icon"></span>
@@ -325,6 +475,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../VariationalAutoencoder/" class="md-nav__link">
       VariationalAutoencoder
@@ -335,6 +486,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -349,6 +501,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../NegativeBinomialVAE/" class="md-nav__link">
       NegativeBinomialVAE
@@ -359,6 +512,7 @@
           
           
           
+
 
   
 
@@ -452,6 +606,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../TopologicalVariationalAutoencoder/" class="md-nav__link">
       TopologicalVariationalAutoencoder
@@ -469,9 +624,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-3" type="checkbox" id="nav-2-1-3" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-3" type="checkbox" id="nav-2-1-3" >
+    
     <label class="md-nav__link" for="nav-2-1-3">
       twae
       <span class="md-nav__icon md-icon"></span>
@@ -487,6 +646,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -511,9 +671,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2" type="checkbox" id="nav-2-2" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2" type="checkbox" id="nav-2-2" >
+    
     <label class="md-nav__link" for="nav-2-2">
       modules
       <span class="md-nav__icon md-icon"></span>
@@ -531,9 +695,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-1" type="checkbox" id="nav-2-2-1" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-1" type="checkbox" id="nav-2-2-1" >
+    
     <label class="md-nav__link" for="nav-2-2-1">
       encoder
       <span class="md-nav__icon md-icon"></span>
@@ -551,6 +719,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../modules/Encoder/" class="md-nav__link">
       Encoder
@@ -561,6 +730,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -575,6 +745,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../modules/TopologicalEncoder/" class="md-nav__link">
       TopologicalEncoder
@@ -585,6 +756,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -604,9 +776,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-2" type="checkbox" id="nav-2-2-2" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-2" type="checkbox" id="nav-2-2-2" >
+    
     <label class="md-nav__link" for="nav-2-2-2">
       decoder
       <span class="md-nav__icon md-icon"></span>
@@ -624,6 +800,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../modules/Decoder/" class="md-nav__link">
       Decoder
@@ -634,6 +811,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -648,6 +826,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../modules/NegativeBinomialDecoder/" class="md-nav__link">
       NegativeBinomialDecoder
@@ -658,6 +837,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -682,9 +862,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-3" type="checkbox" id="nav-2-3" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-3" type="checkbox" id="nav-2-3" >
+    
     <label class="md-nav__link" for="nav-2-3">
       activations
       <span class="md-nav__icon md-icon"></span>
@@ -702,6 +886,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../activations/clipped_exp/" class="md-nav__link">
       clipped_exp
@@ -714,6 +899,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../activations/clipped_softplus/" class="md-nav__link">
       clipped_softplus
@@ -724,6 +910,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -743,9 +930,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4" >
+    
     <label class="md-nav__link" for="nav-2-4">
       layers
       <span class="md-nav__icon md-icon"></span>
@@ -763,6 +954,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../layers/DenseBlock/" class="md-nav__link">
       DenseBlock
@@ -773,6 +965,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -787,9 +980,10 @@
           
 
 
+
   <li class="md-nav__item">
-    <a href="../../layers/ColwiseMult/" class="md-nav__link">
-      ColwiseMult
+    <a href="../../layers/RowwiseMult/" class="md-nav__link">
+      RowwiseMult
     </a>
   </li>
 
@@ -797,6 +991,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -811,6 +1006,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../layers/Constant/" class="md-nav__link">
       Constant
@@ -821,6 +1017,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -840,9 +1037,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-5" type="checkbox" id="nav-2-5" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-5" type="checkbox" id="nav-2-5" >
+    
     <label class="md-nav__link" for="nav-2-5">
       losses
       <span class="md-nav__icon md-icon"></span>
@@ -860,6 +1061,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../losses/NegativeBinomial/" class="md-nav__link">
       NegativeBinomial
@@ -870,6 +1072,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -884,6 +1087,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../losses/MaximumMeanDiscrepancy/" class="md-nav__link">
       MaximumMeanDiscrepancy
@@ -896,6 +1100,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../losses/TopologicalSignatureDistance/" class="md-nav__link">
       TopologicalSignatureDistance
@@ -906,6 +1111,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -925,9 +1131,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6" >
+    
     <label class="md-nav__link" for="nav-2-6">
       callbacks
       <span class="md-nav__icon md-icon"></span>
@@ -945,6 +1155,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="../../callbacks/IncreaseKLDOnEpoch/" class="md-nav__link">
       IncreaseKLDOnEpoch
@@ -955,6 +1166,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -974,6 +1186,48 @@
   </li>
 
     
+      
+      
+      
+
+
+
+  
+  <li class="md-nav__item md-nav__item--nested">
+    
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" >
+    
+    <label class="md-nav__link" for="nav-3">
+      Notebooks
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Notebooks" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        <span class="md-nav__icon md-icon"></span>
+        Notebooks
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+
+  <li class="md-nav__item">
+    <a href="../../../notebooks/integration/" class="md-nav__link">
+      Integration
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
   </ul>
 </nav>
                   </div>
@@ -981,7 +1235,8 @@
               </div>
             
             
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -1065,6 +1320,7 @@
         <code>latent.models.vae.ZINBVAE</code>
 
 
+
       </h3>
 <div class="doc doc-contents first">
 <p>Zero-inflated negative binomial variational autoencoder with fixed variational
@@ -1073,8 +1329,7 @@ encoder and ZINB decoder networks.</p>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.ZINBVAE.__init__">
 
-        <code class="highlight language-python">
-__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'nb_vae'</span><span class="p">,</span> <span class="n">x_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">encoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">decoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">reconstruction_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_conditions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dispersion</span><span class="o">=</span><span class="s1">'constant'</span><span class="p">,</span> <span class="n">kld_weight</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="s1">'normal'</span><span class="p">,</span> <span class="n">latent_dist</span><span class="o">=</span><span class="s1">'independent'</span><span class="p">,</span> <span class="n">iaf_units</span><span class="o">=</span><span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">n_pseudoinputs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'nb_vae'</span><span class="p">,</span> <span class="n">x_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">encoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">decoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">reconstruction_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_conditions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dispersion</span><span class="o">=</span><span class="s1">'constant'</span><span class="p">,</span> <span class="n">kld_weight</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="s1">'normal'</span><span class="p">,</span> <span class="n">latent_dist</span><span class="o">=</span><span class="s1">'independent'</span><span class="p">,</span> <span class="n">iaf_units</span><span class="o">=</span><span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">n_pseudoinputs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1251,8 +1506,7 @@ decoder networks.</p>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.ZINBVAE.call">
 
-        <code class="highlight language-python">
-call<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>        </code>
+<code class="highlight language-python"><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -1266,8 +1520,7 @@ call<span class="p">(</span><span class="bp">self</span><span class="p">,</span>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.ZINBVAE.compile">
 
-        <code class="highlight language-python">
-compile<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">'adam'</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+<code class="highlight language-python"><span class="nb">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">'adam'</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -1377,20 +1630,28 @@ this as <code>None</code> unless your <code>Model</code> cannot be run inside a
 <td><em>required</em></td>
 </tr>
 <tr>
+<td><code>steps_per_execution</code></td>
+<td><code></code></td>
+<td>
+<p>Int. Defaults to 1. The number of batches to
+run during each <code>tf.function</code> call. Running multiple batches
+inside a single <code>tf.function</code> call can greatly improve performance
+on TPUs or small models with a large Python overhead.
+At most, one full epoch will be run each
+execution. If a number larger than the size of the epoch is passed,
+the execution will be truncated to the size of the epoch.
+Note that if <code>steps_per_execution</code> is set to <code>N</code>,
+<code>Callback.on_batch_begin</code> and <code>Callback.on_batch_end</code> methods
+will only be called every <code>N</code> batches
+(i.e. before/after each <code>tf.function</code> execution).</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
 <td><code>**kwargs</code></td>
 <td><code></code></td>
 <td>
-<p>Any additional arguments. Supported arguments:
-- <code>experimental_steps_per_execution</code>: Int. The number of batches to
-  run during each <code>tf.function</code> call. Running multiple batches
-  inside a single <code>tf.function</code> call can greatly improve performance
-  on TPUs or small models with a large Python overhead. Note that if
-  this value is set to <code>N</code>, <code>Callback.on_batch</code> methods will only be
-  called every <code>N</code> batches. This currently defaults to <code>1</code>. At most,
-  one full epoch will be run each execution. If a number larger than
-  the size of the epoch is passed, the execution will be truncated
-  to the size of the epoch.
-- <code>sample_weight_mode</code> for backward compatibility.</p>
+<p>Arguments supported for backwards compatibility only.</p>
 </td>
 <td><code>{}</code></td>
 </tr>
@@ -1419,8 +1680,7 @@ this as <code>None</code> unless your <code>Model</code> cannot be run inside a
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.ZINBVAE.fit">
 
-        <code class="highlight language-python">
-fit<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+<code class="highlight language-python"><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -1520,7 +1780,11 @@ interactively (eg, in a production environment).</p>
 <td>
 <p>List of <code>keras.callbacks.Callback</code> instances.
 List of callbacks to apply during training.
-See <code>tf.keras.callbacks</code>.</p>
+See <code>tf.keras.callbacks</code>. Note <code>tf.keras.callbacks.ProgbarLogger</code>
+and <code>tf.keras.callbacks.History</code> callbacks are created automatically
+and need not be passed into <code>model.fit</code>.
+<code>tf.keras.callbacks.ProgbarLogger</code> is created or not based on
+<code>verbose</code> argument to <code>model.fit</code>.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1550,7 +1814,7 @@ the loss and any model metrics at the end of each epoch.
 The model will not be trained on this data. Thus, note the fact
 that the validation loss of data provided using <code>validation_split</code>
 or <code>validation_data</code> is not affected by regularization layers like
-noise and dropuout.
+noise and dropout.
 <code>validation_data</code> will override <code>validation_split</code>.
 <code>validation_data</code> could be:
   - tuple <code>(x_val, y_val)</code> of Numpy arrays or tensors
@@ -1781,7 +2045,7 @@ and validation metrics values (if applicable).</p>
 <td><code>ValueError</code></td>
 <td>
 <p>In case of mismatch between the provided input data
-and what the model expects.</p>
+and what the model expects or when the input data is empty.</p>
 </td>
 </tr>
 </tbody>
@@ -1791,8 +2055,7 @@ and what the model expects.</p>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.ZINBVAE.transform">
 
-        <code class="highlight language-python">
-transform<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>        </code>
+<code class="highlight language-python"><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -1910,15 +2173,15 @@ transform<span class="p">(</span><span class="bp">self</span><span class="p">,</
       
     </div>
     
-      <script src="../../../assets/javascripts/vendor.0ac82a11.min.js"></script>
-      <script src="../../../assets/javascripts/bundle.f81dfb4d.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      <script src="../../../assets/javascripts/vendor.93c04032.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.83e5331e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
       
       <script>
         app = initialize({
           base: "../../..",
-          features: [],
+          features: ['navigation.tabs'],
           search: Object.assign({
-            worker: "../../../assets/javascripts/worker/search.4ac00218.min.js"
+            worker: "../../../assets/javascripts/worker/search.8c7e0a7e.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

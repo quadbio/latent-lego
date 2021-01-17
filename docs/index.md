@@ -6,6 +6,18 @@ LatentLego is a python library for building autoencoders for single-cell genomic
 
 ## Installation
 
+You can install LatentLego from [PyPI](https://pypi.org/project/latent/) using `pip`
+
+```python
+pip install latent
+```
+
+or install the development version from GitHub
+
+```python
+pip install git+https://github.com/quadbiolab/latent-lego
+```
+
 ## Overview
 
 LatentLego is designed to be a flexible kit for defining autoencoders by providing standard building blocks that can be freely assembled. Here's an overview:

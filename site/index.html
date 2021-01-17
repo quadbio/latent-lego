@@ -10,18 +10,18 @@
       
       
       <link rel="shortcut icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.1.7">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.4">
     
     
       
-        <title>Latent Lego</title>
+        <title>About - LatentLego</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.19753c6b.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.15aa0b43.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.196e0c26.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.75751829.min.css">
         
           
           
@@ -33,12 +33,16 @@
     
       
         
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
         <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
       
     
     
+    
+      <link rel="stylesheet" href="stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="css/ansi-colours.css">
     
     
       
@@ -55,13 +59,14 @@
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="amber">
       
   
+    
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
         
-        <a href="#latent-lego" class="md-skip">
+        <a href="#latentlego-flexible-latent-spaces-for-single-cells" class="md-skip">
           Skip to content
         </a>
       
@@ -74,7 +79,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid" aria-label="Header">
-    <a href="." title="Latent Lego" class="md-header-nav__button md-logo" aria-label="Latent Lego">
+    <a href="." title="LatentLego" class="md-header-nav__button md-logo" aria-label="LatentLego">
       
   <img src="assets/images/logo.svg" alt="logo">
 
@@ -83,18 +88,20 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
     </label>
     <div class="md-header-nav__title" data-md-component="header-title">
-      
-        <div class="md-header-nav__ellipsis">
-          <span class="md-header-nav__topic md-ellipsis">
-            Latent Lego
+      <div class="md-header-nav__ellipsis">
+        <div class="md-header-nav__topic">
+          <span class="md-ellipsis">
+            LatentLego
           </span>
-          <span class="md-header-nav__topic md-ellipsis">
+        </div>
+        <div class="md-header-nav__topic">
+          <span class="md-ellipsis">
             
-              Home
+              About
             
           </span>
         </div>
-      
+      </div>
     </div>
     
       <label class="md-header-nav__button md-icon" for="__search">
@@ -135,24 +142,103 @@
       
       
         
+          
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="." class="md-tabs__link md-tabs__link--active">
+        Home
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="api/models/Autoencoder/" class="md-tabs__link">
+        API Reference
+      </a>
+    </li>
+  
+
+  
+
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="notebooks/integration/" class="md-tabs__link">
+        Notebooks
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+        
       
       <main class="md-main" data-md-component="main">
         <div class="md-main__inner md-grid">
           
             
-              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="Latent Lego" class="md-nav__button md-logo" aria-label="Latent Lego">
+    <a href="." title="LatentLego" class="md-nav__button md-logo" aria-label="LatentLego">
       
   <img src="assets/images/logo.svg" alt="logo">
 
     </a>
-    Latent Lego
+    LatentLego
   </label>
   
   <ul class="md-nav__list" data-md-scrollfix>
@@ -160,6 +246,33 @@
       
       
       
+
+
+  
+
+
+  
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-1" type="checkbox" id="nav-1" checked>
+    
+    <label class="md-nav__link" for="nav-1">
+      Home
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Home" data-md-level="1">
+      <label class="md-nav__title" for="nav-1">
+        <span class="md-nav__icon md-icon"></span>
+        Home
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
 
   
 
@@ -172,12 +285,12 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        Home
+        About
         <span class="md-nav__icon md-icon"></span>
       </label>
     
     <a href="." class="md-nav__link md-nav__link--active">
-      Home
+      About
     </a>
     
       
@@ -194,8 +307,15 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#flexible-latent-space-generation-for-single-cell-genomics" class="md-nav__link">
-    Flexible latent space generation for single-cell genomics
+  <a href="#installation" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
   </a>
   
 </li>
@@ -206,15 +326,37 @@
     
   </li>
 
+        
+          
+          
+          
+
+
+
+  <li class="md-nav__item">
+    <a href="quickstart/" class="md-nav__link">
+      Quickstart
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
     
       
       
       
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" >
+    
     <label class="md-nav__link" for="nav-2">
       API Reference
       <span class="md-nav__icon md-icon"></span>
@@ -232,9 +374,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1" >
+    
     <label class="md-nav__link" for="nav-2-1">
       models
       <span class="md-nav__icon md-icon"></span>
@@ -252,9 +398,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-1" type="checkbox" id="nav-2-1-1" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-1" type="checkbox" id="nav-2-1-1" >
+    
     <label class="md-nav__link" for="nav-2-1-1">
       ae
       <span class="md-nav__icon md-icon"></span>
@@ -272,6 +422,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/models/Autoencoder/" class="md-nav__link">
       Autoencoder
@@ -282,6 +433,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -296,6 +448,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/models/NegativeBinomialAutoencoder/" class="md-nav__link">
       NegativeBinomialAutoencoder
@@ -308,6 +461,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/models/ZINBAutoencoder/" class="md-nav__link">
       ZINBAutoencoder
@@ -318,6 +472,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -337,9 +492,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-2" type="checkbox" id="nav-2-1-2" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-2" type="checkbox" id="nav-2-1-2" >
+    
     <label class="md-nav__link" for="nav-2-1-2">
       vae
       <span class="md-nav__icon md-icon"></span>
@@ -357,6 +516,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/models/VariationalAutoencoder/" class="md-nav__link">
       VariationalAutoencoder
@@ -367,6 +527,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -381,6 +542,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/models/NegativeBinomialVAE/" class="md-nav__link">
       NegativeBinomialVAE
@@ -393,6 +555,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/models/ZINBVAE/" class="md-nav__link">
       ZINBVAE
@@ -403,6 +566,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -422,9 +586,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-3" type="checkbox" id="nav-2-1-3" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1-3" type="checkbox" id="nav-2-1-3" >
+    
     <label class="md-nav__link" for="nav-2-1-3">
       twae
       <span class="md-nav__icon md-icon"></span>
@@ -440,6 +608,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -464,9 +633,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2" type="checkbox" id="nav-2-2" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2" type="checkbox" id="nav-2-2" >
+    
     <label class="md-nav__link" for="nav-2-2">
       modules
       <span class="md-nav__icon md-icon"></span>
@@ -484,9 +657,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-1" type="checkbox" id="nav-2-2-1" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-1" type="checkbox" id="nav-2-2-1" >
+    
     <label class="md-nav__link" for="nav-2-2-1">
       encoder
       <span class="md-nav__icon md-icon"></span>
@@ -504,6 +681,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/modules/Encoder/" class="md-nav__link">
       Encoder
@@ -514,6 +692,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -528,6 +707,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/modules/TopologicalEncoder/" class="md-nav__link">
       TopologicalEncoder
@@ -538,6 +718,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -557,9 +738,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-2" type="checkbox" id="nav-2-2-2" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2-2" type="checkbox" id="nav-2-2-2" >
+    
     <label class="md-nav__link" for="nav-2-2-2">
       decoder
       <span class="md-nav__icon md-icon"></span>
@@ -577,6 +762,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/modules/Decoder/" class="md-nav__link">
       Decoder
@@ -587,6 +773,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -601,6 +788,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/modules/NegativeBinomialDecoder/" class="md-nav__link">
       NegativeBinomialDecoder
@@ -611,6 +799,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -635,9 +824,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-3" type="checkbox" id="nav-2-3" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-3" type="checkbox" id="nav-2-3" >
+    
     <label class="md-nav__link" for="nav-2-3">
       activations
       <span class="md-nav__icon md-icon"></span>
@@ -655,6 +848,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/activations/clipped_exp/" class="md-nav__link">
       clipped_exp
@@ -667,6 +861,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/activations/clipped_softplus/" class="md-nav__link">
       clipped_softplus
@@ -677,6 +872,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -696,9 +892,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4" >
+    
     <label class="md-nav__link" for="nav-2-4">
       layers
       <span class="md-nav__icon md-icon"></span>
@@ -716,6 +916,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/layers/DenseBlock/" class="md-nav__link">
       DenseBlock
@@ -726,6 +927,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -740,9 +942,10 @@
           
 
 
+
   <li class="md-nav__item">
-    <a href="api/layers/ColwiseMult/" class="md-nav__link">
-      ColwiseMult
+    <a href="api/layers/RowwiseMult/" class="md-nav__link">
+      RowwiseMult
     </a>
   </li>
 
@@ -750,6 +953,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -764,6 +968,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/layers/Constant/" class="md-nav__link">
       Constant
@@ -774,6 +979,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -793,9 +999,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-5" type="checkbox" id="nav-2-5" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-5" type="checkbox" id="nav-2-5" >
+    
     <label class="md-nav__link" for="nav-2-5">
       losses
       <span class="md-nav__icon md-icon"></span>
@@ -813,6 +1023,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/losses/NegativeBinomial/" class="md-nav__link">
       NegativeBinomial
@@ -823,6 +1034,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -837,6 +1049,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/losses/MaximumMeanDiscrepancy/" class="md-nav__link">
       MaximumMeanDiscrepancy
@@ -849,6 +1062,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/losses/TopologicalSignatureDistance/" class="md-nav__link">
       TopologicalSignatureDistance
@@ -859,6 +1073,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -878,9 +1093,13 @@
           
 
 
+
+  
   <li class="md-nav__item md-nav__item--nested">
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6" >
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6" >
+    
     <label class="md-nav__link" for="nav-2-6">
       callbacks
       <span class="md-nav__icon md-icon"></span>
@@ -898,6 +1117,7 @@
           
 
 
+
   <li class="md-nav__item">
     <a href="api/callbacks/IncreaseKLDOnEpoch/" class="md-nav__link">
       IncreaseKLDOnEpoch
@@ -908,6 +1128,7 @@
           
           
           
+
 
 
   <li class="md-nav__item">
@@ -927,6 +1148,48 @@
   </li>
 
     
+      
+      
+      
+
+
+
+  
+  <li class="md-nav__item md-nav__item--nested">
+    
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" >
+    
+    <label class="md-nav__link" for="nav-3">
+      Notebooks
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Notebooks" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        <span class="md-nav__icon md-icon"></span>
+        Notebooks
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+
+  <li class="md-nav__item">
+    <a href="notebooks/integration/" class="md-nav__link">
+      Integration
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
   </ul>
 </nav>
                   </div>
@@ -934,7 +1197,8 @@
               </div>
             
             
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -951,8 +1215,15 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#flexible-latent-space-generation-for-single-cell-genomics" class="md-nav__link">
-    Flexible latent space generation for single-cell genomics
+  <a href="#installation" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
   </a>
   
 </li>
@@ -970,8 +1241,32 @@
               
                 
                 
-                <h1 id="latent-lego">Latent Lego</h1>
-<h2 id="flexible-latent-space-generation-for-single-cell-genomics">Flexible latent space generation for single-cell genomics</h2>
+                <h1 id="latentlego-flexible-latent-spaces-for-single-cells">LatentLego - flexible latent spaces for single cells</h1>
+<p><img src="assets/images/logo.png" align="right" width="250"/></p>
+<p>LatentLego is a python library for building autoencoders for single-cell genomics. It is build on top of <a href="https://www.tensorflow.org/">TensorFlow</a> and <a href="https://keras.io/">Keras</a> and provides modular components to build common single-cell autoencoder architectures. All individual comonents are valid Keras <code>Layer</code> or <code>Model</code> objects and therefore support model construction using the standard Keras (functional/sequential) API. There is also a model zoo of preconstructed models that understand builtin Keras methods like <code>.fit()</code> or <code>.predict()</code> and <code>.compile()</code> with custom loss functions.</p>
+<h2 id="installation">Installation</h2>
+<p>You can install LatentLego from <a href="https://pypi.org/project/latent/">PyPI</a> using <code>pip</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">pip</span> <span class="n">install</span> <span class="n">latent</span>
+</code></pre></div>
+<p>or install the development version from GitHub</p>
+<div class="highlight"><pre><span></span><code><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">quadbiolab</span><span class="o">/</span><span class="n">latent</span><span class="o">-</span><span class="n">lego</span>
+</code></pre></div>
+<h2 id="overview">Overview</h2>
+<p>LatentLego is designed to be a flexible kit for defining autoencoders by providing standard building blocks that can be freely assembled. Here's an overview:</p>
+<ul>
+<li>
+<p><code>latent.models</code> - Here you can find Keras-compatible implementations of common single-cell architectures, such as the <code>ZINBAutoencoder</code> (<a href="https://www.nature.com/articles/s41467-018-07931-2">Erslan 2019</a>) or the <code>NegativeBinomialVAE</code> (<a href="https://www.nature.com/articles/s41592-018-0229-2">Lopez 2018</a>). I also implemented some more experimental architectures like the <code>TopologicalAutoencoder</code> (<a href="https://arxiv.org/abs/1906.00722">Moor 2019</a>).</p>
+</li>
+<li>
+<p><code>latent.modules</code> - Here live the lower level building blocks of autoencoders, namely <code>encoder</code> and <code>decoder</code> models that can be freely assembled to produce autoencoder models. E.g., using a <code>VariationalEncoder</code> with a <code>PoissonDecoder</code> produces a <code>PoissonVAE</code>, a variational autoencoder with a poisson reconstruction loss.</p>
+</li>
+<li>
+<p><code>latent.layers</code> - These are the most basic building blocks of <code>encoder</code> and <code>decoder</code> models. In addition to the <code>DenseBlock</code>/<code>DenseStack</code> layers that are the core component of encoders and decoders, I implemeneted some other useful utility layers.</p>
+</li>
+<li>
+<p><code>latent.losses</code>, <code>latent.activations</code>, <code>latent.callbacks</code> - Keras-style components that are useful for single-cell data, like a <code>NegativeBinomial</code> loss or a <code>KLDivergenceScheduler</code> callback function. All of these should work nicely within the TensorFlow/Keras framework.</p>
+</li>
+</ul>
                 
               
               
@@ -991,13 +1286,13 @@
       <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
         
         
-          <a href="api/models/Autoencoder/" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="quickstart/" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-footer-nav__title">
               <div class="md-ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Autoencoder
+                Quickstart
               </div>
             </div>
             <div class="md-footer-nav__button md-icon">
@@ -1024,15 +1319,15 @@
       
     </div>
     
-      <script src="assets/javascripts/vendor.0ac82a11.min.js"></script>
-      <script src="assets/javascripts/bundle.f81dfb4d.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      <script src="assets/javascripts/vendor.93c04032.min.js"></script>
+      <script src="assets/javascripts/bundle.83e5331e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
       
       <script>
         app = initialize({
           base: ".",
-          features: [],
+          features: ['navigation.tabs'],
           search: Object.assign({
-            worker: "assets/javascripts/worker/search.4ac00218.min.js"
+            worker: "assets/javascripts/worker/search.8c7e0a7e.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

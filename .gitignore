@@ -4,6 +4,7 @@ repos/
 
 # Notebooks
 docs/notebooks/data/
+site/notebooks/data/
 *.ipynb_checkpoints/
 
 # Hidden
