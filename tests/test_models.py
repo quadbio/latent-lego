@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from latent.models import *
 
 nx = 600
@@ -17,7 +18,7 @@ def check_attributes(model, ce=False, cd=False, c=False, sf=False):
 
 def test_autoencoder():
     lat_dim = 18
-    ae = Autoencoder(x_dim=X.shape[1], latent_dim=lat_dims)
+    ae = Autoencoder(x_dim=X.shape[1], latent_dim=lat_dim)
     ae.compile(optimizer='adam', loss='mse', run_eagerly=False)
     check_attributes(ae)
     ae.fit(X, batch_size=50, epochs=1)

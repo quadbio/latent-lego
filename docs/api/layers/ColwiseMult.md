@@ -1,4 +1,4 @@
-::: latent.layers.ColwiseMult
+::: latent.layers.RowwiseMult
     selection:
         inherited_members: true
         members:

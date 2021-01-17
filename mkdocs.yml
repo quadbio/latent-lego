@@ -53,7 +53,7 @@ nav:
       layers:
         DenseBlock: api/layers/DenseBlock.md
         DenseStack: api/layers/DenseStack.md
-        ColwiseMult: api/layers/ColwiseMult.md
+        RowwiseMult: api/layers/RowwiseMult.md
         # Sampling: api/layers/Sampling.md
         SharedDispersion: api/layers/SharedDispersion.md
         Constant: api/layers/Constant.md

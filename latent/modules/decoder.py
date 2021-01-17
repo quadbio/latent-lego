@@ -220,7 +220,7 @@ class NegativeBinomialDecoder(PoissonDecoder):
                 name='constant_dispersion',
                 activation=clipped_exp
             )
-        self.norm_layer = ColwiseMult()
+        self.norm_layer = RowwiseMult()
 
     def call(self, inputs):
         """Full forward pass through model"""
