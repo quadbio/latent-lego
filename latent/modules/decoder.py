@@ -7,7 +7,7 @@ import tensorflow.keras.layers as layers
 from typing import Iterable, Literal, Union, Callable
 
 from latent.activations import clipped_exp
-from latent.layers import ColwiseMult, DenseStack, SharedDispersion, Constant
+from latent.layers import RowwiseMult, DenseStack, SharedDispersion, Constant
 from latent.losses import NegativeBinomial, ZINB
 from latent.losses import get as get_loss
 
@@ -129,7 +129,7 @@ class PoissonDecoder(Decoder):
             activation=clipped_exp,
             kernel_initializer=self.initializer
         )
-        self.norm_layer = ColwiseMult(name='output')
+        self.norm_layer = RowwiseMult(name='output')
 
     def call(self, inputs):
         """Full forward pass through model"""

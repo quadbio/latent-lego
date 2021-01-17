@@ -25,7 +25,7 @@ class DenseBlock(layers.Layer):
     def __init__(
         self,
         units: int,
-        name: str = 'dense_block',
+        name: str = None,
         dropout_rate: float = 0.1,
         batchnorm: bool = True,
         layernorm: bool = False,
@@ -84,7 +84,7 @@ class DenseStack(layers.Layer):
     """A stack of `DenseBlock` layers."""
     def __init__(
         self,
-        name: str = 'dense_stack',
+        name: str = None,
         hidden_units: Iterable[int] = [128, 128],
         conditional: Literal['first', 'all'] = None,
         **kwargs
@@ -151,7 +151,7 @@ class RowwiseMult(layers.Layer):
 
 class Sampling(layers.Layer):
     """Uses inputs (z_mean, log_var) to sample z."""
-    def __init__(self, name: str = 'sampling'):
+    def __init__(self, name: str = None):
         """
         Arguments:
             name: String indicating the name of the layer.
@@ -169,7 +169,7 @@ class SharedDispersion(layers.Layer):
     def __init__(
         self,
         units: int,
-        name: str = 'shared_dispersion',
+        name: str = None,
         activation: Union[str, Callable] = 'clipped_exp',
         initializer: Union[str, Callable] = 'glorot_normal'
     ):
@@ -207,8 +207,8 @@ class Constant(layers.Layer):
     def __init__(
         self,
         units: int,
-        name: str = 'constant',
         constant: float = 1.,
+        name: str = None,
         trainable: bool = True,
         activation: Union[str, Callable] = 'clipped_exp'
     ):
@@ -244,7 +244,7 @@ class PseudoInputs(layers.Layer):
     def __init__(
         self,
         n_inputs: int,
-        name: str = 'pseudo_inputs',
+        name: str = None,
         activation: Union[str, Callable] = 'relu',
         initializer: Union[str, Callable] = None
     ):
@@ -291,7 +291,7 @@ class PseudoInputs(layers.Layer):
 
 class GradReversal(layers.Layer):
     """Reverses gradient during backprop."""
-    def __init__(self, name: str = 'grad_reversal', weight: float = 1.):
+    def __init__(self, name: str = None, weight: float = 1.):
         super().__init__(name=name)
         self.weight = weight
 
@@ -313,7 +313,7 @@ class MMDCritic(layers.Layer):
     """Adds MMD loss between conditions."""
     def __init__(
         self,
-        name: str = 'mmd_critic',
+        name: str = None,
         weight: float = 1.,
         n_conditions: int = 2,
         n_groups: int = None,
@@ -352,7 +352,7 @@ class PairwiseDistCritic(layers.Layer):
     """Matches paired points in latent space by forcing them to the same location."""
     def __init__(
         self,
-        name: str = 'pairing_critic',
+        name: str = None,
         weight: float = 1.,
         **kwargs
     ):
@@ -374,7 +374,7 @@ class GromovWassersteinCritic(layers.Layer):
     """Adds Gromov-Wasserstein loss between conditions."""
     def __init__(
         self,
-        name: str = 'wasserstein_critic',
+        name: str = None,
         method: Literal['gw', 'entropic_gw'] = 'gw',
         weight: float = 1.,
         **kwargs
