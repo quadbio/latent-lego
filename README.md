@@ -1,6 +1,6 @@
 # LatentLego - flexible latent spaces for single cells
 
-<img src="docs/assets/images/logo.png" align="right" width="250"/>
+<img src="site/assets/images/logo.png" align="right" width="250"/>
 
 LatentLego is a python library for building autoencoders for single-cell genomics. It is build on top of [TensorFlow](https://www.tensorflow.org/) and [Keras](https://keras.io/) and provides modular components to build common single-cell autoencoder architectures. All individual comonents are valid Keras `Layer` or `Model` objects and therefore support model construction using the standard Keras (functional/sequential) API. There is also a model zoo of preconstructed models that understand builtin Keras methods like `.fit()` or `.predict()` and `.compile()` with custom loss functions.
 

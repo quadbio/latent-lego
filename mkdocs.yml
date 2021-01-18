@@ -1,6 +1,8 @@
 ---
 site_name: LatentLego
 repo_name: quadbiolab/latent_lego
+site_dir: docs
+docs_dir: site
 theme:
   name: 'material'
   logo: assets/images/logo.svg
