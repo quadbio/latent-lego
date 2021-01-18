@@ -1,3 +1,4 @@
+![pypi](https://img.shields.io/pypi/v/latent.svg)
 ![CI](https://github.com/quadbiolab/latent-lego/workflows/CI/badge.svg)
 ![docs](https://github.com/quadbiolab/latent-lego/workflows/docs/badge.svg)
 
