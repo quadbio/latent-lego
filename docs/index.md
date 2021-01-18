@@ -20,9 +20,9 @@ pip install git+https://github.com/quadbiolab/latent-lego
 
 ## Overview
 
-LatentLego is designed to be a flexible kit for defining autoencoders by providing standard building blocks that can be freely assembled. Here's an overview:
+LatentLego is designed to be a flexible kit for defining autoencoders by providing common building blocks that can be freely assembled. Here's an overview:
 
-* `latent.models` - Here you can find Keras-compatible implementations of common single-cell architectures, such as the `ZINBAutoencoder` ([Erslan 2019](https://www.nature.com/articles/s41467-018-07931-2)) or the `NegativeBinomialVAE` ([Lopez 2018](https://www.nature.com/articles/s41592-018-0229-2)). I also implemented some more experimental architectures like the `TopologicalAutoencoder` ([Moor 2019](https://arxiv.org/abs/1906.00722)).
+* `latent.models` - Here you can find Keras-compatible implementations of common single-cell autoencoder architectures, such as the `ZINBAutoencoder` ([Erslan 2019](https://www.nature.com/articles/s41467-018-07931-2)) or the `NegativeBinomialVAE` ([Lopez 2018](https://www.nature.com/articles/s41592-018-0229-2)). I also implemented some more experimental architectures like the `TopologicalAutoencoder` ([Moor 2019](https://arxiv.org/abs/1906.00722)).
 
 * `latent.modules` - Here live the lower level building blocks of autoencoders, namely `encoder` and `decoder` models that can be freely assembled to produce autoencoder models. E.g., using a `VariationalEncoder` with a `PoissonDecoder` produces a `PoissonVAE`, a variational autoencoder with a poisson reconstruction loss.
 

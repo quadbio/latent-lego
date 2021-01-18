@@ -4,7 +4,7 @@ LatentLego is like a lego box with building blocks for autoencoders. These build
 
 ## Using pre-defined models
 
-LatentLego hosts a model zoo with a number of common autoencoder architectures ready to use. These are the largest components in LatentLego and therefore on top of the hierarchy. They are subclassed Keras `Model` objects and understand common methods like `.fit()` and `.predict()`. So the quickest way to train an autoencoder with LatentLego is simply
+LatentLego hosts a model zoo with a number of common autoencoder architectures ready to use. They are subclassed Keras `Model` objects and understand common methods like `.fit()` and `.predict()`. So the quickest way to train an autoencoder with LatentLego is simply
 
 ```python
 import numpy as np
@@ -81,7 +81,7 @@ ae.fit(x=x_train, y=x_train, epochs=10, batch_size=10)
 
 ## Building autoencoders from scratch
 
-Lastly, if you want to implement a model that can not be directly assembled in LatentLego, you may want to implement the encoder/decoder or both from scratch. For this, we also provide some convenient lower-level components that expand the reportoire of Keras and TensorFlow. For instance, the `DenseStack` layer strings together a sequence of `DenseBlock` layers and take care of batch normalization, dropout and conditional injection. We can combine it with some [TensorFlow Probability](https://www.tensorflow.org/probability) magic and stack it on top of a `NegativeBinomialDecoder` to obtain a VAE with negative binomial loss.
+Lastly, if you want to implement a model that can not be directly assembled in LatentLego, you may want to implement the encoder/decoder or both from scratch. For this, we also provide some convenient lower-level components that extend the reportoire of Keras and TensorFlow. For instance, the `DenseStack` layer strings together a sequence of `DenseBlock` layers and take care of batch normalization, dropout and conditional injection. We can combine it with some [TensorFlow Probability](https://www.tensorflow.org/probability) magic and stack it on top of a `NegativeBinomialDecoder` to obtain a VAE with negative binomial loss.
 
 ```python
 import tensorflow as tf
