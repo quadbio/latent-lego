@@ -1,3 +1,5 @@
+![CI](https://github.com/quadbiolab/latent-lego/CI/build/badge.svg)
+
 # LatentLego - flexible latent spaces for single cells
 
 <img src="site/assets/images/logo.png" align="right" width="250"/>
