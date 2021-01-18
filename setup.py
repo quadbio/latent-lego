@@ -11,7 +11,7 @@ requirements = [l.strip()
 
 setup(
     name='latent',
-    version='0.1.0',
+    version='0.1',
     author=author,
     author_email=author_email,
     description=description,

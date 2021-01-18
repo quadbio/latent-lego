@@ -33,3 +33,8 @@ LatentLego is designed to be a flexible kit for defining autoencoders by providi
 * `latent.layers` - These are the most basic building blocks of `encoder` and `decoder` models. In addition to the `DenseBlock`/`DenseStack` layers that are the core component of encoders and decoders, I implemeneted some other useful utility layers.
 
 * `latent.losses`, `latent.activations`, `latent.callbacks` - Keras-style components that are useful for single-cell data, like a `NegativeBinomial` loss or a `KLDivergenceScheduler` callback function. All of these should work nicely within the TensorFlow/Keras framework.
+
+
+## Documentation
+
+If you want to find out more, check out the [Documentation](https://quadbiolab.github.io/latent-lego/).
