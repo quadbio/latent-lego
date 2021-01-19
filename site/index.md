@@ -1,4 +1,4 @@
-# LatentLego - flexible latent spaces for single cells
+# LatentLego <br/> - flexible latent spaces for single cells
 
 <img src="assets/images/logo.png" align="right" width="250"/>
 
