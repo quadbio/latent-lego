@@ -3,7 +3,11 @@ site_name: LatentLego
 repo_name: quadbiolab/latent_lego
 site_dir: docs
 docs_dir: site
+repo_url: https://github.com/quadbiolab/latent-lego
+repo_name: quadbiolab/latent-lego
 theme:
+  icon:
+    repo: fontawesome/brands/github
   name: 'material'
   logo: assets/images/logo.svg
   favicon: assets/images/favicon.png
@@ -23,6 +27,8 @@ nav:
   - Home:
       - About: index.md
       - Quickstart: quickstart.md
+  - Notebooks:
+      - Integration: notebooks/integration.ipynb
   - API Reference:
       models:
         ae:
@@ -71,8 +77,6 @@ nav:
       callbacks:
         IncreaseKLDOnEpoch: api/callbacks/IncreaseKLDOnEpoch.md
         KLDivergenceScheduler: api/callbacks/KLDivergenceScheduler.md
-  - Notebooks:
-      - Integration: notebooks/integration.ipynb
 plugins:
   - search
   - mkdocstrings:
