@@ -4,7 +4,8 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
 import tensorflow_probability as tfp
-from typing import Iterable, Literal, Union, Callable
+from typing import Iterable, Union, Callable
+from latent._compat import Literal
 
 from latent.layers import DenseStack, PseudoInputs, DISTRIBUTIONS
 from latent.losses import TopologicalSignatureDistance

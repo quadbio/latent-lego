@@ -2,7 +2,8 @@
 
 import tensorflow as tf
 import tensorflow.keras.losses as losses
-from typing import Literal, Union, Callable
+from typing import Union, Callable
+from ._compat import Literal
 
 from .utils import ms_rbf_kernel, persistent_homology, slice_matrix
 from .utils import l2_norm, nan2zero, KERNELS, OT_DIST

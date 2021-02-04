@@ -2,7 +2,8 @@
 
 import tensorflow as tf
 import tensorflow.keras as keras
-from typing import Iterable, Literal, Union, Callable
+from typing import Iterable, Union, Callable
+from latent._compat import Literal
 
 from latent.modules import Encoder, TopologicalEncoder
 from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder

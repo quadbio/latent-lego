@@ -7,7 +7,8 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l1_l2
 import tensorflow.keras.layers as layers
 import tensorflow_probability as tfp
-from typing import Iterable, Literal, Union, Callable
+from typing import Iterable, Union, Callable
+from ._compat import Literal
 
 from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance

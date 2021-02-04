@@ -11,7 +11,7 @@ requirements = [l.strip()
 
 setup(
     name='latent',
-    version='0.1',
+    version='0.1.1',
     author=author,
     author_email=author_email,
     description=description,
@@ -20,5 +20,5 @@ setup(
     long_description_content_type='text/markdown',
     packages=find_packages(),
     install_requires=requirements,
-    python_requires='>=3.8.5'
+    python_requires='>=3.7'
 )
