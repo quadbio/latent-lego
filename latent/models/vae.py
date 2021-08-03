@@ -26,6 +26,7 @@ class VariationalAutoencoder(Autoencoder):
         reconstruction_loss: Callable = None,
         use_conditions: bool = False,
         kld_weight: float = 1e-5,
+        capacity: float = 0.,
         prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
         latent_dist: Literal['independent', 'multivariate'] = 'independent',
         iaf_units: Iterable[int] = [256, 256],
@@ -51,6 +52,8 @@ class VariationalAutoencoder(Autoencoder):
                 inputs.
             kld_weight: Float indicating the weight of the KL Divergence regularization
                 loss.
+            capacity: Capacity of the KLD loss. Can be linearly increased using a  KL
+                scheduler callback.
             prior: The choice of prior distribution. One of the following:\n
                 * `'normal'` - A unit gaussian (normal) distribution.
                 * `'iaf'` - A unit gaussian with a Inverse Autoregressive Flows bijector
@@ -70,6 +73,7 @@ class VariationalAutoencoder(Autoencoder):
                 decoder networks.
         """
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
+        self.capacity = tf.Variable(capacity, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
         self.n_pseudoinputs = n_pseudoinputs
@@ -78,6 +82,7 @@ class VariationalAutoencoder(Autoencoder):
             hidden_units=encoder_units,
             latent_dim=latent_dim,
             kld_weight=self.kld_weight,
+            capacity=self.capacity,
             prior=self.prior,
             iaf_units=self.iaf_units,
             n_pseudoinputs=self.n_pseudoinputs,

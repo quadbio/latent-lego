@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import tensorflow.keras.losses as losses
+import tensorflow_probability as tfp
 from typing import Union, Callable
 from ._compat import Literal
 

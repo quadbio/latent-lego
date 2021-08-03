@@ -7,7 +7,7 @@ import tensorflow_probability as tfp
 from typing import Iterable, Union, Callable
 from latent._compat import Literal
 
-from latent.layers import DenseStack, PseudoInputs, DISTRIBUTIONS
+from latent.layers import DenseStack, PseudoInputs, KLDivergenceAddLoss, DISTRIBUTIONS
 from latent.losses import TopologicalSignatureDistance
 
 tfpl = tfp.layers
@@ -111,6 +111,7 @@ class VariationalEncoder(Encoder):
         name: str = 'variational_encoder',
         initializer: Union[str, Callable] = 'glorot_normal',
         kld_weight: float = 1e-4,
+        capacity: float = 0.,
         prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
         latent_dist: Literal['independent', 'multivariate'] = 'independent',
         iaf_units: Iterable[int] = [256, 256],
@@ -125,6 +126,8 @@ class VariationalEncoder(Encoder):
                 `keras.initializers`)
             kld_weight: Float indicating the weight of the KL Divergence
                 regularization loss.
+            capacity: Capacity of the KLD loss. Can be linearly increased using a  KL
+                scheduler callback.
             prior: The choice of prior distribution. One of the following:\n
                 * `'normal'` - A unit gaussian (normal) distribution.
                 * `'iaf'` - A unit gaussian with a Inverse Autoregressive Flows bijector
@@ -143,6 +146,7 @@ class VariationalEncoder(Encoder):
             **kwargs: Other arguments passed on to `DenseStack`.
         """
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
+        self.capacity = tf.Variable(capacity, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
         self.n_pseudoinputs = n_pseudoinputs
@@ -198,10 +202,10 @@ class VariationalEncoder(Encoder):
             kld_loss = self.kld_weight * self._vamp_kld(outputs, prior_dist)
         else:
             prior_dist = self.prior_dist
-            kld_regularizer = tfpl.KLDivergenceRegularizer(
+            kld_regularizer = KLDivergenceAddLoss(
                 prior_dist,
-                weight=self.kld_weight,
-                test_points_reduce_axis=None
+                capacity=self.capacity,
+                beta=self.kld_weight
             )
             kld_loss = kld_regularizer(outputs)
         # Add losses manually to better monitor them
