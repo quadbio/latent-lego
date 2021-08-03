@@ -427,13 +427,13 @@ class KLDivergenceAddLoss(layers.Layer):
         self.capacity = capacity
         self.kld_regularizer = tfpl.KLDivergenceRegularizer(
             distribution_b,
-            weight=self.beta,
+            weight=1.,
             test_points_reduce_axis=None
         )
 
     def call(self, distribution_a):
         """Calculates KLDivergence"""
-        kld_loss = tf.math.maximum(
+        kld_loss = self.beta * tf.math.maximum(
             0., self.kld_regularizer(distribution_a) - self.capacity)
         return kld_loss
 

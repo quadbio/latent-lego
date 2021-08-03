@@ -9,19 +9,18 @@ class ScaleCapacityOnEpoch(callbacks.Callback):
     """Scale KLD capacity of VAEs during training."""
     def __init__(
         self,
-        factor: float = 1.2,
         max_val: float = 10.,
+        steps: int = 100,
         **kwargs
     ):
         """
         Arguments:
-            factor: Positive float. Factor by which the capacity
-                will be increased each epoch.
             max_val: Positive float. Maximum value of the capacity.
+            steps: Number of steps before reaching the maximum value.
             **kwargs: Other parameters passed to `keras.callbacks.Callback`.
         """
         super().__init__(**kwargs)
-        self.factor = factor
+        self.steps = steps
         self.max_val = max_val
 
     def on_epoch_end(self, epoch, logs=None):
@@ -31,7 +30,9 @@ class ScaleCapacityOnEpoch(callbacks.Callback):
             raise ValueError('Model encoder must have a "capacity" attribute.')
 
         capacity = float(K.get_value(self.model.encoder.capacity))
-        capacity = min(self.factor * capacity, self.max_val)
+        assert capacity <= self.max_val
+        delta = self.max_val - capacity
+        capacity = min(capacity + delta * epoch / self.steps, self.max_val)
         K.set_value(self.model.encoder.capacity, K.get_value(capacity))
 
 
@@ -39,18 +40,18 @@ class ScaleKLDOnEpoch(callbacks.Callback):
     """Scale Kullback-Leibler Divergence loss of VAEs during training."""
     def __init__(
         self,
-        factor: float = 1.5,
-        max_val: float = 1.,
+        max_val: float = 5.,
+        steps: int = 100,
         **kwargs
     ):
         """
         Arguments:
-            factor: Positive float. Factor by which the KLD will be increased each epoch.
             max_val: Positive float. Maximum value of KLD.
+            steps: Number of steps before reaching the maximum value.
             **kwargs: Other parameters passed to `keras.callbacks.Callback`.
         """
         super().__init__(**kwargs)
-        self.factor = factor
+        self.steps = steps
         self.max_val = max_val
 
     def on_epoch_end(self, epoch, logs=None):
@@ -60,7 +61,9 @@ class ScaleKLDOnEpoch(callbacks.Callback):
             raise ValueError('Model encoder must have a "kld_weight" attribute.')
 
         kld_weight = float(K.get_value(self.model.encoder.kld_weight))
-        kld_weight = min(self.factor * kld_weight, self.max_val)
+        assert kld_weight <= self.max_val
+        delta = self.max_val - kld_weight
+        kld_weight = min(kld_weight + delta * epoch, self.max_val)
         K.set_value(self.model.encoder.kld_weight, K.get_value(kld_weight))
 
 
