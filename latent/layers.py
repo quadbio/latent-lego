@@ -401,6 +401,44 @@ CRITICS = {
 }
 
 
+# Loss layers
+class KLDivergenceAddLoss(layers.Layer):
+    """Computes weighted KLD loss with optional capacity as proposed in
+    ([Burgess 2018](https://arxiv.org/abs/1804.03599)) and
+    ([Higgins 2017](https://openreview.net/forum?id=Sy2fzU9gl)).
+    """
+    def __init__(
+        self,
+        distribution_b,
+        beta: float = 1.,
+        capacity: float = 0.,
+        **kwargs
+    ):
+        """
+        Arguments:
+            distribution_b: Distribution instance corresponding to b as KL[a,b]
+            beta: Weight of the KLD loss.
+            capacity: Capacity of the loss. Can be linearly increased using a scheduler
+                callback.
+            **kwargs: Other arguments passed to `keras.losses.Loss`.
+        """
+        super().__init__(**kwargs)
+        self.beta = beta
+        self.capacity = capacity
+        self.kld_regularizer = tfpl.KLDivergenceRegularizer(
+            distribution_b,
+            weight=self.beta,
+            test_points_reduce_axis=None
+        )
+
+    def call(self, distribution_a):
+        """Calculates KLDivergence"""
+        kld_loss = tf.math.maximum(
+            0., self.kld_regularizer(distribution_a) - self.capacity)
+        return kld_loss
+
+
+
 # PROBABILISTIC LAYERS
 DISTRIBUTIONS = {
     'independent': tfpl.IndependentNormal,

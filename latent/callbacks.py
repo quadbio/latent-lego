@@ -5,8 +5,38 @@ import tensorflow.keras.callbacks as callbacks
 from typing import Callable
 
 
-class IncreaseKLDOnEpoch(callbacks.Callback):
-    """Increase Kullback-Leibler Divergence loss of VAEs during training."""
+class ScaleCapacityOnEpoch(callbacks.Callback):
+    """Scale KLD capacity of VAEs during training."""
+    def __init__(
+        self,
+        factor: float = 1.2,
+        max_val: float = 10.,
+        **kwargs
+    ):
+        """
+        Arguments:
+            factor: Positive float. Factor by which the capacity
+                will be increased each epoch.
+            max_val: Positive float. Maximum value of the capacity.
+            **kwargs: Other parameters passed to `keras.callbacks.Callback`.
+        """
+        super().__init__(**kwargs)
+        self.factor = factor
+        self.max_val = max_val
+
+    def on_epoch_end(self, epoch, logs=None):
+        if not hasattr(self.model, 'encoder'):
+            raise ValueError('Model must have a "encoder" attribute.')
+        if not hasattr(self.model.encoder, 'capacity'):
+            raise ValueError('Model encoder must have a "capacity" attribute.')
+
+        capacity = float(K.get_value(self.model.encoder.capacity))
+        capacity = min(self.factor * capacity, self.max_val)
+        K.set_value(self.model.encoder.capacity, K.get_value(capacity))
+
+
+class ScaleKLDOnEpoch(callbacks.Callback):
+    """Scale Kullback-Leibler Divergence loss of VAEs during training."""
     def __init__(
         self,
         factor: float = 1.5,
