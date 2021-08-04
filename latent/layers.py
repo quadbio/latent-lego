@@ -12,6 +12,7 @@ from ._compat import Literal
 
 from .activations import ACTIVATIONS, clipped_exp
 from .losses import MaximumMeanDiscrepancy, GromovWassersteinDistance
+from .utils import log_density_gaussian, matrix_log_density_gaussian
 
 tfpl = tfp.layers
 tfd = tfp.distributions
@@ -420,7 +421,7 @@ class KLDivergenceAddLoss(layers.Layer):
             beta: Weight of the KLD loss.
             capacity: Capacity of the loss. Can be linearly increased using a scheduler
                 callback.
-            **kwargs: Other arguments passed to `keras.losses.Loss`.
+            **kwargs: Other arguments passed to `keras.layers.Layer`.
         """
         super().__init__(**kwargs)
         self.beta = beta
@@ -437,6 +438,90 @@ class KLDivergenceAddLoss(layers.Layer):
             0., self.kld_regularizer(distribution_a) - self.capacity)
         return kld_loss
 
+
+# Implementation adapted from https://github.com/YannDubs/disentangling-vae
+class DecomposedKLDAddLoss(layers.Layer):
+    """Computes decomposed KLD loss with weights for individual terms
+    using minibatch weighted sampling or minibatch stratified sampling
+    according to ([Chen 2019](https://arxiv.org/abs/1802.04942)).
+    """
+    def __init__(
+        self,
+        data_size,
+        mi_weight: float = 1.,
+        tc_weight: float = 1.,
+        kl_weight: float = 1.,
+        use_mss: bool = True,
+        **kwargs
+    ):
+        """
+        Arguments:
+            data_size: Number of data points in the training set.
+            mi_weight: Weight of the Index-Code mutual information term.
+            tc_weight: Weight of the total correlation term.
+            kl_weight: Weight of the dimension-wise KL term.
+            use_mss: Whether to use minibatch stratified sampling instead of minibatch
+                weighted sampling.
+            **kwargs: Other arguments passed to `keras.layers.Layer`.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, latent_sample, latent_params):
+        batch_size, latent_dim = tf.shape(latent_sample)
+        log_pz, log_qz, log_prod_qzi, log_q_zCx = self._get_log_pz_qz_prodzi_qzCx(
+            latent_sample, latent_params)
+
+        # Compute components of KLD loss
+        # I[z;x] = KL[q(z,x)||q(x)q(z)] = E_x[KL[q(z|x)||q(z)]]
+        mi_loss = tf.reduce_mean(log_q_zCx - log_qz)
+        # TC[z] = KL[q(z)||\prod_i z_i]
+        tc_loss = tf.reduce_mean(log_qz - log_prod_qzi)
+        # dw_kl_loss is KL[q(z)||p(z)] instead of usual KL[q(z|x)||p(z))]
+        dw_kl_loss = tf.reduce_mean(log_prod_qzi - log_pz)
+
+        # Compute total KLD loss
+        loss = (self.mi_weight * mi_loss
+            + self.tc_weight * tc_loss
+            + self.kl_weight * dw_kl_loss)
+
+        return loss
+
+    def _get_log_pz_qz_prodzi_qzCx(self, latent_sample, latent_params):
+        batch_size, hidden_dim = tf.shape(latent_sample)
+
+        # Calculate log q(z|x)
+        log_q_zCx = tf.math.reduce_sum(
+            log_density_gaussian(latent_sample, *latent_params), 1)
+
+        # Calculate log p(z)
+        # Mean and log var is 0
+        zeros = tf.zeros_like(latent_sample)
+        log_pz = tf.reduce_sum(
+            log_density_gaussian(latent_sample, zeros, zeros), 1)
+
+        mat_log_qz = matrix_log_density_gaussian(latent_sample, *latent_params)
+
+        if self.use_mss:
+            # Use stratification
+            log_iw_mat = self._log_importance_weight_matrix(batch_size, self.data_size)
+            mat_log_qz = mat_log_qz + tf.reshape(log_iw_mat, (batch_size, batch_size, 1))
+
+        mat_log_qz_sum = tf.reduce_sum(mat_log_qz, axis=2)
+        log_qz = tf.reduce_logsumexp(mat_log_qz_sum, axis=1, keepdims=False)
+        log_prod_qzi = tf.reduce_logsumexp(mat_log_qz, axis=1, keepdims=False)
+        log_prod_qzi = tf.reduce_sum(log_prod_qzi, axis=1)
+
+        return log_pz, log_qz, log_prod_qzi, log_q_zCx
+
+    def _log_importance_weight_matrix(self, batch_size):
+        N = self.data_size
+        M = batch_size - 1
+        strat_weight = (N - M) / (N * M)
+        W = tf.fill((batch_size, batch_size), 1 / M)
+        tf.reshape(W, (-1))[::M + 1] = 1 / N
+        tf.reshape(W, (-1))[1::M + 1] = strat_weight
+        W[M - 1, 0] = strat_weight
+        return tf.math.log(W)
 
 
 # PROBABILISTIC LAYERS

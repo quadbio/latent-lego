@@ -12,7 +12,7 @@ tfd = tfp.distributions
 
 # Probability distribution utils
 def matrix_log_density_gaussian(x, mu, logvar):
-    """Calculates log density of a Gaussian for all combination of bacth pairs of
+    """Calculates log density of a Gaussian for all combination of batch pairs of
     `x` and `mu`. I.e. return tensor of shape `(batch_size, batch_size, dim)`
     instead of (batch_size, dim) in the usual log density.
 
