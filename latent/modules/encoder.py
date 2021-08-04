@@ -7,7 +7,8 @@ import tensorflow_probability as tfp
 from typing import Iterable, Union, Callable
 from latent._compat import Literal
 
-from latent.layers import DenseStack, PseudoInputs, KLDivergenceAddLoss, DISTRIBUTIONS
+from latent.layers import DenseStack, PseudoInputs
+from latent.layers import KLDivergenceAddLoss, DecomposedKLDAddLoss, DISTRIBUTIONS
 from latent.losses import TopologicalSignatureDistance
 
 tfpl = tfp.layers
@@ -110,7 +111,12 @@ class VariationalEncoder(Encoder):
         latent_dim: int = 50,
         name: str = 'variational_encoder',
         initializer: Union[str, Callable] = 'glorot_normal',
+        use_decomposed_kld: bool = False,
+        data_size: int = 1000,
+        use_mss: bool = True,
         kld_weight: float = 1e-4,
+        mi_weight: float = 1.,
+        tc_weight: float = 1.,
         capacity: float = 0.,
         prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
         latent_dist: Literal['independent', 'multivariate'] = 'independent',
@@ -124,9 +130,21 @@ class VariationalEncoder(Encoder):
             name: String indicating the name of the model.
             initializer: Initializer for the kernel weights matrix (see
                 `keras.initializers`)
+            use_decomposed_kld: Boolean indicating whether to use the decomposed KLD loss
+                ([Chen 2019](https://arxiv.org/abs/1802.04942))
+            data_size: Total number of data points.
+                Only used if `use_decomposed_kld = True`.
+            use_mss: Whether to use minibatch stratified sampling instead of minibatch
+                weighted sampling. Only used if `use_decomposed_kld = True`.
             kld_weight: Float indicating the weight of the KL Divergence
-                regularization loss.
-            capacity: Capacity of the KLD loss. Can be linearly increased using a  KL
+                regularization loss. If `use_decomposed_kld = True`, this indicated the
+                weight of the dimension-wise KLD.
+            mi_weight: Float indicating the weight of the
+                Index-Code mutual information term in the KLD loss.
+                Only used if `use_decomposed_kld = True`.
+            tc_weight: Float indicating the weight of the total correlation term
+                of the KLD loss. Only used if `use_decomposed_kld = True`.
+            capacity: Capacity of the KLD loss. Can be linearly increased using a KL
                 scheduler callback.
             prior: The choice of prior distribution. One of the following:\n
                 * `'normal'` - A unit gaussian (normal) distribution.
@@ -146,7 +164,12 @@ class VariationalEncoder(Encoder):
             **kwargs: Other arguments passed on to `DenseStack`.
         """
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
+        self.mi_weight = tf.Variable(mi_weight, trainable=False)
+        self.tc_weight = tf.Variable(tc_weight, trainable=False)
         self.capacity = tf.Variable(capacity, trainable=False)
+        self.data_size = data_size
+        self.use_mss = use_mss
+        self.use_decomposed_kld = use_decomposed_kld
         self.prior = prior
         self.iaf_units = iaf_units
         self.n_pseudoinputs = n_pseudoinputs
@@ -167,37 +190,47 @@ class VariationalEncoder(Encoder):
         )
         self.sampling = self.latent_dist_layer(self.latent_dim)
 
-        # Independent() reinterprets each latent_dim as an independent distribution
-        self.prior_dist = tfd.Independent(
-            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
-            reinterpreted_batch_ndims=1
-        )
-
-        if self.prior == 'iaf':
-            # Inverse autoregressive flow (Kingma et al. 2016)
-            made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
-            self.prior_dist = tfd.TransformedDistribution(
-                distribution=self.prior_dist,
-                bijector=tfb.Invert(tfb.MaskedAutoregressiveFlow(
-                    shift_and_log_scale_fn=made))
+        if not self.use_decomposed_kld:
+            # Independent() reinterprets each latent_dim as an independent distribution
+            self.prior_dist = tfd.Independent(
+                tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+                reinterpreted_batch_ndims=1
             )
 
-        elif self.prior == 'vamp':
-            # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
-            self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
+            if self.prior == 'iaf':
+                # Inverse autoregressive flow (Kingma et al. 2016)
+                made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
+                self.prior_dist = tfd.TransformedDistribution(
+                    distribution=self.prior_dist,
+                    bijector=tfb.Invert(tfb.MaskedAutoregressiveFlow(
+                        shift_and_log_scale_fn=made))
+                )
+
+            elif self.prior == 'vamp':
+                # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
+                self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
     def call(self, inputs):
         """Full forward pass through model"""
         h = self.hidden_layers(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
-        self.add_kld_loss(inputs, outputs)
+        self.add_kld_loss(inputs, dist_params, outputs)
         return outputs
 
-    def add_kld_loss(self, inputs, outputs):
+    def add_kld_loss(self, inputs, dist_params, outputs):
         """Adds KLDivergence loss to model"""
+        if self.use_decomposed_kld:
+            kld_regularizer = DecomposedKLDAddLoss(
+                self.data_size,
+                self.kld_weight,
+                self.mi_weight,
+                self.tc_weight,
+                self.use_mss
+            )
+            kld_loss = kld_regularizer(outputs, dist_params)
         # VAMP prior depends on input, so we have to add it here
-        if self.prior == 'vamp':
+        elif self.prior == 'vamp':
             prior_dist = self._vamp_prior(inputs)
             kld_loss = self.kld_weight * self._vamp_kld(outputs, prior_dist)
         else:
