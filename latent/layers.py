@@ -465,19 +465,27 @@ class DecomposedKLDAddLoss(layers.Layer):
             **kwargs: Other arguments passed to `keras.layers.Layer`.
         """
         super().__init__(**kwargs)
+        self.data_size = data_size
+        self.mi_weight = mi_weight
+        self.tc_weight = tc_weight
+        self.kl_weight = kl_weight
+        self.use_mss = use_mss
 
-    def call(self, latent_sample, latent_params):
-        batch_size, latent_dim = tf.shape(latent_sample)
-        log_pz, log_qz, log_prod_qzi, log_q_zCx = self._get_log_pz_qz_prodzi_qzCx(
-            latent_sample, latent_params)
+    def call(self, latent_dist):
+        log_pz, log_qz, log_qz_prod, log_qz_cond_x = self._get_elbo_components(
+            latent_dist)
 
         # Compute components of KLD loss
         # I[z;x] = KL[q(z,x)||q(x)q(z)] = E_x[KL[q(z|x)||q(z)]]
-        mi_loss = tf.reduce_mean(log_q_zCx - log_qz)
+        mi_loss = tf.reduce_mean(log_qz_cond_x - log_qz)
         # TC[z] = KL[q(z)||\prod_i z_i]
-        tc_loss = tf.reduce_mean(log_qz - log_prod_qzi)
+        tc_loss = tf.reduce_mean(log_qz - log_qz_prod)
         # dw_kl_loss is KL[q(z)||p(z)] instead of usual KL[q(z|x)||p(z))]
-        dw_kl_loss = tf.reduce_mean(log_prod_qzi - log_pz)
+        dw_kl_loss = tf.reduce_mean(log_qz_prod - log_pz)
+
+        tf.print('logqzCx', tf.math.reduce_mean(log_qz_cond_x))
+        tf.print('logqz', tf.math.reduce_mean(log_qz))
+        tf.print('logqzprod', tf.math.reduce_mean(log_qz_prod))
 
         # Compute total KLD loss
         loss = (self.mi_weight * mi_loss
@@ -486,42 +494,55 @@ class DecomposedKLDAddLoss(layers.Layer):
 
         return loss
 
-    def _get_log_pz_qz_prodzi_qzCx(self, latent_sample, latent_params):
-        batch_size, hidden_dim = tf.shape(latent_sample)
+    def _get_elbo_components(self, latent_dist):
+        latent_sample = tf.convert_to_tensor(latent_dist)
+        # batch_size = tf.shape(latent_sample)[0]
+        loc = latent_dist.distribution.loc
+        scale = latent_dist.distribution.scale
 
         # Calculate log q(z|x)
-        log_q_zCx = tf.math.reduce_sum(
-            log_density_gaussian(latent_sample, *latent_params), 1)
+        log_qz_cond_x = tf.math.reduce_sum(
+            log_density_gaussian(latent_sample, loc, scale), 1)
 
         # Calculate log p(z)
-        # Mean and log var is 0
+        # Zero mean and unit variance -> prior
         zeros = tf.zeros_like(latent_sample)
         log_pz = tf.reduce_sum(
-            log_density_gaussian(latent_sample, zeros, zeros), 1)
+            log_density_gaussian(latent_sample, zeros, 1), 1)
 
-        mat_log_qz = matrix_log_density_gaussian(latent_sample, *latent_params)
+        log_qz_prob = matrix_log_density_gaussian(latent_sample, loc, scale)
 
-        if self.use_mss:
-            # Use stratification
-            log_iw_mat = self._log_importance_weight_matrix(batch_size, self.data_size)
-            mat_log_qz = mat_log_qz + tf.reshape(log_iw_mat, (batch_size, batch_size, 1))
+        # if self.use_mss:
+        #     # Use stratification
+        #     log_iw_mat = self._log_importance_weight_matrix(batch_size)
+        #     mat_log_qz = mat_log_qz + tf.reshape(
+        #         log_iw_mat, (batch_size, batch_size, 1))
 
-        mat_log_qz_sum = tf.reduce_sum(mat_log_qz, axis=2)
-        log_qz = tf.reduce_logsumexp(mat_log_qz_sum, axis=1, keepdims=False)
-        log_prod_qzi = tf.reduce_logsumexp(mat_log_qz, axis=1, keepdims=False)
-        log_prod_qzi = tf.reduce_sum(log_prod_qzi, axis=1)
+        log_qz = tf.reduce_logsumexp(
+            tf.reduce_sum(log_qz_prob, axis=2, keepdims=False),
+            axis=1,
+            keepdims=False
+        )
+        log_qz_prod = tf.reduce_sum(
+            tf.reduce_logsumexp(log_qz_prob, axis=1, keepdims=False),
+            axis=1,
+            keepdims=False
+        )
 
-        return log_pz, log_qz, log_prod_qzi, log_q_zCx
+        return log_pz, log_qz, log_qz_prod, log_qz_cond_x
 
-    def _log_importance_weight_matrix(self, batch_size):
-        N = self.data_size
-        M = batch_size - 1
-        strat_weight = (N - M) / (N * M)
-        W = tf.fill((batch_size, batch_size), 1 / M)
-        tf.reshape(W, (-1))[::M + 1] = 1 / N
-        tf.reshape(W, (-1))[1::M + 1] = strat_weight
-        W[M - 1, 0] = strat_weight
-        return tf.math.log(W)
+    # def _log_importance_weight_matrix(self, batch_size):
+    #     N = self.data_size
+    #     M = batch_size - 1
+    #     strat_weight = (N - M) / (N * M)
+    #     W = tf.fill((batch_size, batch_size), 1 / M)
+    #     W = tf.Variable(W, trainable=False)
+    #     weight = tf.fill(batch_size, 1 / N)
+    #     W = W[:, 0].assign(weight)
+    #     weight = tf.fill(batch_size, strat_weight)
+    #     W = W[:, 1].assgn(weight)
+    #     W = W[M - 1, 0].assign(strat_weight)
+    #     return tf.math.log(W)
 
 
 # PROBABILISTIC LAYERS

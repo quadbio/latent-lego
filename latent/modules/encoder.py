@@ -190,45 +190,45 @@ class VariationalEncoder(Encoder):
         )
         self.sampling = self.latent_dist_layer(self.latent_dim)
 
-        if not self.use_decomposed_kld:
-            # Independent() reinterprets each latent_dim as an independent distribution
-            self.prior_dist = tfd.Independent(
-                tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
-                reinterpreted_batch_ndims=1
+        # Independent() reinterprets each latent_dim as an independent distribution
+        self.prior_dist = tfd.Independent(
+            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
+            reinterpreted_batch_ndims=1
+        )
+
+        if self.prior == 'iaf':
+            # Inverse autoregressive flow (Kingma et al. 2016)
+            made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
+            self.prior_dist = tfd.TransformedDistribution(
+                distribution=self.prior_dist,
+                bijector=tfb.Invert(tfb.MaskedAutoregressiveFlow(
+                    shift_and_log_scale_fn=made))
             )
 
-            if self.prior == 'iaf':
-                # Inverse autoregressive flow (Kingma et al. 2016)
-                made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
-                self.prior_dist = tfd.TransformedDistribution(
-                    distribution=self.prior_dist,
-                    bijector=tfb.Invert(tfb.MaskedAutoregressiveFlow(
-                        shift_and_log_scale_fn=made))
-                )
-
-            elif self.prior == 'vamp':
-                # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
-                self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
+        elif self.prior == 'vamp':
+            # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
+            self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
     def call(self, inputs):
         """Full forward pass through model"""
         h = self.hidden_layers(inputs)
         dist_params = self.dist_param_layer(h)
         outputs = self.sampling(dist_params)
-        self.add_kld_loss(inputs, dist_params, outputs)
+        self.add_kld_loss(inputs, outputs)
         return outputs
 
-    def add_kld_loss(self, inputs, dist_params, outputs):
+    def add_kld_loss(self, inputs, outputs):
         """Adds KLDivergence loss to model"""
         if self.use_decomposed_kld:
+            prior_dist = self.prior_dist
             kld_regularizer = DecomposedKLDAddLoss(
-                self.data_size,
-                self.kld_weight,
-                self.mi_weight,
-                self.tc_weight,
-                self.use_mss
+                data_size=self.data_size,
+                kl_weight=self.kld_weight,
+                mi_weight=self.mi_weight,
+                tc_weight=self.tc_weight,
+                use_mss=self.use_mss
             )
-            kld_loss = kld_regularizer(outputs, dist_params)
+            kld_loss = kld_regularizer(outputs)
         # VAMP prior depends on input, so we have to add it here
         elif self.prior == 'vamp':
             prior_dist = self._vamp_prior(inputs)

@@ -11,7 +11,7 @@ tfd = tfp.distributions
 
 
 # Probability distribution utils
-def matrix_log_density_gaussian(x, mu, logvar):
+def matrix_log_density_gaussian(x, mu, scale):
     """Calculates log density of a Gaussian for all combination of batch pairs of
     `x` and `mu`. I.e. return tensor of shape `(batch_size, batch_size, dim)`
     instead of (batch_size, dim) in the usual log density.
@@ -22,14 +22,13 @@ def matrix_log_density_gaussian(x, mu, logvar):
         logvar: Float value indicating the log variance. Shape: (batch_size, dim).
         batch_size: Integer indicating the batch size.
     """
-    batch_size, dim = tf.shape(x)
-    x = tf.reshape(x, (batch_size, 1, dim))
-    mu = tf.reshape(mu, (1, batch_size, dim))
-    logvar = tf.reshape(logvar, (1, batch_size, dim))
-    return log_density_gaussian(x, mu, logvar)
+    x = tf.expand_dims(x, 1)
+    mu = tf.expand_dims(mu, 0)
+    scale = tf.expand_dims(scale, 0)
+    return log_density_gaussian(x, mu, scale)
 
 
-def log_density_gaussian(x, mu, logvar):
+def log_density_gaussian(x, mu, scale):
     """Calculates log density of a Gaussian.
 
     Arguments:
@@ -39,8 +38,8 @@ def log_density_gaussian(x, mu, logvar):
     """
     x = tf.cast(x, tf.float32)
     mu = tf.cast(mu, tf.float32)
-    logvar = tf.cast(logvar, tf.float32)
-    normal_dist = tfp.distributions.Normal(mu, tf.math.exp(0.5 * logvar))
+    scale = tf.cast(scale, tf.float32)
+    normal_dist = tfp.distributions.Normal(mu, scale)
     log_density = normal_dist.log_prob(x)
     return log_density
 
