@@ -112,7 +112,7 @@ class VariationalEncoder(Encoder):
         name: str = 'variational_encoder',
         initializer: Union[str, Callable] = 'glorot_normal',
         use_decomposed_kld: bool = False,
-        data_size: int = 1000,
+        x_size: int = 1000,
         use_mss: bool = True,
         kld_weight: float = 1e-4,
         mi_weight: float = 1.,
@@ -132,7 +132,7 @@ class VariationalEncoder(Encoder):
                 `keras.initializers`)
             use_decomposed_kld: Boolean indicating whether to use the decomposed KLD loss
                 ([Chen 2019](https://arxiv.org/abs/1802.04942))
-            data_size: Total number of data points.
+            x_size: Total number of data points.
                 Only used if `use_decomposed_kld = True`.
             use_mss: Whether to use minibatch stratified sampling instead of minibatch
                 weighted sampling. Only used if `use_decomposed_kld = True`.
@@ -167,7 +167,7 @@ class VariationalEncoder(Encoder):
         self.mi_weight = tf.Variable(mi_weight, trainable=False)
         self.tc_weight = tf.Variable(tc_weight, trainable=False)
         self.capacity = tf.Variable(capacity, trainable=False)
-        self.data_size = data_size
+        self.x_size = x_size
         self.use_mss = use_mss
         self.use_decomposed_kld = use_decomposed_kld
         self.prior = prior
@@ -222,7 +222,8 @@ class VariationalEncoder(Encoder):
         if self.use_decomposed_kld:
             prior_dist = self.prior_dist
             kld_regularizer = DecomposedKLDAddLoss(
-                data_size=self.data_size,
+                self.prior_dist,
+                data_size=self.x_size,
                 kl_weight=self.kld_weight,
                 mi_weight=self.mi_weight,
                 tc_weight=self.tc_weight,
@@ -238,7 +239,7 @@ class VariationalEncoder(Encoder):
             kld_regularizer = KLDivergenceAddLoss(
                 prior_dist,
                 capacity=self.capacity,
-                beta=self.kld_weight
+                weight=self.kld_weight
             )
             kld_loss = kld_regularizer(outputs)
         # Add losses manually to better monitor them

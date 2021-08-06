@@ -411,20 +411,20 @@ class KLDivergenceAddLoss(layers.Layer):
     def __init__(
         self,
         distribution_b,
-        beta: float = 1.,
+        weight: float = 1.,
         capacity: float = 0.,
         **kwargs
     ):
         """
         Arguments:
             distribution_b: Distribution instance corresponding to b as KL[a,b]
-            beta: Weight of the KLD loss.
+            weight: Weight of the KLD loss.
             capacity: Capacity of the loss. Can be linearly increased using a scheduler
                 callback.
             **kwargs: Other arguments passed to `keras.layers.Layer`.
         """
         super().__init__(**kwargs)
-        self.beta = beta
+        self.weight = weight
         self.capacity = capacity
         self.kld_regularizer = tfpl.KLDivergenceRegularizer(
             distribution_b,
@@ -434,12 +434,15 @@ class KLDivergenceAddLoss(layers.Layer):
 
     def call(self, distribution_a):
         """Calculates KLDivergence"""
-        kld_loss = self.beta * tf.math.maximum(
+        kld_loss = self.weight * tf.math.maximum(
             0., self.kld_regularizer(distribution_a) - self.capacity)
         return kld_loss
 
 
-# Implementation adapted from https://github.com/YannDubs/disentangling-vae
+# Implementation adapted from
+# * https://github.com/YannDubs/disentangling-vae
+# * https://github.com/julian-carpenter/beta-TCVAE
+# * https://github.com/rtqichen/beta-tcvae
 class DecomposedKLDAddLoss(layers.Layer):
     """Computes decomposed KLD loss with weights for individual terms
     using minibatch weighted sampling or minibatch stratified sampling
@@ -447,11 +450,14 @@ class DecomposedKLDAddLoss(layers.Layer):
     """
     def __init__(
         self,
-        data_size,
+        distribution_b,
+        data_size: int = 1000,
         mi_weight: float = 1.,
         tc_weight: float = 1.,
         kl_weight: float = 1.,
+        capacity: float = 0.,
         use_mss: bool = True,
+        full_decompose: bool = False,
         **kwargs
     ):
         """
@@ -460,49 +466,59 @@ class DecomposedKLDAddLoss(layers.Layer):
             mi_weight: Weight of the Index-Code mutual information term.
             tc_weight: Weight of the total correlation term.
             kl_weight: Weight of the dimension-wise KL term.
+            capacity: Capacity of the loss. Can be linearly increased using a scheduler
+                callback.
             use_mss: Whether to use minibatch stratified sampling instead of minibatch
                 weighted sampling.
-            **kwargs: Other arguments passed to `keras.layers.Layer`.
+            full_decompose: Whether to fully decompose the KLD as α*MI + ß*TC + γ*dwKL
+                or only calculate TC and write loss as γ*KLD + (ß-1) * TC (default).
+            kwargs: Other arguments passed to `keras.layers.Layer`.
         """
         super().__init__(**kwargs)
         self.data_size = data_size
         self.mi_weight = mi_weight
-        self.tc_weight = tc_weight
+        self.tc_weight = tf.math.maximum(1., tc_weight)
         self.kl_weight = kl_weight
+        self.capacity = capacity
         self.use_mss = use_mss
+        self.full_decompose = full_decompose
 
-    def call(self, latent_dist):
-        log_pz, log_qz, log_qz_prod, log_qz_cond_x = self._get_elbo_components(
-            latent_dist)
+        if not self.full_decompose:
+            self.kld_layer = KLDivergenceAddLoss(
+                distribution_b,
+                weight=self.kl_weight,
+                capacity=self.capacity
+            )
 
-        # Compute components of KLD loss
-        # I[z;x] = KL[q(z,x)||q(x)q(z)] = E_x[KL[q(z|x)||q(z)]]
-        mi_loss = tf.reduce_mean(log_qz_cond_x - log_qz)
+    def call(self, distribution_a):
+        log_pz, log_qz, log_qz_prod, log_qz_cond_x = self._get_kld_components(
+            distribution_a)
+
+        # Compute TC term
         # TC[z] = KL[q(z)||\prod_i z_i]
         tc_loss = tf.reduce_mean(log_qz - log_qz_prod)
-        # dw_kl_loss is KL[q(z)||p(z)] instead of usual KL[q(z|x)||p(z))]
-        dw_kl_loss = tf.reduce_mean(log_qz_prod - log_pz)
 
-        tf.print('logqzCx', tf.math.reduce_mean(log_qz_cond_x))
-        tf.print('logqz', tf.math.reduce_mean(log_qz))
-        tf.print('logqzprod', tf.math.reduce_mean(log_qz_prod))
+        if not self.full_decompose:
+            kld_loss = self.kld_layer(distribution_a)
+            return self.kl_weight * kld_loss + (self.tc_weight - 1) * tc_loss
+            
+        else:
+            # Compute other components of KLD loss
+            # I[z;x] = KL[q(z,x)||q(x)q(z)] = E_x[KL[q(z|x)||q(z)]]
+            mi_loss = tf.reduce_mean(log_qz_cond_x - log_qz)
+            # dw_kl_loss is KL[q(z)||p(z)] instead of usual KL[q(z|x)||p(z))]
+            dw_kl_loss = tf.reduce_mean(log_qz_prod - log_pz)
+            # Compute total KLD loss
+            return (self.mi_weight * mi_loss
+                + self.tc_weight * tc_loss
+                + self.kl_weight * dw_kl_loss)
 
-        # Compute total KLD loss
-        loss = (self.mi_weight * mi_loss
-            + self.tc_weight * tc_loss
-            + self.kl_weight * dw_kl_loss)
-
-        return loss
-
-    def _get_elbo_components(self, latent_dist):
-        latent_sample = tf.convert_to_tensor(latent_dist)
-        # batch_size = tf.shape(latent_sample)[0]
-        loc = latent_dist.distribution.loc
-        scale = latent_dist.distribution.scale
-
-        # Calculate log q(z|x)
-        log_qz_cond_x = tf.math.reduce_sum(
-            log_density_gaussian(latent_sample, loc, scale), 1)
+    def _get_kld_components(self, distribution_a):
+        latent_sample = tf.convert_to_tensor(distribution_a)
+        batch_size = tf.cast(tf.shape(latent_sample)[0], dtype=tf.float32)
+        norm_const = tf.math.log(batch_size * self.data_size)
+        loc = distribution_a.distribution.loc
+        scale = distribution_a.distribution.scale
 
         # Calculate log p(z)
         # Zero mean and unit variance -> prior
@@ -510,39 +526,24 @@ class DecomposedKLDAddLoss(layers.Layer):
         log_pz = tf.reduce_sum(
             log_density_gaussian(latent_sample, zeros, 1), 1)
 
-        log_qz_prob = matrix_log_density_gaussian(latent_sample, loc, scale)
+        # Calculate log q(z|x)
+        log_qz_cond_x = tf.math.reduce_sum(
+            log_density_gaussian(latent_sample, loc, scale), 1)
 
-        # if self.use_mss:
-        #     # Use stratification
-        #     log_iw_mat = self._log_importance_weight_matrix(batch_size)
-        #     mat_log_qz = mat_log_qz + tf.reshape(
-        #         log_iw_mat, (batch_size, batch_size, 1))
+        log_qz_prob = matrix_log_density_gaussian(latent_sample, loc, scale)
 
         log_qz = tf.reduce_logsumexp(
             tf.reduce_sum(log_qz_prob, axis=2, keepdims=False),
             axis=1,
             keepdims=False
-        )
+        ) - norm_const
         log_qz_prod = tf.reduce_sum(
-            tf.reduce_logsumexp(log_qz_prob, axis=1, keepdims=False),
+            tf.reduce_logsumexp(log_qz_prob, axis=1, keepdims=False) - norm_const,
             axis=1,
             keepdims=False
         )
 
         return log_pz, log_qz, log_qz_prod, log_qz_cond_x
-
-    # def _log_importance_weight_matrix(self, batch_size):
-    #     N = self.data_size
-    #     M = batch_size - 1
-    #     strat_weight = (N - M) / (N * M)
-    #     W = tf.fill((batch_size, batch_size), 1 / M)
-    #     W = tf.Variable(W, trainable=False)
-    #     weight = tf.fill(batch_size, 1 / N)
-    #     W = W[:, 0].assign(weight)
-    #     weight = tf.fill(batch_size, strat_weight)
-    #     W = W[:, 1].assgn(weight)
-    #     W = W[M - 1, 0].assign(strat_weight)
-    #     return tf.math.log(W)
 
 
 # PROBABILISTIC LAYERS

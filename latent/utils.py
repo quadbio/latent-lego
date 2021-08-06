@@ -1,4 +1,3 @@
-import math
 import inspect
 import warnings
 import numpy as np
@@ -10,11 +9,17 @@ tfpl = tfp.layers
 tfd = tfp.distributions
 
 
+# Only needed for GW-OT
+try:
+    import ot
+except ModuleNotFoundError:
+    warnings.warn('POT package not available.')
+
+
 # Probability distribution utils
 def matrix_log_density_gaussian(x, mu, scale):
     """Calculates log density of a Gaussian for all combination of batch pairs of
-    `x` and `mu`. I.e. return tensor of shape `(batch_size, batch_size, dim)`
-    instead of (batch_size, dim) in the usual log density.
+    `x` and `mu`. I.e. return tensor of shape `(batch_size, batch_size, dim)`.
 
     Arguments:
         x: Float value at which to compute the density. Shape: (batch_size, dim).
@@ -44,11 +49,40 @@ def log_density_gaussian(x, mu, scale):
     return log_density
 
 
-# Only needed for GW-OT
-try:
-    import ot
-except ModuleNotFoundError:
-    warnings.warn('POT package not available.')
+def total_correlation(z, mu, scale):
+    """Estimate of total correlation on a batch.
+    We need to compute the expectation over a batch of:
+    E_j [log(q(z(x_j))) - log(prod_l q(z(x_j)_l))].
+    We ignore the constants as they do not matter for the minimization.
+    The constant should be equal to (num_latents - 1) * log(batch_size * dataset_size)
+
+    Arguments:
+      z: [batch_size, num_latents]-tensor with sampled representation.
+      z_mean: [batch_size, num_latents]-tensor with mean of the encoder.
+      z_log_squared_scale: [batch_size, num_latents]-
+        tensor with log variance of the encoder.
+    """
+    # Compute log(q(z(x_j)|x_i)) for every sample in the batch, which is a
+    # tensor of size [batch_size, batch_size, num_latents]. In the following
+    # comments, [batch_size, batch_size, num_latents] are indexed by [j, i, l].
+    log_qz_prob = log_density_gaussian(
+        tf.expand_dims(z, 1), tf.expand_dims(mu, 0),
+        tf.expand_dims(scale, 0)
+    )
+    # Compute log prod_l p(z(x_j)_l) = sum_l(log(sum_i(q(z(z_j)_l|x_i)))
+    # + constant) for each sample in the batch, which is a vector of size
+    # [batch_size,].
+    log_qz_product = tf.math.reduce_sum(
+        tf.math.reduce_logsumexp(log_qz_prob, axis=1, keepdims=False),
+        axis=1,
+        keepdims=False)
+    # Compute log(q(z(x_j))) as log(sum_i(q(z(x_j)|x_i))) + constant =
+    # log(sum_i(prod_l q(z(x_j)_l|x_i))) + constant.
+    log_qz = tf.math.reduce_logsumexp(
+        tf.math.reduce_sum(log_qz_prob, axis=2, keepdims=False),
+        axis=1,
+        keepdims=False)
+    return tf.math.reduce_mean(log_qz - log_qz_product)
 
 
 # Kernels
