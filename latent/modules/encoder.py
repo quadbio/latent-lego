@@ -112,6 +112,7 @@ class VariationalEncoder(Encoder):
         name: str = 'variational_encoder',
         initializer: Union[str, Callable] = 'glorot_normal',
         use_decomposed_kld: bool = False,
+        full_decompose: bool = False,
         x_size: int = 1000,
         use_mss: bool = True,
         kld_weight: float = 1e-4,
@@ -132,6 +133,9 @@ class VariationalEncoder(Encoder):
                 `keras.initializers`)
             use_decomposed_kld: Boolean indicating whether to use the decomposed KLD loss
                 ([Chen 2019](https://arxiv.org/abs/1802.04942))
+            full_decompose: Whether to fully decompose the KLD as α*MI + ß*TC + γ*dwKL
+                or only calculate TC and write loss as γ*KLD + (ß-1) * TC (default).
+                Only used if `use_decomposed_kld = True`.
             x_size: Total number of data points.
                 Only used if `use_decomposed_kld = True`.
             use_mss: Whether to use minibatch stratified sampling instead of minibatch
@@ -170,6 +174,7 @@ class VariationalEncoder(Encoder):
         self.x_size = x_size
         self.use_mss = use_mss
         self.use_decomposed_kld = use_decomposed_kld
+        self.full_decompose = full_decompose
         self.prior = prior
         self.iaf_units = iaf_units
         self.n_pseudoinputs = n_pseudoinputs
@@ -223,6 +228,7 @@ class VariationalEncoder(Encoder):
             prior_dist = self.prior_dist
             kld_regularizer = DecomposedKLDAddLoss(
                 self.prior_dist,
+                full_decompose=self.full_decompose,
                 data_size=self.x_size,
                 kl_weight=self.kld_weight,
                 mi_weight=self.mi_weight,

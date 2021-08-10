@@ -501,7 +501,6 @@ class DecomposedKLDAddLoss(layers.Layer):
         if not self.full_decompose:
             kld_loss = self.kld_layer(distribution_a)
             return self.kl_weight * kld_loss + (self.tc_weight - 1) * tc_loss
-            
         else:
             # Compute other components of KLD loss
             # I[z;x] = KL[q(z,x)||q(x)q(z)] = E_x[KL[q(z|x)||q(z)]]
