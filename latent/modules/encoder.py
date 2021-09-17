@@ -112,11 +112,9 @@ class VariationalEncoder(Encoder):
         name: str = 'variational_encoder',
         initializer: Union[str, Callable] = 'glorot_normal',
         use_decomposed_kld: bool = False,
-        full_decompose: bool = False,
         x_size: int = 1000,
         use_mss: bool = True,
         kld_weight: float = 1e-4,
-        mi_weight: float = 1.,
         tc_weight: float = 1.,
         capacity: float = 0.,
         prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
@@ -133,9 +131,6 @@ class VariationalEncoder(Encoder):
                 `keras.initializers`)
             use_decomposed_kld: Boolean indicating whether to use the decomposed KLD loss
                 ([Chen 2019](https://arxiv.org/abs/1802.04942))
-            full_decompose: Whether to fully decompose the KLD as α*MI + ß*TC + γ*dwKL
-                or only calculate TC and write loss as γ*KLD + (ß-1) * TC (default).
-                Only used if `use_decomposed_kld = True`.
             x_size: Total number of data points.
                 Only used if `use_decomposed_kld = True`.
             use_mss: Whether to use minibatch stratified sampling instead of minibatch
@@ -143,9 +138,6 @@ class VariationalEncoder(Encoder):
             kld_weight: Float indicating the weight of the KL Divergence
                 regularization loss. If `use_decomposed_kld = True`, this indicated the
                 weight of the dimension-wise KLD.
-            mi_weight: Float indicating the weight of the
-                Index-Code mutual information term in the KLD loss.
-                Only used if `use_decomposed_kld = True`.
             tc_weight: Float indicating the weight of the total correlation term
                 of the KLD loss. Only used if `use_decomposed_kld = True`.
             capacity: Capacity of the KLD loss. Can be linearly increased using a KL
@@ -228,10 +220,9 @@ class VariationalEncoder(Encoder):
             prior_dist = self.prior_dist
             kld_regularizer = DecomposedKLDAddLoss(
                 self.prior_dist,
-                full_decompose=self.full_decompose,
+                full_decompose=False,
                 data_size=self.x_size,
                 kl_weight=self.kld_weight,
-                mi_weight=self.mi_weight,
                 tc_weight=self.tc_weight,
                 use_mss=self.use_mss
             )
