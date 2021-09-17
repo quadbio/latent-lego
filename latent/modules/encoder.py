@@ -160,13 +160,11 @@ class VariationalEncoder(Encoder):
             **kwargs: Other arguments passed on to `DenseStack`.
         """
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
-        self.mi_weight = tf.Variable(mi_weight, trainable=False)
         self.tc_weight = tf.Variable(tc_weight, trainable=False)
         self.capacity = tf.Variable(capacity, trainable=False)
         self.x_size = x_size
         self.use_mss = use_mss
         self.use_decomposed_kld = use_decomposed_kld
-        self.full_decompose = full_decompose
         self.prior = prior
         self.iaf_units = iaf_units
         self.n_pseudoinputs = n_pseudoinputs
