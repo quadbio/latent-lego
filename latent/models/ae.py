@@ -198,6 +198,7 @@ class PoissonAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
+        super().__init__()
         poisson_decoder = PoissonDecoder(
             x_dim=x_dim,
             hidden_units=decoder_units,
@@ -253,6 +254,7 @@ class NegativeBinomialAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
+        super().__init__()
         self.dispersion = dispersion
         nb_decoder = NegativeBinomialDecoder(
             x_dim=x_dim,
@@ -312,6 +314,7 @@ class ZINBAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
+        super().__init__()
         self.dispersion = dispersion
         zinb_decoder = ZINBDecoder(
             x_dim=x_dim,
@@ -364,6 +367,7 @@ class TopologicalAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
+        super().__init__()
         self.topo_weight = tf.Variable(topo_weight, trainable=False)
         topo_encoder = TopologicalEncoder(
             latent_dim=latent_dim,

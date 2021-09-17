@@ -72,6 +72,7 @@ class VariationalAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
                 decoder networks.
         """
+        super().__init__()
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.capacity = tf.Variable(capacity, trainable=False)
         self.prior = prior
@@ -158,6 +159,7 @@ class PoissonVAE(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
                 decoder networks.
         """
+        super().__init__()
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
         self.iaf_units = iaf_units
@@ -254,6 +256,7 @@ class NegativeBinomialVAE(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
                 decoder networks.
         """
+        super().__init__()
         self.dispersion = dispersion
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
@@ -352,6 +355,7 @@ class ZINBVAE(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
                 decoder networks.
         """
+        super().__init__()
         self.dispersion = dispersion
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.prior = prior
@@ -443,6 +447,7 @@ class TopologicalVariationalAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung encoder/
                 decoder networks.
         """
+        super().__init__()
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.topo_weight = tf.Variable(topo_weight, trainable=False)
         self.prior = prior

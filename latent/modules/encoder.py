@@ -80,6 +80,7 @@ class TopologicalEncoder(Encoder):
             topo_weight: Float indicating the weight of the topological loss.
             **kwargs: Other arguments passed on to `DenseStack`
         """
+        super().__init__()
         self.topo_weight = topo_weight
         self.topo_regularizer = TopologicalSignatureDistance()
         super().__init__(
@@ -159,6 +160,7 @@ class VariationalEncoder(Encoder):
                 prior. Only used if `prior = 'vamp'`.
             **kwargs: Other arguments passed on to `DenseStack`.
         """
+        super().__init__()
         self.kld_weight = tf.Variable(kld_weight, trainable=False)
         self.tc_weight = tf.Variable(tc_weight, trainable=False)
         self.capacity = tf.Variable(capacity, trainable=False)
