@@ -115,7 +115,7 @@ class VariationalEncoder(Encoder):
         x_size: int = 1000,
         use_mss: bool = True,
         kld_weight: float = 1e-4,
-        tc_weight: float = 1.,
+        tc_weight: float = 1e-3,
         capacity: float = 0.,
         prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
         latent_dist: Literal['independent', 'multivariate'] = 'independent',
