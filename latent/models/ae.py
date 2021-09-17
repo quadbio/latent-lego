@@ -54,7 +54,7 @@ class Autoencoder(keras.Model):
         self.latent_dim = int(latent_dim)
         self.x_dim = int(x_dim) if x_dim else None
         if not x_dim and not decoder:
-            raise ValueError('Either x_dim or decoder must be specified.')
+            raise Warning('Either x_dim or decoder must be specified for this to work.')
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
         self.reconstruction_loss = reconstruction_loss
@@ -198,7 +198,7 @@ class PoissonAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
-        super().__init__()
+        super().__init__(x_dim=x_dim)
         poisson_decoder = PoissonDecoder(
             x_dim=x_dim,
             hidden_units=decoder_units,
@@ -254,7 +254,7 @@ class NegativeBinomialAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
-        super().__init__()
+        super().__init__(x_dim=x_dim)
         self.dispersion = dispersion
         nb_decoder = NegativeBinomialDecoder(
             x_dim=x_dim,
@@ -314,7 +314,7 @@ class ZINBAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
-        super().__init__()
+        super().__init__(x_dim=x_dim)
         self.dispersion = dispersion
         zinb_decoder = ZINBDecoder(
             x_dim=x_dim,
@@ -367,7 +367,7 @@ class TopologicalAutoencoder(Autoencoder):
             **kwargs: Other arguments passed on to `DenseStack` for constructung
                 encoder/decoder networks.
         """
-        super().__init__()
+        super().__init__(x_dim=x_dim)
         self.topo_weight = tf.Variable(topo_weight, trainable=False)
         topo_encoder = TopologicalEncoder(
             latent_dim=latent_dim,
