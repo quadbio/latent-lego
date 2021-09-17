@@ -10,7 +10,7 @@
       
       
       <link rel="shortcut icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.4">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.3">
     
     
       
@@ -18,10 +18,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.15aa0b43.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.3b61ea93.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.75751829.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.39b8e14a.min.css">
         
           
           
@@ -1190,19 +1190,6 @@
 
 
   <li class="md-nav__item">
-    <a href="../../api/callbacks/IncreaseKLDOnEpoch/" class="md-nav__link">
-      IncreaseKLDOnEpoch
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-
-  <li class="md-nav__item">
     <a href="../../api/callbacks/KLDivergenceScheduler/" class="md-nav__link">
       KLDivergenceScheduler
     </a>
@@ -1281,13 +1268,15 @@
                 
                   <h1>Integration</h1>
                 
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script>
 (function() {
   function addWidgetsRenderer() {
+    var requireJsScript = document.createElement('script');
+    requireJsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js';
+
     var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
-    var scriptElement = document.createElement('script');
+    var jupyterWidgetsScript = document.createElement('script');
     var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
     var widgetState;
 
@@ -1300,8 +1289,10 @@
       }
     } catch(e) {}
 
-    scriptElement.src = widgetRendererSrc;
-    document.body.appendChild(scriptElement);
+    jupyterWidgetsScript.src = widgetRendererSrc;
+
+    document.body.appendChild(requireJsScript);
+    document.body.appendChild(jupyterWidgetsScript);
   }
 
   document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
@@ -1686,8 +1677,8 @@
       
     </div>
     
-      <script src="../../assets/javascripts/vendor.93c04032.min.js"></script>
-      <script src="../../assets/javascripts/bundle.83e5331e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      <script src="../../assets/javascripts/vendor.08c56446.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6ced434e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
       
       <script>
         app = initialize({

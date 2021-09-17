@@ -10,7 +10,7 @@
       
       
       <link rel="shortcut icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.4">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.3">
     
     
       
@@ -18,10 +18,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.15aa0b43.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.3b61ea93.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.75751829.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.39b8e14a.min.css">
         
           
           
@@ -1198,19 +1198,6 @@
 
 
   <li class="md-nav__item">
-    <a href="../../callbacks/IncreaseKLDOnEpoch/" class="md-nav__link">
-      IncreaseKLDOnEpoch
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-
-  <li class="md-nav__item">
     <a href="../../callbacks/KLDivergenceScheduler/" class="md-nav__link">
       KLDivergenceScheduler
     </a>
@@ -1301,7 +1288,6 @@
         <code>latent.layers.RowwiseMult</code>
 
 
-
       </h3>
 <div class="doc doc-contents first">
 <p>Performs row-wise multiplication between input vectors.</p>
@@ -1309,7 +1295,8 @@
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.layers.RowwiseMult.__init__">
 
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>        </code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1343,7 +1330,8 @@
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.layers.RowwiseMult.call">
 
-<code class="highlight language-python"><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+call<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>        </code>
 
 
       </h4>
@@ -1368,7 +1356,32 @@ method to support masking.</p>
 <td><code>inputs</code></td>
 <td><code></code></td>
 <td>
-<p>Input tensor, or list/tuple of input tensors.</p>
+<p>Input tensor, or dict/list/tuple of input tensors.
+The first positional <code>inputs</code> argument is subject to special rules:
+- <code>inputs</code> must be explicitly passed. A layer cannot have zero
+  arguments, and <code>inputs</code> cannot be provided via the default value
+  of a keyword argument.
+- NumPy array or Python scalar values in <code>inputs</code> get cast as tensors.
+- Keras mask metadata is only collected from <code>inputs</code>.
+- Layers are built (<code>build(input_shape)</code> method)
+  using shape info from <code>inputs</code> only.
+- <code>input_spec</code> compatibility is only checked against <code>inputs</code>.
+- Mixed precision input casting is only applied to <code>inputs</code>.
+  If a layer has tensor arguments in <code>*args</code> or <code>**kwargs</code>, their
+  casting behavior in mixed precision should be handled manually.
+- The SavedModel input specification is generated using <code>inputs</code> only.
+- Integration with various ecosystem packages like TFMOT, TFLite,
+  TF.js, etc is only supported for <code>inputs</code> and not for tensors in
+  positional and keyword arguments.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>*args</code></td>
+<td><code></code></td>
+<td>
+<p>Additional positional arguments. May contain tensors, although
+this is not recommended, for the reasons above.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1376,7 +1389,16 @@ method to support masking.</p>
 <td><code>**kwargs</code></td>
 <td><code></code></td>
 <td>
-<p>Additional keyword arguments. Currently unused.</p>
+<p>Additional keyword arguments. May contain tensors, although
+this is not recommended, for the reasons above.
+The following optional keyword arguments are reserved:
+- <code>training</code>: Boolean scalar tensor of Python boolean indicating
+  whether the <code>call</code> is meant for training or inference.
+- <code>mask</code>: Boolean input mask. If the layer's <code>call()</code> method takes a
+  <code>mask</code> argument, its default value will be set to the mask generated
+  for <code>inputs</code> by the previous layer (if <code>input</code> did come from a layer
+  that generated a corresponding mask, i.e. if it came from a Keras
+  layer with masking support).</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1470,8 +1492,8 @@ method to support masking.</p>
       
     </div>
     
-      <script src="../../../assets/javascripts/vendor.93c04032.min.js"></script>
-      <script src="../../../assets/javascripts/bundle.83e5331e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      <script src="../../../assets/javascripts/vendor.08c56446.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.6ced434e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
       
       <script>
         app = initialize({

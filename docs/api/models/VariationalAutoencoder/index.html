@@ -10,7 +10,7 @@
       
       
       <link rel="shortcut icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.4">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.3">
     
     
       
@@ -18,10 +18,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.15aa0b43.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.3b61ea93.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.75751829.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.39b8e14a.min.css">
         
           
           
@@ -1225,19 +1225,6 @@
 
 
   <li class="md-nav__item">
-    <a href="../../callbacks/IncreaseKLDOnEpoch/" class="md-nav__link">
-      IncreaseKLDOnEpoch
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-
-  <li class="md-nav__item">
     <a href="../../callbacks/KLDivergenceScheduler/" class="md-nav__link">
       KLDivergenceScheduler
     </a>
@@ -1350,7 +1337,6 @@
         <code>latent.models.vae.VariationalAutoencoder</code>
 
 
-
       </h3>
 <div class="doc doc-contents first">
 <p>Variational Autoencoder base class. This model uses a fixed variational encoder
@@ -1360,7 +1346,8 @@ by a Kullback-Leibler Divergence loss.</p>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.VariationalAutoencoder.__init__">
 
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'variational_autoencoder'</span><span class="p">,</span> <span class="n">x_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">encoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">decoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">reconstruction_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_conditions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kld_weight</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="s1">'normal'</span><span class="p">,</span> <span class="n">latent_dist</span><span class="o">=</span><span class="s1">'independent'</span><span class="p">,</span> <span class="n">iaf_units</span><span class="o">=</span><span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">n_pseudoinputs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'variational_autoencoder'</span><span class="p">,</span> <span class="n">x_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">encoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">decoder_units</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">reconstruction_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_conditions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kld_weight</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="s1">'normal'</span><span class="p">,</span> <span class="n">latent_dist</span><span class="o">=</span><span class="s1">'independent'</span><span class="p">,</span> <span class="n">iaf_units</span><span class="o">=</span><span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">n_pseudoinputs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-special"><code>special</code></small>
@@ -1460,6 +1447,15 @@ loss.</p>
 <td><code>1e-05</code></td>
 </tr>
 <tr>
+<td><code>capacity</code></td>
+<td><code>float</code></td>
+<td>
+<p>Capacity of the KLD loss. Can be linearly increased using a  KL
+scheduler callback.</p>
+</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
 <td><code>prior</code></td>
 <td><code>Literal['normal', 'iaf', 'vamp']</code></td>
 <td>
@@ -1522,7 +1518,8 @@ decoder networks.</p>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.VariationalAutoencoder.call">
 
-<code class="highlight language-python"><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+call<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>        </code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -1536,7 +1533,8 @@ decoder networks.</p>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.VariationalAutoencoder.compile">
 
-<code class="highlight language-python"><span class="nb">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">'adam'</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+compile<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">'adam'</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -1545,6 +1543,15 @@ decoder networks.</p>
       </h4>
 <div class="doc doc-contents ">
 <p>Configures the model for training.</p>
+<p><strong>Examples:</strong></p>
+<br />
+<div class="highlight">
+<pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">),</span>
+              <span class="n">loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">BinaryCrossentropy</span><span class="p">(),</span>
+              <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">BinaryAccuracy</span><span class="p">(),</span>
+                       <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">FalseNegatives</span><span class="p">()])</span>
+</code></pre>
+</div>
 <p><strong>Parameters:</strong></p>
 <table>
 <thead>
@@ -1569,20 +1576,26 @@ decoder networks.</p>
 <td><code>loss</code></td>
 <td><code></code></td>
 <td>
-<p>String (name of objective function), objective function or
-<code>tf.keras.losses.Loss</code> instance. See <code>tf.keras.losses</code>. An objective
+<p>Loss function. Maybe be a string (name of loss function), or
+a <code>tf.keras.losses.Loss</code> instance. See <code>tf.keras.losses</code>. A loss
 function is any callable with the signature <code>loss = fn(y_true,
-y_pred)</code>, where y_true = ground truth values with shape =
-<code>[batch_size, d0, .. dN]</code>, except sparse loss functions such as sparse
-categorical crossentropy where shape = <code>[batch_size, d0, .. dN-1]</code>.
-y_pred = predicted values with shape = <code>[batch_size, d0, .. dN]</code>. It
-returns a weighted loss float tensor. If a custom <code>Loss</code> instance is
-used and reduction is set to NONE, return value has the shape
-[batch_size, d0, .. dN-1] ie. per-sample or per-timestep loss values;
-otherwise, it is a scalar. If the model has multiple outputs, you can
-use a different loss on each output by passing a dictionary or a list
-of losses. The loss value that will be minimized by the model will
-then be the sum of all individual losses.</p>
+y_pred)</code>, where <code>y_true</code> are the ground truth values, and
+<code>y_pred</code> are the model's predictions.
+<code>y_true</code> should have shape
+<code>(batch_size, d0, .. dN)</code> (except in the case of
+sparse loss functions such as
+sparse categorical crossentropy which expects integer arrays of shape
+<code>(batch_size, d0, .. dN-1)</code>).
+<code>y_pred</code> should have shape <code>(batch_size, d0, .. dN)</code>.
+The loss function should return a float tensor.
+If a custom <code>Loss</code> instance is
+used and reduction is set to <code>None</code>, return value has shape
+<code>(batch_size, d0, .. dN-1)</code> i.e. per-sample or per-timestep loss
+values; otherwise, it is a scalar. If the model has multiple outputs,
+you can use a different loss on each output by passing a dictionary
+or a list of losses. The loss value that will be minimized by the
+model will then be the sum of all individual losses, unless
+<code>loss_weights</code> is specified.</p>
 </td>
 <td><code>None</code></td>
 </tr>
@@ -1598,15 +1611,15 @@ function is any callable with the signature <code>result = fn(y_true,
 y_pred)</code>. To specify different metrics for different outputs of a
 multi-output model, you could also pass a dictionary, such as
 <code>metrics={'output_a': 'accuracy', 'output_b': ['accuracy', 'mse']}</code>.
-  You can also pass a list (len = len(outputs)) of lists of metrics
-  such as <code>metrics=[['accuracy'], ['accuracy', 'mse']]</code> or
-  <code>metrics=['accuracy', ['accuracy', 'mse']]</code>. When you pass the
-  strings 'accuracy' or 'acc', we convert this to one of
-  <code>tf.keras.metrics.BinaryAccuracy</code>,
-  <code>tf.keras.metrics.CategoricalAccuracy</code>,
-  <code>tf.keras.metrics.SparseCategoricalAccuracy</code> based on the loss
-  function used and the model output shape. We do a similar
-  conversion for the strings 'crossentropy' and 'ce' as well.</p>
+You can also pass a list to specify a metric or a list of metrics
+for each output, such as <code>metrics=[['accuracy'], ['accuracy', 'mse']]</code>
+or <code>metrics=['accuracy', ['accuracy', 'mse']]</code>. When you pass the
+strings 'accuracy' or 'acc', we convert this to one of
+<code>tf.keras.metrics.BinaryAccuracy</code>,
+<code>tf.keras.metrics.CategoricalAccuracy</code>,
+<code>tf.keras.metrics.SparseCategoricalAccuracy</code> based on the loss
+function used and the model output shape. We do a similar
+conversion for the strings 'crossentropy' and 'ce' as well.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1630,7 +1643,7 @@ If a list, it is expected to have a 1:1 mapping to the model's
 <td><code></code></td>
 <td>
 <p>List of metrics to be evaluated and weighted by
-sample_weight or class_weight during training and testing.</p>
+<code>sample_weight</code> or <code>class_weight</code> during training and testing.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1641,7 +1654,8 @@ sample_weight or class_weight during training and testing.</p>
 <p>Bool. Defaults to <code>False</code>. If <code>True</code>, this <code>Model</code>'s
 logic will not be wrapped in a <code>tf.function</code>. Recommended to leave
 this as <code>None</code> unless your <code>Model</code> cannot be run inside a
-<code>tf.function</code>.</p>
+<code>tf.function</code>. <code>run_eagerly=True</code> is not supported when using
+<code>tf.distribute.experimental.ParameterServerStrategy</code>.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1696,7 +1710,8 @@ will only be called every <code>N</code> batches
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.VariationalAutoencoder.fit">
 
-<code class="highlight language-python"><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+fit<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -1732,8 +1747,17 @@ of either <code>(inputs, targets)</code> or
 <code>(inputs, targets, sample_weights)</code>.
 - A generator or <code>keras.utils.Sequence</code> returning <code>(inputs, targets)</code>
 or <code>(inputs, targets, sample_weights)</code>.
+- A <code>tf.keras.utils.experimental.DatasetCreator</code>, which wraps a
+callable that takes a single argument of type
+<code>tf.distribute.InputContext</code>, and returns a <code>tf.data.Dataset</code>.
+<code>DatasetCreator</code> should be used when users prefer to specify the
+per-replica batching and sharding logic for the <code>Dataset</code>.
+See <code>tf.keras.utils.experimental.DatasetCreator</code> doc for more
+information.
 A more detailed description of unpacking behavior for iterator types
-(Dataset, generator, Sequence) is given below.</p>
+(Dataset, generator, Sequence) is given below. If using
+<code>tf.distribute.experimental.ParameterServerStrategy</code>, only
+<code>DatasetCreator</code> type is supported for <code>x</code>.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1782,11 +1806,13 @@ of index <code>epochs</code> is reached.</p>
 <td><code>verbose</code></td>
 <td><code></code></td>
 <td>
-<p>0, 1, or 2. Verbosity mode.
+<p>'auto', 0, 1, or 2. Verbosity mode.
 0 = silent, 1 = progress bar, 2 = one line per epoch.
-Note that the progress bar is not particularly useful when
-logged to a file, so verbose=2 is recommended when not running
-interactively (eg, in a production environment).</p>
+'auto' defaults to 1 for most cases, but 2 when used with
+<code>ParameterServerStrategy</code>. Note that the progress bar is not
+particularly useful when logged to a file, so verbose=2 is
+recommended when not running interactively (eg, in a production
+environment).</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1800,7 +1826,11 @@ See <code>tf.keras.callbacks</code>. Note <code>tf.keras.callbacks.ProgbarLogger
 and <code>tf.keras.callbacks.History</code> callbacks are created automatically
 and need not be passed into <code>model.fit</code>.
 <code>tf.keras.callbacks.ProgbarLogger</code> is created or not based on
-<code>verbose</code> argument to <code>model.fit</code>.</p>
+<code>verbose</code> argument to <code>model.fit</code>.
+Callbacks with batch-level calls are currently unsupported with
+<code>tf.distribute.experimental.ParameterServerStrategy</code>, and users are
+advised to implement epoch-level calls instead with an appropriate
+<code>steps_per_epoch</code> value.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1817,7 +1847,9 @@ on this data at the end of each epoch.
 The validation data is selected from the last samples
 in the <code>x</code> and <code>y</code> data provided, before shuffling. This argument is
 not supported when <code>x</code> is a dataset, generator or
-<code>keras.utils.Sequence</code> instance.</p>
+<code>keras.utils.Sequence</code> instance.
+<code>validation_split</code> is not yet supported with
+<code>tf.distribute.experimental.ParameterServerStrategy</code>.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1833,13 +1865,13 @@ or <code>validation_data</code> is not affected by regularization layers like
 noise and dropout.
 <code>validation_data</code> will override <code>validation_split</code>.
 <code>validation_data</code> could be:
-  - tuple <code>(x_val, y_val)</code> of Numpy arrays or tensors
-  - tuple <code>(x_val, y_val, val_sample_weights)</code> of Numpy arrays
-  - dataset
-For the first two cases, <code>batch_size</code> must be provided.
-For the last case, <code>validation_steps</code> could be provided.
-Note that <code>validation_data</code> does not support all the data types that
-are supported in <code>x</code>, eg, dict, generator or <code>keras.utils.Sequence</code>.</p>
+  - A tuple <code>(x_val, y_val)</code> of Numpy arrays or tensors.
+  - A tuple <code>(x_val, y_val, val_sample_weights)</code> of NumPy arrays.
+  - A <code>tf.data.Dataset</code>.
+  - A Python generator or <code>keras.utils.Sequence</code> returning
+  <code>(inputs, targets)</code> or <code>(inputs, targets, sample_weights)</code>.
+<code>validation_data</code> is not yet supported with
+<code>tf.distribute.experimental.ParameterServerStrategy</code>.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1849,7 +1881,8 @@ are supported in <code>x</code>, eg, dict, generator or <code>keras.utils.Sequen
 <td>
 <p>Boolean (whether to shuffle the training data
 before each epoch) or str (for 'batch'). This argument is ignored
-when <code>x</code> is a generator. 'batch' is a special option for dealing
+when <code>x</code> is a generator or an object of tf.data.Dataset.
+'batch' is a special option for dealing
 with the limitations of HDF5 data; it shuffles in batch-sized
 chunks. Has no effect when <code>steps_per_epoch</code> is not <code>None</code>.</p>
 </td>
@@ -1911,8 +1944,11 @@ the batch size, or 1 if that cannot be determined. If x is a
 <code>tf.data</code> dataset, and 'steps_per_epoch'
 is None, the epoch will run until the input dataset is exhausted.
 When passing an infinitely repeating dataset, you must specify the
-<code>steps_per_epoch</code> argument. This argument is not supported with
-array inputs.</p>
+<code>steps_per_epoch</code> argument. If <code>steps_per_epoch=-1</code> the training
+will run indefinitely with an infinitely repeating dataset.
+This argument is not supported with array inputs.
+When using <code>tf.distribute.experimental.ParameterServerStrategy</code>:
+  * <code>steps_per_epoch=None</code> is not supported.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -1951,7 +1987,7 @@ form of datasets, generators, or <code>keras.utils.Sequence</code> instances
 <td><code></code></td>
 <td>
 <p>Only relevant if validation data is provided. Integer
-or <code>collections_abc.Container</code> instance (e.g. list, tuple, etc.).
+or <code>collections.abc.Container</code> instance (e.g. list, tuple, etc.).
 If an integer, specifies how many training epochs to run before a
 new validation run is performed, e.g. <code>validation_freq=2</code> runs
 validation every 2 epochs. If a Container, specifies the epochs on
@@ -1977,8 +2013,7 @@ If unspecified, <code>max_queue_size</code> will default to 10.</p>
 <p>Integer. Used for generator or <code>keras.utils.Sequence</code> input
 only. Maximum number of processes to spin up
 when using process-based threading. If unspecified, <code>workers</code>
-will default to 1. If 0, will execute the generator on the main
-thread.</p>
+will default to 1.</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -2071,7 +2106,8 @@ and what the model expects or when the input data is empty.</p>
 <div class="doc doc-object doc-method">
 <h4 class="doc doc-heading" id="latent.models.vae.VariationalAutoencoder.transform">
 
-<code class="highlight language-python"><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+transform<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>        </code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-inherited"><code>inherited</code></small>
@@ -2189,8 +2225,8 @@ and what the model expects or when the input data is empty.</p>
       
     </div>
     
-      <script src="../../../assets/javascripts/vendor.93c04032.min.js"></script>
-      <script src="../../../assets/javascripts/bundle.83e5331e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      <script src="../../../assets/javascripts/vendor.08c56446.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.6ced434e.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
       
       <script>
         app = initialize({
