@@ -477,7 +477,7 @@ class DecomposedKLDAddLoss(layers.Layer):
         super().__init__(**kwargs)
         self.data_size = data_size
         self.mi_weight = mi_weight
-        self.tc_weight = tf.math.maximum(1., tc_weight)
+        self.tc_weight = tc_weight
         self.kl_weight = kl_weight
         self.capacity = capacity
         self.use_mss = use_mss
