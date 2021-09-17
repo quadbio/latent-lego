@@ -75,7 +75,6 @@ nav:
         TopologicalSignatureDistance: api/losses/TopologicalSignatureDistance.md
         get: api/losses/get.md
       callbacks:
-        IncreaseKLDOnEpoch: api/callbacks/IncreaseKLDOnEpoch.md
         KLDivergenceScheduler: api/callbacks/KLDivergenceScheduler.md
 plugins:
   - search
