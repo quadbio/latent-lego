@@ -1,6 +1,7 @@
 import inspect
 import warnings
 import numpy as np
+import scipy.sparse as sp
 import tensorflow as tf
 import tensorflow_probability as tfp
 from sklearn.preprocessing import LabelEncoder
@@ -22,6 +23,10 @@ def aggregate(ary, groups, fun=np.mean, axis=0):
     groups = le.fit_transform(groups)
     split_ary = np.split(ary, np.unique(groups, return_index=True)[1][1:], axis=axis)
     return np.array(list(map(fun, split_ary)))
+
+
+def todense(ary):
+    return ary.A if sp.issparse(ary) else ary
 
 
 # Probability distribution utils
