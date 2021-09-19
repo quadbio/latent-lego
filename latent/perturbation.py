@@ -100,7 +100,9 @@ class LatentVectorArithmetics:
         else:
             mean_delta = np.mean(delta)
 
-        return latent_pred_to + mean_delta
+        latent_pred = latent_pred_to + mean_delta
+        
+        return self.model.reconstruct(latent_pred)
 
 
     def _get_weights(self, latent, celltypes, metric='euclidean'):
