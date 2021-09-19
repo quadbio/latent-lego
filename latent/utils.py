@@ -21,7 +21,7 @@ def aggregate(ary, groups, fun=np.mean, axis=0):
     le = LabelEncoder()
     groups = le.fit_transform(groups)
     split_ary = np.split(ary, np.unique(groups, return_index=True)[1][1:], axis=axis)
-    return np.array(map(fun, split_ary))
+    return np.array(list(map(fun, split_ary)))
 
 
 # Probability distribution utils
