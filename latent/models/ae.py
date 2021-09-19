@@ -1,5 +1,6 @@
 """Tensorflow Autoencoder Models"""
 
+import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 from typing import Iterable, Union, Callable
@@ -73,6 +74,7 @@ class Autoencoder(keras.Model):
 
         if decoder:
             self.decoder = decoder
+            self.x_dim = self.decoder.x_dim
         else:
             self.decoder = Decoder(
                 x_dim=self.x_dim,
@@ -125,6 +127,31 @@ class Autoencoder(keras.Model):
             A numpy array with the coordinates of the input data in latent space.
         """
         return self.encoder.predict(inputs)
+
+    def reconstruct(self, latent, size_factors=None, conditions=None):
+        """
+        Reconstruct data from latent space (z).
+        Arguments:
+            latent: A numpy array with latent coordinates.
+            size_factors: A numpy array size factors for count data.
+            conditions: A numpy array with conditions.
+        Returns:
+            A numpy array with the reconstructed data.
+        """
+        if not conditions and self._conditional_decoder():
+            raise ValueError('Conditions must be provided for conditional autoencoders.')
+        if not size_factors and self._use_sf():
+            size_factors = np.ones(self.x_dim)
+        if self._use_sf() and not self._conditional_decoder():
+            return self.decoder.predict([latent, size_factors])
+        if not self._use_sf() and not self._conditional_decoder():
+            return self.decoder.predict([latent])
+        if self._use_sf() and self._conditional_decoder():
+            latent = [latent, *conditions]
+            return self.decoder.predict([latent, size_factors])
+        if not self._use_sf() and self._conditional_decoder():
+            latent = [latent, *conditions]
+            return self.decoder.predict([latent])
 
     def unpack_inputs(self, inputs):
         """Unpacks inputs into x, conditions and size_factors."""
