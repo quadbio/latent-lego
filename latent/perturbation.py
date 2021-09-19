@@ -1,6 +1,8 @@
 import latent
 import numpy as np
 import scipy as sp
+import tensorflow.keras as keras
+from sklearn import preprocessing as pp
 from scipy.spatial.distance import pdist
 
 from typing import Iterable, Union
@@ -49,6 +51,7 @@ class LatentVectorArithmetics:
             model: An autoencoder model.
         """
         self.model = model
+        self.use_conditions = self.model._conditional_decoder()
 
     def predict(
         self, 
@@ -101,12 +104,21 @@ class LatentVectorArithmetics:
             mean_delta = np.mean(delta)
 
         latent_pred = latent_pred_to + mean_delta
-        
-        return self.model.reconstruct(latent_pred)
 
+        if self.use_conditions:
+            conditions = self._get_conditions(pred_to, condition_key)
+            return self.model.reconstruct([latent_pred, conditions])
+        else:
+            return self.model.reconstruct(latent_pred)
 
     def _get_weights(self, latent, celltypes, metric='euclidean'):
         latent_mean = aggregate(latent, celltypes, axis=0)
         dists = sp.distance.pdist(latent_mean, metric=metric)
         rev_dists = 1 / (dists + 1)
         return rev_dists / np.sum(rev_dists)
+
+    def _get_conditions(self, adata, condition_key):
+        le = pp.LabelEncoder()
+        cond = adata.obs[condition_key].values
+        cond = le.fit_transform(cond)
+        cond = keras.utils.to_categorical(cond)
