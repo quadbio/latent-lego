@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+from sklearn.preprocessing import LabelEncoder
 
 kernels = tfp.math.psd_kernels
 tfpl = tfp.layers
@@ -14,6 +15,13 @@ try:
     import ot
 except ModuleNotFoundError:
     warnings.warn('POT package not available.')
+
+
+def aggregate(ary, groups, fun=np.mean, axis=0):
+    le = LabelEncoder()
+    groups = le.fit_transform(groups)
+    split_ary = np.split(ary, np.unique(groups, return_index=True)[1][1:], axis=axis)
+    return np.array(map(fun, split_ary))
 
 
 # Probability distribution utils
