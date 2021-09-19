@@ -15,6 +15,35 @@ try:
 except ModuleNotFoundError:
     warnings.warn('POT package not available.')
 
+# Perturbation prediction utils
+def test_train_split(
+    adata, 
+    celltype_key, 
+    condition_key, 
+    celltype_predict, 
+    control_condition = False
+):
+    """Splits andata object into training and test set for pertrubation prediction. 
+    The training set consists of controls of all cell types and stimulated state for all 
+    but one cell type. The exluded test data will further be used as a ground truth for 
+    evaluation of the perturbation prediction.
+
+    Arguments:
+        adata: A anndata object.
+        celltype_predict: String indicating the metadata column containing celltype info.
+        condition_key: String indicating the metadata column containing condition info.
+        celltype_predict: A string or list of strings containing the celltype(s) 
+            to be held out from training.
+        control_condition: A string or list of strings containing the control conditions.
+    """
+    ct_pred = np.array(celltype_predict)
+    ctrl_cond = np.array(control_condition)
+    stim_idx = ~adata.obs.loc[:, condition_key].isin(ctrl_cond)
+    ct_idx = stimulated.obs[celltype_key].isin(ct_pred)
+    train = adata[~(stim_idx & ct_idx), :]
+    test = adata[~(stim_idx & ct_idx), :]
+    return test, train
+
 
 # Probability distribution utils
 def matrix_log_density_gaussian(x, mu, scale):
