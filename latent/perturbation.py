@@ -52,6 +52,7 @@ class LatentVectorArithmetics:
         """
         self.model = model
         self.use_conditions = self.model._conditional_decoder()
+        self.use_sf = self.model._use_sf()
 
     def predict(
         self, 
@@ -61,6 +62,7 @@ class LatentVectorArithmetics:
         predict_key: str,
         control_name: Union[str, Iterable[str]],
         condition_key: str = None,
+        size_factor_key: str = None,
         weighted: bool = False
     ):
         """
@@ -73,6 +75,8 @@ class LatentVectorArithmetics:
             control_name: String indicating the control condition.
             condition_key: String indicating the metadata column containing the 
                 condition info (used for conditional autoencoders)
+            size_factor_key: String indicating the metadata column containing the 
+                size factors.
             weighted: Whether to weight the latent vectors.
         """
         ct_pred = np.array(celltype_predict)
@@ -105,11 +109,21 @@ class LatentVectorArithmetics:
 
         latent_pred = latent_pred_to + mean_delta
 
+        use_sf = self.use_sf & size_factor_key is not None
+
         if self.use_conditions:
             conditions = self._get_conditions(pred_to, condition_key)
-            return self.model.reconstruct([latent_pred, conditions])
+            if use_sf:
+                size_factors = pred_to.obs[size_factor_key].values
+                return self.model.reconstruct([latent_pred, conditions, size_factors])
+            else:
+                return self.model.reconstruct([latent_pred, conditions])
         else:
-            return self.model.reconstruct(latent_pred)
+            if use_sf:
+                size_factors = pred_to.obs[size_factor_key].values
+                return self.model.reconstruct([latent_pred, size_factors])
+            else:
+                return self.model.reconstruct([latent_pred])
 
     def _get_weights(self, latent, celltypes, metric='euclidean'):
         latent_mean = aggregate(latent, celltypes, axis=0)
