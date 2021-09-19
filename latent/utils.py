@@ -25,7 +25,7 @@ def aggregate(ary, groups, fun=np.mean, axis=0):
     return np.array(list(map(fun, split_ary)))
 
 
-def todense(ary):
+def to_dense(ary):
     return ary.A if sp.issparse(ary) else ary
 
 
