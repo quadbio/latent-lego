@@ -73,6 +73,10 @@ class Decoder(keras.Model):
         self.add_reconstruction_loss(x, outputs)
         return outputs
 
+    def predict(self, latent):
+        h = self.hidden.predict(latent)
+        return self.final_layer.predict(h)
+
     def hidden(self, latent):
         """Pass through hidden layers"""
         return self.hidden_layers(latent) if self.hidden_units else latent
