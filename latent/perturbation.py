@@ -17,7 +17,7 @@ def test_train_split(
     evaluation of the perturbation prediction.
 
     Arguments:
-        adata: A anndata object.
+        adata: An anndata object.
         celltype_predict: String indicating the metadata column containing celltype info.
         condition_key: String indicating the metadata column containing condition info.
         celltype_predict: A string or list of strings containing the celltype(s) 
@@ -41,6 +41,18 @@ class LatentVectorArithmetics:
         self,
         model,
         adata,
-        celltype_key = 'celltype',
+        celltype_key,
+        celltype_predict,
+        condition_key,
+        control_condition,
+        weighted = False
     ):
-        pass
+        """
+        Arguments:
+            model: A trained autoencoder model.
+            adata: An anndata object.
+            celltype_key: String indicating the metadata column containing celltype info.
+            condition_key: String indicating the metadata column containing 
+                condition info.
+            celltye_weights: Whether to weight the latent vectors.
+        """
