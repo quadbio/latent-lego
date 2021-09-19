@@ -39,7 +39,7 @@ def test_train_split(
     ct_pred = np.array(celltype_predict)
     ctrl_cond = np.array(control_condition)
     stim_idx = ~adata.obs.loc[:, condition_key].isin(ctrl_cond)
-    ct_idx = stimulated.obs[celltype_key].isin(ct_pred)
+    ct_idx = adata.obs[celltype_key].isin(ct_pred)
     train = adata[~(stim_idx & ct_idx), :]
     test = adata[~(stim_idx & ct_idx), :]
     return test, train
