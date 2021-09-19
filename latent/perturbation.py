@@ -96,7 +96,7 @@ class LatentVectorArithmetics:
 
         delta = stim_mean - ctrl_mean
 
-        if self.weighted:
+        if weighted:
             weights = self._get_weights(
                 latent_ctrl, celltypes[(~ct_idx & ~stim_idx)])
             mean_delta = np.mean(delta * weights)
