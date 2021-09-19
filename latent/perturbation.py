@@ -52,7 +52,9 @@ class LatentVectorArithmetics:
             model: A trained autoencoder model.
             adata: An anndata object.
             celltype_key: String indicating the metadata column containing celltype info.
+            celltype_predict: String indicating the cell type to predict.
             condition_key: String indicating the metadata column containing 
                 condition info.
-            celltye_weights: Whether to weight the latent vectors.
+            control_condition: String indicating the control condition.
+            weighted: Whether to weight the latent vectors.
         """
