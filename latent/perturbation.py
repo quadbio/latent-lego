@@ -58,3 +58,10 @@ class LatentVectorArithmetics:
             control_condition: String indicating the control condition.
             weighted: Whether to weight the latent vectors.
         """
+        self.model = model
+        self.adata = adata
+        self.celltype_key = celltype_key
+        self.celltype_predict = celltype_predict
+        self.condition_key = condition_key
+        self.control_condition = control_condition
+        self.weighted = weighted
