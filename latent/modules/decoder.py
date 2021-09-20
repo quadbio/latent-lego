@@ -74,8 +74,8 @@ class Decoder(keras.Model):
         return outputs
 
     def predict(self, latent):
-        h = self.hidden.predict(latent)
-        return self.final_layer.predict(h)
+        h = self.hidden(latent)
+        return self.final_layer(h)
 
     def hidden(self, latent):
         """Pass through hidden layers"""
