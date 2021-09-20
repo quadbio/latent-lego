@@ -60,7 +60,7 @@ class LatentVectorArithmetics:
         celltype_key: str,
         celltype_predict: str,
         predict_key: str,
-        pred_name: Union[str, Iterable[str]],
+        predict_name: Union[str, Iterable[str]],
         condition_key: str = None,
         size_factor_key: str = None,
         weighted: bool = False
@@ -72,7 +72,7 @@ class LatentVectorArithmetics:
             celltype_predict: String indicating the cell type to predict.
             predict_key: String indicating the metadata column containing 
                 the condition to predict info.
-            pred_name: String indicating the condition to predict.
+            predict_name: String indicating the condition to predict.
             condition_key: String indicating the metadata column containing the 
                 condition info (used for conditional autoencoders)
             size_factor_key: String indicating the metadata column containing the 
@@ -80,7 +80,7 @@ class LatentVectorArithmetics:
             weighted: Whether to weight the latent vectors.
         """
         ct_pred = np.array(celltype_predict)
-        pred_cond = np.array(pred_name)
+        pred_cond = np.array(predict_name)
         stim_idx = adata.obs.loc[:, predict_key].isin(pred_cond)
         celltypes = adata.obs[celltype_key]
         ct_idx = celltypes.isin(ct_pred)
