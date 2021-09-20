@@ -219,8 +219,7 @@ class VariationalEncoder(Encoder):
                 full_decompose=False,
                 data_size=self.x_size,
                 kl_weight=self.kld_weight,
-                tc_weight=self.tc_weight,
-                use_mss=self.use_mss
+                tc_weight=self.tc_weight
             )
             kld_loss = kld_regularizer(outputs)
         # VAMP prior depends on input, so we have to add it here
