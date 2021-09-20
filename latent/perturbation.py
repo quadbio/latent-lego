@@ -1,4 +1,3 @@
-import latent
 import numpy as np
 import scipy as sp
 import tensorflow.keras as keras
@@ -6,6 +5,7 @@ from sklearn import preprocessing as pp
 from scipy.spatial.distance import pdist
 
 from typing import Iterable, Union
+from latent.models import Autoencoder
 from latent.utils import aggregate, to_dense
 
 # Perturbation prediction utils
@@ -44,7 +44,7 @@ class LatentVectorArithmetics:
     """
     def __init__(
         self,
-        model: latent.models.Autoencoder
+        model: Autoencoder
     ):
         """
         Arguments:
