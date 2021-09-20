@@ -141,7 +141,8 @@ class Autoencoder(keras.Model):
         if not conditions and self._conditional_decoder():
             raise ValueError('Conditions must be provided for conditional autoencoders.')
         if not size_factors and self._use_sf():
-            size_factors = np.ones(self.x_dim)
+            size_factors = np.ones(tf.shape(latent)[0])
+            
         if self._use_sf() and not self._conditional_decoder():
             return self.decoder.predict([latent, size_factors])
         if not self._use_sf() and not self._conditional_decoder():
