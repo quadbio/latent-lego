@@ -456,7 +456,6 @@ class DecomposedKLDAddLoss(layers.Layer):
         tc_weight: float = 1.,
         kl_weight: float = 1.,
         capacity: float = 0.,
-        use_mss: bool = True,
         full_decompose: bool = False,
         **kwargs
     ):
@@ -468,8 +467,6 @@ class DecomposedKLDAddLoss(layers.Layer):
             kl_weight: Weight of the dimension-wise KL term.
             capacity: Capacity of the loss. Can be linearly increased using a scheduler
                 callback.
-            use_mss: Whether to use minibatch stratified sampling instead of minibatch
-                weighted sampling.
             full_decompose: Whether to fully decompose the KLD as α*MI + ß*TC + γ*dwKL
                 or only calculate TC and write loss as γ*KLD + (ß-1) * TC (default).
             kwargs: Other arguments passed to `keras.layers.Layer`.
@@ -480,7 +477,6 @@ class DecomposedKLDAddLoss(layers.Layer):
         self.tc_weight = tc_weight
         self.kl_weight = kl_weight
         self.capacity = capacity
-        self.use_mss = use_mss
         self.full_decompose = full_decompose
 
         if not self.full_decompose:

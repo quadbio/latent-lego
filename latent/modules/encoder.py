@@ -114,7 +114,6 @@ class VariationalEncoder(Encoder):
         initializer: Union[str, Callable] = 'glorot_normal',
         use_decomposed_kld: bool = False,
         x_size: int = 1000,
-        use_mss: bool = True,
         kld_weight: float = 1e-4,
         tc_weight: float = 1e-3,
         capacity: float = 0.,
@@ -134,8 +133,6 @@ class VariationalEncoder(Encoder):
                 ([Chen 2019](https://arxiv.org/abs/1802.04942))
             x_size: Total number of data points.
                 Only used if `use_decomposed_kld = True`.
-            use_mss: Whether to use minibatch stratified sampling instead of minibatch
-                weighted sampling. Only used if `use_decomposed_kld = True`.
             kld_weight: Float indicating the weight of the KL Divergence
                 regularization loss. If `use_decomposed_kld = True`, this indicated the
                 weight of the dimension-wise KLD.
@@ -165,7 +162,6 @@ class VariationalEncoder(Encoder):
         self.tc_weight = tf.Variable(tc_weight, trainable=False)
         self.capacity = tf.Variable(capacity, trainable=False)
         self.x_size = x_size
-        self.use_mss = use_mss
         self.use_decomposed_kld = use_decomposed_kld
         self.prior = prior
         self.iaf_units = iaf_units
