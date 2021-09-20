@@ -73,8 +73,8 @@ class Decoder(keras.Model):
         self.add_reconstruction_loss(x, outputs)
         return outputs
 
-    def predict(self, latent):
-        h = self.hidden(latent)
+    def predict(self, inputs):
+        h = self.hidden(inputs)
         return self.final_layer(h)
 
     def hidden(self, latent):
@@ -143,6 +143,13 @@ class PoissonDecoder(Decoder):
         mean = self.mean_layer(h)
         outputs = self.norm_layer([mean, sf])
         self.add_reconstruction_loss(x, outputs)
+        return outputs
+
+    def predict(self, inputs):
+        latent, sf = inputs
+        h = self.hidden(latent)
+        mean = self.mean_layer(h)
+        outputs = self.norm_layer([mean, sf])
         return outputs
 
 
