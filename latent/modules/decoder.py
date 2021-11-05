@@ -135,12 +135,16 @@ class PoissonDecoder(Decoder):
 
     def call(self, inputs, training=None):
         """Full forward pass through model"""
-        x, latent, sf = inputs
-        h = self.hidden(latent, training=training)
-        mean = self.mean_layer(h)
         # Only use size factors during training
-        outputs = self.norm_layer([mean, sf]) if training else mean
-        self.add_reconstruction_loss(x, outputs)
+        if training:
+            x, latent, sf = inputs
+            h = self.hidden(latent, training=training)
+            mean = self.mean_layer(h)
+            outputs = self.norm_layer([mean, sf])
+            self.add_reconstruction_loss(x, outputs)
+        else:
+            h = self.hidden(inputs, training=training)
+            outputs = self.mean_layer(h)
         return outputs
 
 
@@ -227,14 +231,18 @@ class NegativeBinomialDecoder(PoissonDecoder):
 
     def call(self, inputs, training=None):
         """Full forward pass through model"""
-        x, latent, sf = inputs
-        h = self.hidden(latent, training=training)
-        mean = self.mean_layer(h)
-        # Use size factors only during training
-        outputs = self.norm_layer([mean, sf]) if training else mean
-        disp = self.dispersion_layer(h)
-        self.reconstruction_loss = NegativeBinomial(theta=disp)
-        self.add_reconstruction_loss(x, outputs)
+        # Only use size factors during training
+        if training:
+            x, latent, sf = inputs
+            h = self.hidden(latent, training=training)
+            mean = self.mean_layer(h)
+            dispersion = self.dispersion_layer(h) 
+            outputs = self.norm_layer([mean, sf])
+            self.reconstruction_loss = NegativeBinomial(theta=dispersion)
+            self.add_reconstruction_loss(x, outputs)
+        else:
+            h = self.hidden(inputs, training=training)
+            outputs = self.mean_layer(h)
         return outputs
 
 
@@ -292,13 +300,17 @@ class ZINBDecoder(NegativeBinomialDecoder):
 
     def call(self, inputs, training=None):
         """Full forward pass through model"""
-        x, latent, sf = inputs
-        h = self.hidden(latent, training=training)
-        mean = self.mean_layer(h)
-        # Use size factors only during training
-        outputs = self.norm_layer([mean, sf]) if training else mean
-        disp = self.dispersion_layer(h)
-        pi = self.pi_layer(h)
-        self.reconstruction_loss = ZINB(theta=disp, pi=pi)
-        self.add_reconstruction_loss(x, outputs)
+        # Only use size factors during training
+        if training:
+            x, latent, sf = inputs
+            h = self.hidden(latent, training=training)
+            pi = self.pi_layer(h)
+            mean = self.mean_layer(h)
+            dispersion = self.dispersion_layer(h)
+            outputs = self.norm_layer([mean, sf])
+            self.reconstruction_loss = ZINB(theta=dispersion, pi=pi)
+            self.add_reconstruction_loss(x, outputs)
+        else:
+            h = self.hidden(inputs, training=training)
+            outputs = self.mean_layer(h)
         return outputs
