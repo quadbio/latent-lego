@@ -73,15 +73,15 @@ class DenseBlock(layers.Layer):
 
     # Full pass through the block
     def call(self, inputs, training=None):
-        outputs = self.dense(inputs)
+        x = self.dense(inputs)
         if self.batchnorm:
-            outputs = self.bn(outputs, training=training)
+            x = self.bn(x, training=training)
         if self.layernorm:
-            outputs = self.ln(outputs)
+            x = self.ln(x)
         if self.dropout_rate > 0:
-            outputs = self.dropout(outputs, training=training)
-        outputs = self.activation(outputs)
-        return outputs
+            x = self.dropout(x, training=training)
+        x = self.activation(x)
+        return x
 
 
 class DenseStack(layers.Layer):
@@ -125,8 +125,8 @@ class DenseStack(layers.Layer):
         for idx, layer in enumerate(self.dense_stack):
             if self._inject_condition(idx):
                 x = tf.concat([x, *conditions], axis=-1)
-            outputs = layer(x, training=training)
-        return outputs
+            x = layer(x, training=training)
+        return x
 
     def _inject_condition(self, idx):
         """Checks if conditions should be injected into layer"""
@@ -200,9 +200,9 @@ class SharedDispersion(layers.Layer):
         )
 
     def call(self, inputs):
-        h = tf.broadcast_to(self.disp, (tf.shape(inputs)[0], self.units))
-        outputs = self.activation(h)
-        return outputs
+        x = tf.broadcast_to(self.disp, (tf.shape(inputs)[0], self.units))
+        x = self.activation(x)
+        return x
 
 
 class Constant(layers.Layer):
@@ -233,9 +233,9 @@ class Constant(layers.Layer):
             self.activation = activation
 
     def call(self, inputs):
-        h = tf.broadcast_to(self.const, (tf.shape(inputs)[0], self.units))
-        outputs = self.activation(h)
-        return outputs
+        x = tf.broadcast_to(self.const, (tf.shape(inputs)[0], self.units))
+        x = self.activation(x)
+        return x
 
 
 # Implementation adapted from https://github.com/theislab/sfaira/
@@ -363,14 +363,14 @@ class PairwiseDistCritic(layers.Layer):
         self.weight = weight
 
     def call(self, inputs):
-        outputs, labels = inputs
-        x1, x2 = tf.dynamic_partition(outputs, labels, 2)
+        x, labels = inputs
+        x1, x2 = tf.dynamic_partition(x, labels, 2)
         # Element-wise euclidean distance
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
         crit_loss = self.weight * tf.math.reduce_mean(dist)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
-        return outputs
+        return x
 
 
 class GromovWassersteinCritic(layers.Layer):
@@ -387,13 +387,13 @@ class GromovWassersteinCritic(layers.Layer):
         self.loss_func = GromovWassersteinDistance(method=method)
 
     def call(self, inputs):
-        outputs, labels = inputs
-        x1, x2 = tf.dynamic_partition(outputs, labels, 2)
+        x, labels = inputs
+        x1, x2 = tf.dynamic_partition(x, labels, 2)
         # Element-wise difference
         crit_loss = self.weight * self.loss_func(x1, x2)
         self.add_loss(crit_loss)
         self.add_metric(crit_loss, name=f'{self.name}_loss')
-        return outputs
+        return x
 
 
 CRITICS = {
