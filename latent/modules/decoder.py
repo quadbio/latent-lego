@@ -65,17 +65,18 @@ class Decoder(keras.Model):
             activation='linear'
         )
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
         x, latent = inputs
-        h = self.hidden(latent)
+        h = self.hidden(latent, training=training)
         outputs = self.final_layer(h)
         self.add_reconstruction_loss(x, outputs)
         return outputs
 
-    def hidden(self, latent):
+    def hidden(self, latent, training=None):
         """Pass through hidden layers"""
-        return self.hidden_layers(latent) if self.hidden_units else latent
+        return (self.hidden_layers(latent, training=training) 
+            if self.hidden_units else latent)
 
     def add_reconstruction_loss(self, x, output):
         """Adds reconstruction loss to final model loss"""
@@ -132,12 +133,13 @@ class PoissonDecoder(Decoder):
         )
         self.norm_layer = RowwiseMult(name='output')
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
         x, latent, sf = inputs
-        h = self.hidden(latent)
+        h = self.hidden(latent, training=training)
         mean = self.mean_layer(h)
-        outputs = self.norm_layer([mean, sf])
+        # Only use size factors during training
+        outputs = self.norm_layer([mean, sf]) if training else mean
         self.add_reconstruction_loss(x, outputs)
         return outputs
 
@@ -223,12 +225,13 @@ class NegativeBinomialDecoder(PoissonDecoder):
             )
         self.norm_layer = RowwiseMult()
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
         x, latent, sf = inputs
-        h = self.hidden(latent)
+        h = self.hidden(latent, training=training)
         mean = self.mean_layer(h)
-        outputs = self.norm_layer([mean, sf])
+        # Use size factors only during training
+        outputs = self.norm_layer([mean, sf]) if training else mean
         disp = self.dispersion_layer(h)
         self.reconstruction_loss = NegativeBinomial(theta=disp)
         self.add_reconstruction_loss(x, outputs)
@@ -287,12 +290,13 @@ class ZINBDecoder(NegativeBinomialDecoder):
             kernel_initializer=self.initializer
         )
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
         x, latent, sf = inputs
-        h = self.hidden(latent)
+        h = self.hidden(latent, training=training)
         mean = self.mean_layer(h)
-        outputs = self.norm_layer([mean, sf])
+        # Use size factors only during training
+        outputs = self.norm_layer([mean, sf]) if training else mean
         disp = self.dispersion_layer(h)
         pi = self.pi_layer(h)
         self.reconstruction_loss = ZINB(theta=disp, pi=pi)
