@@ -71,14 +71,16 @@ class DenseBlock(layers.Layer):
             self.activation = activation
         self.dropout = layers.Dropout(self.dropout_rate)
 
-    def call(self, inputs):
-        h = self.dense(inputs)
+    # Full pass through the block
+    def call(self, inputs, training=None):
+        outputs = self.dense(inputs)
         if self.batchnorm:
-            h = self.bn(h)
+            outputs = self.bn(outputs, training=training)
         if self.layernorm:
-            h = self.ln(h)
-        h = self.activation(h)
-        outputs = self.dropout(h)
+            outputs = self.ln(outputs)
+        if self.dropout_rate > 0:
+            outputs = self.dropout(outputs, training=training)
+        outputs = self.activation(outputs)
         return outputs
 
 
@@ -115,16 +117,15 @@ class DenseStack(layers.Layer):
             layer = DenseBlock(units, name=layer_name, **kwargs)
             self.dense_stack += [layer]
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         if self.conditional:
-            h, *conditions = inputs
+            x, *conditions = inputs
         else:
-            h = inputs
+            x = inputs
         for idx, layer in enumerate(self.dense_stack):
             if self._inject_condition(idx):
-                h = tf.concat([h, *conditions], axis=-1)
-            h = layer(h)
-        outputs = h
+                x = tf.concat([x, *conditions], axis=-1)
+            outputs = layer(x, training=training)
         return outputs
 
     def _inject_condition(self, idx):
