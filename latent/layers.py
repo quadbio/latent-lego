@@ -292,25 +292,6 @@ class PseudoInputs(layers.Layer):
             return self.activation(self.u)
 
 
-class GradReversal(layers.Layer):
-    """Reverses gradient during backprop."""
-    def __init__(self, name: str = None, weight: float = 1.):
-        super().__init__(name=name)
-        self.weight = weight
-
-    def call(self, inputs):
-        return self.grad_reverse(inputs)
-
-    @tf.custom_gradient
-    def grad_reverse(self, x):
-        y = tf.identity(x)
-
-        def grad(dy):
-            return -dy * self.weight
-
-        return y, grad
-
-
 # Critic layers
 class MMDCritic(layers.Layer):
     """Adds MMD loss between conditions."""
