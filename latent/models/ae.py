@@ -90,24 +90,24 @@ class Autoencoder(keras.Model):
         else:
             return self.encoder(inputs['x'], training=training)
 
-    def decode(self, inputs, latent):
+    def decode(self, inputs, latent, training=None):
         """Prepare input for decoder and decode"""
         if self._use_sf() and not self._conditional_decoder():
-            return self.decoder([inputs['x'], latent, inputs['sf']])
+            return self.decoder([inputs['x'], latent, inputs['sf']], training=training)
         if not self._use_sf() and not self._conditional_decoder():
-            return self.decoder([inputs['x'], latent])
+            return self.decoder([inputs['x'], latent], training=training)
         if self._use_sf() and self._conditional_decoder():
             latent = [latent, *inputs['cond']]
-            return self.decoder([inputs['x'], latent, inputs['sf']])
+            return self.decoder([inputs['x'], latent, inputs['sf']], training=training)
         if not self._use_sf() and self._conditional_decoder():
             latent = [latent, *inputs['cond']]
-            return self.decoder([inputs['x'], latent])
+            return self.decoder([inputs['x'], latent], training=training)
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
         inputs = self.unpack_inputs(inputs)
-        latent = self.encode(inputs)
-        outputs = self.decode(inputs, latent)
+        latent = self.encode(inputs, training=training)
+        outputs = self.decode(inputs, latent, training=training)
         return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
