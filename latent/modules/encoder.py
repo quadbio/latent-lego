@@ -52,11 +52,11 @@ class Encoder(keras.Model):
             activation='linear'
         )
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
-        h = self.hidden_layers(inputs)
-        outputs = self.final_layer(h)
-        return outputs
+        x = self.hidden_layers(inputs, training=training)
+        x = self.final_layer(x)
+        return x
 
 
 class TopologicalEncoder(Encoder):
@@ -90,12 +90,11 @@ class TopologicalEncoder(Encoder):
             **kwargs
         )
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
-        h = self.hidden_layers(inputs)
-        outputs = self.final_layer(h)
-        self.add_topo_loss(inputs, outputs)
-        return outputs
+        x = super().call(inputs, training=training)
+        self.add_topo_loss(inputs, x)
+        return x
 
     def add_topo_loss(self, inputs, outputs):
         """Added topological loss to final model"""
@@ -202,10 +201,10 @@ class VariationalEncoder(Encoder):
             # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
             self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
-        h = self.hidden_layers(inputs)
-        dist_params = self.dist_param_layer(h)
+        x = self.hidden_layers(inputs, training=training)
+        dist_params = self.dist_param_layer(x)
         outputs = self.sampling(dist_params)
         self.add_kld_loss(inputs, outputs)
         return outputs
@@ -242,11 +241,15 @@ class VariationalEncoder(Encoder):
         """Computes VAMP prior by feeding pseudoinputs through model"""
         # Inputs are needed to infer shape
         # and to ensure a connected graph
-        h = self.pseudo_inputs(inputs)
-        h = self.hidden_layers(h)
-        dist_params = self.dist_param_layer(h)
-        outputs = self.sampling(dist_params)
-        return outputs
+        # Get pseudoinputs
+        pseudo_inputs = self.pseudo_inputs(inputs)
+        # Feed pseudoinputs through model
+        pseudo_inputs = self.hidden_layers(pseudo_inputs)
+        # Get distribution parameters
+        dist_params = self.dist_param_layer(pseudo_inputs)
+        # Create prior distribution
+        prior_dist = self.sampling(dist_params)
+        return prior_dist
 
     # Adapted from original implementation https://github.com/jmtomczak/vae_vampprior
     def _vamp_kld(self, xdist, pdist):
@@ -320,11 +323,8 @@ class TopologicalVariationalEncoder(VariationalEncoder, TopologicalEncoder):
             **kwargs
         )
 
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Full forward pass through model"""
-        h = self.hidden_layers(inputs)
-        dist_params = self.dist_param_layer(h)
-        outputs = self.sampling(dist_params)
-        self.add_kld_loss(inputs, outputs)
+        outputs = super().call(inputs, training=training)
         self.add_topo_loss(inputs, outputs)
         return outputs
