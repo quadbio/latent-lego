@@ -128,33 +128,21 @@ class Autoencoder(keras.Model):
         """
         return self.encoder.predict(inputs)
 
-    def reconstruct(self, latent, size_factors=None, conditions=None):
+    def reconstruct(self, latent, conditions=None):
         """
         Reconstruct data from latent space (z).
         Arguments:
             latent: A numpy array with latent coordinates.
-            size_factors: A numpy array size factors for count data.
             conditions: A numpy array with conditions.
         Returns:
             A numpy array with the reconstructed data.
         """
-        pseudo_x = np.zeros((tf.shape(latent)[0], self.x_dim))
         if not conditions and self._conditional_decoder():
             raise ValueError('Conditions must be provided for conditional autoencoders.')
-        if size_factors is None and self._use_sf():
-            size_factors = np.ones(tf.shape(latent)[0])
-
-        if self._use_sf() and not self._conditional_decoder():
-            inputs = [pseudo_x, latent, size_factors]
-        if not self._use_sf() and not self._conditional_decoder():
-            inputs = [pseudo_x, latent]
-        if self._use_sf() and self._conditional_decoder():
-            latent = [latent, *conditions]
-            inputs = [pseudo_x, latent, size_factors]
-        if not self._use_sf() and self._conditional_decoder():
-            latent = [latent, *conditions]
-            inputs = [pseudo_x, latent]
-        return self.decoder.predict(inputs)
+        if self._conditional_decoder():
+            return self.decoder.predict([latent, *conditions])
+        else:
+            return self.decoder.predict(latent)
 
     def unpack_inputs(self, inputs):
         """Unpacks inputs into x, conditions and size_factors."""
