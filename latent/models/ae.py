@@ -83,12 +83,12 @@ class Autoencoder(keras.Model):
                 **kwargs
             )
 
-    def encode(self, inputs):
+    def encode(self, inputs, training=None):
         """Prepare input for encoder and encode"""
         if self._conditional_encoder():
-            return self.encoder([inputs['x'], *inputs['cond']])
+            return self.encoder([inputs['x'], *inputs['cond']], training=training)
         else:
-            return self.encoder(inputs['x'])
+            return self.encoder(inputs['x'], training=training)
 
     def decode(self, inputs, latent):
         """Prepare input for decoder and decode"""
