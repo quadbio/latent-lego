@@ -128,21 +128,15 @@ class Autoencoder(keras.Model):
         """
         return self.encoder.predict(inputs)
 
-    def reconstruct(self, latent, conditions=None):
+    def reconstruct(self, inputs):
         """
         Reconstruct data from latent space (z).
         Arguments:
-            latent: A numpy array with latent coordinates.
-            conditions: A numpy array with conditions.
+            inputs: A numpy array with input data.
         Returns:
             A numpy array with the reconstructed data.
         """
-        if not conditions and self._conditional_decoder():
-            raise ValueError('Conditions must be provided for conditional autoencoders.')
-        if self._conditional_decoder():
-            return self.decoder.predict([latent, *conditions])
-        else:
-            return self.decoder.predict(latent)
+        return self.decoder.predict(inputs)
 
     def unpack_inputs(self, inputs):
         """Unpacks inputs into x, conditions and size_factors."""
