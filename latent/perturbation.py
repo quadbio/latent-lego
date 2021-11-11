@@ -113,7 +113,7 @@ class LatentVectorArithmetics:
             conditions = self._get_conditions(pred_to, condition_key)
             return self.model.reconstruct([latent_pred, conditions])
         else:
-            return self.model.reconstruct([latent_pred])
+            return self.model.reconstruct(latent_pred)
 
     def _get_weights(self, latent, celltypes, metric='euclidean'):
         latent_mean = aggregate(latent, celltypes, axis=0)
