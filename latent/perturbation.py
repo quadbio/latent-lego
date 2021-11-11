@@ -79,11 +79,11 @@ class LatentVectorArithmetics:
                 size factors.
             weighted: Whether to weight the latent vectors.
         """
-        ct_pred = np.array(celltype_predict)
-        pred_cond = np.array(predict_name)
-        stim_idx = adata.obs.loc[:, predict_key].isin([predict_name])
+        ct_pred = np.array(celltype_predict).tolist()
+        pred_cond = np.array(predict_name).tolist()
+        stim_idx = adata.obs.loc[:, predict_key].isin([pred_cond])
         celltypes = adata.obs[celltype_key]
-        ct_idx = celltypes.isin([celltype_predict])
+        ct_idx = celltypes.isin([ct_pred])
 
         stim_pred_from = adata[(~ct_idx & stim_idx), :]
         ctrl_pred_from = adata[(~ct_idx & ~stim_idx), :]
@@ -93,10 +93,10 @@ class LatentVectorArithmetics:
         latent_ctrl = to_dense(self.model.transform(ctrl_pred_from.X))
         latent_pred_to = to_dense(self.model.transform(pred_to.X))
 
-        stim_mean = aggregate(
-            latent_stim, groups=celltypes[(~ct_idx & stim_idx)], axis=0)
-        ctrl_mean = aggregate(
-            latent_ctrl, groups=celltypes[(~ct_idx & ~stim_idx)], axis=0)
+        stim_groups = celltypes[(~ct_idx & stim_idx)].astype(str).values
+        stim_mean = aggregate(latent_stim, groups=stim_groups, axis=0)
+        ctrl_groups = celltypes[(~ct_idx & ~stim_idx)].astype(str).values
+        ctrl_mean = aggregate(latent_ctrl, groups=ctrl_groups, axis=0)
 
         delta = stim_mean - ctrl_mean
 
@@ -108,8 +108,6 @@ class LatentVectorArithmetics:
             mean_delta = np.mean(delta)
 
         latent_pred = latent_pred_to + mean_delta
-
-        use_sf = self.use_sf & size_factor_key is not None
 
         if self.use_conditions:
             conditions = self._get_conditions(pred_to, condition_key)
