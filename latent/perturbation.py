@@ -103,9 +103,9 @@ class LatentVectorArithmetics:
         if weighted:
             weights = self._get_weights(
                 latent_ctrl, celltypes[(~ct_idx & ~stim_idx)])
-            mean_delta = np.mean(delta * weights)
+            mean_delta = np.mean(delta * weights, axis=0)
         else:
-            mean_delta = np.mean(delta)
+            mean_delta = np.mean(delta, axis=0)
 
         latent_pred = latent_pred_to + mean_delta
 
