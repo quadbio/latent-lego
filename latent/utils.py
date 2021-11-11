@@ -4,6 +4,7 @@ import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
 import tensorflow_probability as tfp
+from functools import partial
 
 kernels = tfp.math.psd_kernels
 tfpl = tfp.layers
@@ -29,6 +30,7 @@ def aggregate(ary, groups=None, fun=np.mean, axis=0):
         # Split ary into groups
         split_ary = np.split(ary, np.unique(groups, return_index=True)[1][1:], axis=axis)
         # Map function over groups
+        fun = partial(fun, axis=axis)
         return np.array(list(map(fun, split_ary)))
 
 
