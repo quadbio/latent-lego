@@ -81,9 +81,9 @@ class LatentVectorArithmetics:
         """
         ct_pred = np.array(celltype_predict)
         pred_cond = np.array(predict_name)
-        stim_idx = adata.obs.loc[:, predict_key].isin(pred_cond)
+        stim_idx = adata.obs.loc[:, predict_key].isin([predict_name])
         celltypes = adata.obs[celltype_key]
-        ct_idx = celltypes.isin(ct_pred)
+        ct_idx = celltypes.isin([celltype_predict])
 
         stim_pred_from = adata[(~ct_idx & stim_idx), :]
         ctrl_pred_from = adata[(~ct_idx & ~stim_idx), :]
@@ -113,17 +113,9 @@ class LatentVectorArithmetics:
 
         if self.use_conditions:
             conditions = self._get_conditions(pred_to, condition_key)
-            if use_sf:
-                size_factors = pred_to.obs[size_factor_key].values
-                return self.model.reconstruct([latent_pred, conditions, size_factors])
-            else:
-                return self.model.reconstruct([latent_pred, conditions])
+            return self.model.reconstruct([latent_pred, conditions])
         else:
-            if use_sf:
-                size_factors = pred_to.obs[size_factor_key].values
-                return self.model.reconstruct([latent_pred, size_factors])
-            else:
-                return self.model.reconstruct([latent_pred])
+            return self.model.reconstruct([latent_pred])
 
     def _get_weights(self, latent, celltypes, metric='euclidean'):
         latent_mean = aggregate(latent, celltypes, axis=0)
