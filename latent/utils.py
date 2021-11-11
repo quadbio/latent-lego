@@ -306,3 +306,15 @@ def size_factors(x):
     return n / np.median(n)
 
 
+def get_init_params(object):
+    """Retruns the parameters needed for reinitialization of the same object"""
+    init = object.__init__
+    sig = inspect.signature(init)
+    exclude_params = ['kwargs', 'encoder', 'decoder']
+    init_params = [p for p in sig.parameters.keys() if p not in exclude_params]
+
+    init_params_dict = {}
+    for p in init_params:
+        init_params_dict[p] = getattr(object, p)
+
+    return init_params_dict
