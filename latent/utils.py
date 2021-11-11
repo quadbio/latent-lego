@@ -4,7 +4,6 @@ import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
 import tensorflow_probability as tfp
-from sklearn.preprocessing import LabelEncoder
 
 kernels = tfp.math.psd_kernels
 tfpl = tfp.layers
@@ -18,11 +17,19 @@ except ModuleNotFoundError:
     warnings.warn('POT package not available.')
 
 
-def aggregate(ary, groups, fun=np.mean, axis=0):
-    le = LabelEncoder()
-    groups = le.fit_transform(groups)
-    split_ary = np.split(ary, np.unique(groups, return_index=True)[1][1:], axis=axis)
-    return np.array(list(map(fun, split_ary)))
+def aggregate(ary, groups=None, fun=np.mean, axis=0):
+    """Aggregate a matrix by groups."""
+    if groups is None:
+        return fun(ary, axis=axis)
+    else:
+        sort_idx = np.argsort(groups)
+        groups = groups[sort_idx]
+        # Sort ary by index along axis
+        ary = ary[sort_idx]
+        # Split ary into groups
+        split_ary = np.split(ary, np.unique(groups, return_index=True)[1][1:], axis=axis)
+        # Map function over groups
+        return np.array(list(map(fun, split_ary)))
 
 
 def to_dense(ary):
