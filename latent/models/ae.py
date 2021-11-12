@@ -1,5 +1,6 @@
 """Tensorflow Autoencoder Models"""
 
+import inspect
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -118,25 +119,25 @@ class Autoencoder(keras.Model):
             y = x[0] if self._use_sf() else x
         return super().fit(x, y, **kwargs)
 
-    def transform(self, inputs):
+    def transform(self, x):
         """
         Map data (x) to latent space (z).
         Arguments:
-            inputs: A numpy array with input data.
+            x: A numpy array with input data.
         Returns:
             A numpy array with the coordinates of the input data in latent space.
         """
-        return self.encoder.predict(inputs)
+        return self.encoder.predict(x)
 
-    def reconstruct(self, inputs):
+    def reconstruct(self, x):
         """
         Reconstruct data from latent space (z).
         Arguments:
-            inputs: A numpy array with input data.
+            x: A numpy array with input data.
         Returns:
             A numpy array with the reconstructed data.
         """
-        return self.decoder.predict(inputs)
+        return self.decoder.predict(x)
 
     def unpack_inputs(self, inputs):
         """Unpacks inputs into x, conditions and size_factors."""
