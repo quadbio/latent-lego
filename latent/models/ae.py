@@ -180,6 +180,19 @@ class Autoencoder(keras.Model):
         has_cond_module = self._conditional_decoder() or self._conditional_encoder()
         return has_cond_module or self.use_conditions
 
+    def get_init_params(self):
+        """Retruns the parameters needed for reinitialization of the same model"""
+        init = self.__init__
+        sig = inspect.signature(init)
+        exclude_params = ['encoder', 'decoder', 'kwargs']
+        init_params = [p for p in sig.parameters.keys() if p not in exclude_params]
+
+        init_params_dict = {}
+        for p in init_params:
+            init_params_dict[p] = getattr(self, p)
+        init_params_dict['kwargs'] = self.net_kwargs
+        return init_params_dict
+
 
 class PoissonAutoencoder(Autoencoder):
     """Autoencoder with fixed poisson decoder and reconstruction loss."""
