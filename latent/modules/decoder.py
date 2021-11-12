@@ -311,16 +311,12 @@ class ZINBDecoder(NegativeBinomialDecoder):
     def call(self, inputs, training=None):
         """Full forward pass through model"""
         # Only use size factors during training
-        if training:
-            x, latent, sf = inputs
-            h = self.hidden(latent, training=training)
-            pi = self.pi_layer(h)
-            mean = self.mean_layer(h)
-            dispersion = self.dispersion_layer(h)
-            outputs = self.norm_layer([mean, sf])
-            self.reconstruction_loss = ZINB(theta=dispersion, pi=pi)
-            self.add_reconstruction_loss(x, outputs)
-        else:
-            h = self.hidden(inputs, training=training)
-            outputs = self.mean_layer(h)
+        x, latent, sf = inputs
+        h = self.hidden(latent, training=training)
+        pi = self.pi_layer(h)
+        mean = self.mean_layer(h)
+        dispersion = self.dispersion_layer(h)
+        outputs = self.norm_layer([mean, sf])
+        self.reconstruction_loss = ZINB(theta=dispersion, pi=pi)
+        self.add_reconstruction_loss(x, outputs)
         return outputs
