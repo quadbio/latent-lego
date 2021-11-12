@@ -159,7 +159,7 @@ class PoissonDecoder(Decoder):
             outputs = self.norm_layer([mean, sf])
         else:
             h = self.hidden(x, training=False)
-            outputs = self.mean_layer(x)
+            outputs = self.mean_layer(h)
         return outputs
 
 
