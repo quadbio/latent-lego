@@ -85,6 +85,13 @@ class Decoder(keras.Model):
             self.add_loss(rec_loss)
             self.add_metric(rec_loss, name=self.loss_name)
 
+    def predict(self, x):
+        """Full forward pass through model"""
+        # No x required
+        h = self.hidden(x)
+        outputs = self.final_layer(h)
+        return outputs
+
 
 class PoissonDecoder(Decoder):
     """Decoder with poisson reconstruction loss. Uses size factors to deal with count
@@ -136,15 +143,23 @@ class PoissonDecoder(Decoder):
     def call(self, inputs, training=None):
         """Full forward pass through model"""
         # Only use size factors during training
-        if training:
-            x, latent, sf = inputs
-            h = self.hidden(latent, training=training)
+        x, latent, sf = inputs
+        h = self.hidden(latent, training=training)
+        mean = self.mean_layer(h)
+        outputs = self.norm_layer([mean, sf])
+        self.add_reconstruction_loss(x, outputs)
+        return outputs
+
+    def predict(self, x, size_factors=None):
+        """Full forward pass through model"""
+        # Optionally use size factors
+        if size_factors is not None:
+            h = self.hidden(x, training=False)
             mean = self.mean_layer(h)
             outputs = self.norm_layer([mean, sf])
-            self.add_reconstruction_loss(x, outputs)
         else:
-            h = self.hidden(inputs, training=training)
-            outputs = self.mean_layer(h)
+            h = self.hidden(x, training=False)
+            outputs = self.mean_layer(x)
         return outputs
 
 
@@ -231,18 +246,13 @@ class NegativeBinomialDecoder(PoissonDecoder):
 
     def call(self, inputs, training=None):
         """Full forward pass through model"""
-        # Only use size factors during training
-        if training:
-            x, latent, sf = inputs
-            h = self.hidden(latent, training=training)
-            mean = self.mean_layer(h)
-            dispersion = self.dispersion_layer(h) 
-            outputs = self.norm_layer([mean, sf])
-            self.reconstruction_loss = NegativeBinomial(theta=dispersion)
-            self.add_reconstruction_loss(x, outputs)
-        else:
-            h = self.hidden(inputs, training=training)
-            outputs = self.mean_layer(h)
+        x, latent, sf = inputs
+        h = self.hidden(latent, training=training)
+        mean = self.mean_layer(h)
+        dispersion = self.dispersion_layer(h) 
+        outputs = self.norm_layer([mean, sf])
+        self.reconstruction_loss = NegativeBinomial(theta=dispersion)
+        self.add_reconstruction_loss(x, outputs)
         return outputs
 
 
