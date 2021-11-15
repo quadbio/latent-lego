@@ -305,16 +305,3 @@ def size_factors(x):
     n = x.sum(1)
     return n / np.median(n)
 
-
-def get_init_params(cls):
-    """Retruns the parameters needed for reinitialization of the same cls"""
-    init = cls.__init__
-    sig = inspect.signature(init)
-    exclude_params = ['kwargs', 'encoder', 'decoder']
-    init_params = [p for p in sig.parameters.keys() if p not in exclude_params]
-
-    init_params_dict = {}
-    for p in init_params:
-        init_params_dict[p] = getattr(cls, p)
-
-    return init_params_dict
