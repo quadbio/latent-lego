@@ -156,7 +156,7 @@ class PoissonDecoder(Decoder):
         if size_factors is not None:
             h = self.hidden(x, training=False)
             mean = self.mean_layer(h)
-            outputs = self.norm_layer([mean, sf])
+            outputs = self.norm_layer([mean, size_factors])
         else:
             h = self.hidden(x, training=False)
             outputs = self.mean_layer(h)
