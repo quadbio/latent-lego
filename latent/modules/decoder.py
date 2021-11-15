@@ -49,6 +49,7 @@ class Decoder(keras.Model):
         self.initializer = keras.initializers.get(initializer)
         # Set use_sf to False because this base model only expects one input
         self.use_sf = False
+        self.net_kwargs = kwargs
 
         # Define components
         if self.hidden_units:

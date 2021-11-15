@@ -38,6 +38,7 @@ class Encoder(keras.Model):
         super().__init__(name=name)
         self.latent_dim = latent_dim
         self.initializer = keras.initializers.get(initializer)
+        self.net_kwargs = kwargs
 
         # Define components
         self.hidden_layers = DenseStack(
