@@ -134,7 +134,7 @@ class LatentVectorArithmetics:
 
     def _get_weights(self, latent, celltypes, metric='euclidean'):
         latent_mean = aggregate(latent, celltypes, axis=0)
-        dists = sp.distance.pdist(latent_mean, metric=metric)
+        dists = sp.spatial.distance.pdist(latent_mean, metric=metric)
         rev_dists = 1 / (dists + 1)
         return rev_dists / np.sum(rev_dists)
 
