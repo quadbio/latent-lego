@@ -62,7 +62,6 @@ class LatentVectorArithmetics:
         predict_key: str,
         predict_name: Union[str, Iterable[str]],
         condition_key: str = None,
-        size_factor_key: str = None,
         weighted: bool = False
     ):
         """
