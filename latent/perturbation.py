@@ -2,7 +2,6 @@ import numpy as np
 import scipy as sp
 import tensorflow.keras as keras
 from sklearn import preprocessing as pp
-from scipy.spatial.distance import pdist
 import anndata as ad
 
 from typing import Iterable, Union
@@ -150,3 +149,4 @@ class LatentVectorArithmetics:
         cond = adata.obs[condition_key].values
         cond = le.fit_transform(cond)
         cond = keras.utils.to_categorical(cond)
+        return cond
