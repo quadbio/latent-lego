@@ -88,9 +88,9 @@ class Decoder(keras.Model):
     def predict(self, x):
         """Full forward pass through model"""
         # No x required
-        h = self.hidden(x)
+        h = self.hidden(x, training=False)
         outputs = self.final_layer(h)
-        return outputs
+        return outputs.numpy()
 
 
 class PoissonDecoder(Decoder):
@@ -160,7 +160,7 @@ class PoissonDecoder(Decoder):
         else:
             h = self.hidden(x, training=False)
             outputs = self.mean_layer(h)
-        return outputs
+        return outputs.numpy()
 
 
 class NegativeBinomialDecoder(PoissonDecoder):
