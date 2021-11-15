@@ -1,9 +1,10 @@
-import inspect
 import warnings
 import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
+import tensorflow.keras as keras
 import tensorflow_probability as tfp
+from sklearn import preprocessing as pp
 from functools import partial
 
 kernels = tfp.math.psd_kernels
@@ -301,7 +302,14 @@ def l2_norm(x, axis=2, eps=1e-8):
     return tf.sqrt(tf.reduce_sum(tf.square(x), axis=axis) + eps)
 
 
-def size_factors(x):
-    n = x.sum(1)
+def size_factors(adata):
+    n = to_dense(adata.X).sum(1)
     return n / np.median(n)
 
+
+def get_conditions(adata, condition_key):
+    le = pp.LabelEncoder()
+    cond = adata.obs[condition_key].values
+    cond = le.fit_transform(cond)
+    cond = keras.utils.to_categorical(cond)
+    return cond
