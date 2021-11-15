@@ -3,6 +3,7 @@ import scipy as sp
 import tensorflow.keras as keras
 from sklearn import preprocessing as pp
 from scipy.spatial.distance import pdist
+import anndata as ad
 
 from typing import Iterable, Union
 from latent.models import Autoencoder
@@ -62,7 +63,9 @@ class LatentVectorArithmetics:
         predict_key: str,
         predict_name: Union[str, Iterable[str]],
         condition_key: str = None,
-        weighted: bool = False
+        weighted: bool = False,
+        metric: str = 'euclidean',
+        return_adata: bool = False
     ):
         """
         Arguments:
@@ -77,6 +80,8 @@ class LatentVectorArithmetics:
             size_factor_key: String indicating the metadata column containing the 
                 size factors.
             weighted: Whether to weight the latent vectors.
+            metric: String indicating the metric to use for distance calculation.
+            return_adata: Whether to return the perturbed adata object.
         """
         ct_pred = np.array(celltype_predict).tolist()
         pred_cond = np.array(predict_name).tolist()
@@ -101,7 +106,9 @@ class LatentVectorArithmetics:
 
         if weighted:
             weights = self._get_weights(
-                latent_ctrl, celltypes[(~ct_idx & ~stim_idx)])
+                latent_ctrl, celltypes[(~ct_idx & ~stim_idx)], 
+                metric=metric
+            )
             mean_delta = np.mean(delta * weights, axis=0)
         else:
             mean_delta = np.mean(delta, axis=0)
@@ -110,9 +117,16 @@ class LatentVectorArithmetics:
 
         if self.use_conditions:
             conditions = self._get_conditions(pred_to, condition_key)
-            return self.model.reconstruct([latent_pred, conditions])
+            x_pred = self.model.reconstruct([latent_pred, conditions])
         else:
-            return self.model.reconstruct(latent_pred)
+            x_pred = self.model.reconstruct(latent_pred)
+
+        if return_adata:
+            ad_pred = ad.AnnData(x_pred, obs=pred_to.obs)
+            ad_pred.obs[predict_key] = 'PREDICTED'
+            return ad_pred
+        else:
+            return x_pred
 
     def _get_weights(self, latent, celltypes, metric='euclidean'):
         latent_mean = aggregate(latent, celltypes, axis=0)
