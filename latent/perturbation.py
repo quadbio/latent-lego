@@ -122,7 +122,11 @@ class LatentVectorArithmetics:
             x_pred = self.model.reconstruct(latent_pred)
 
         if return_adata:
-            ad_pred = ad.AnnData(x_pred, obs=pred_to.obs)
+            ad_pred = ad.AnnData(
+                X=x_pred, 
+                obs=pred_to.obs.copy(),
+                var=pred_to.var.copy()
+            )
             ad_pred.obs[predict_key] = 'PREDICTED'
             return ad_pred
         else:
