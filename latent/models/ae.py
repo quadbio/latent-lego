@@ -1,7 +1,5 @@
 """Tensorflow Autoencoder Models"""
 
-import inspect
-import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 from typing import Iterable, Union, Callable
@@ -178,20 +176,7 @@ class Autoencoder(keras.Model):
     def _use_conditions(self):
         """Determine whether to use conditions in model"""
         has_cond_module = self._conditional_decoder() or self._conditional_encoder()
-        return has_cond_module or self.use_conditions
-
-    def get_init_params(self):
-        """Retruns the parameters needed for reinitialization of the same model"""
-        init = self.__init__
-        sig = inspect.signature(init)
-        exclude_params = ['encoder', 'decoder', 'kwargs']
-        init_params = [p for p in sig.parameters.keys() if p not in exclude_params]
-
-        init_params_dict = {}
-        for p in init_params:
-            init_params_dict[p] = getattr(self, p)
-        init_params_dict['kwargs'] = self.net_kwargs
-        return init_params_dict
+        return has_cond_module or self.use_conditions        
 
 
 class PoissonAutoencoder(Autoencoder):
