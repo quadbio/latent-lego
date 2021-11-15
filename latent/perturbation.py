@@ -91,10 +91,12 @@ class LatentVectorArithmetics:
 
         stim_pred_from = adata[(~ct_idx & stim_idx), :]
         ctrl_pred_from = adata[(~ct_idx & ~stim_idx), :]
+        ctrl_all = adata[(~stim_idx), :]
         pred_to = adata[(ct_idx & ~stim_idx), :]
         
         latent_stim = to_dense(self.model.transform(stim_pred_from.X))
         latent_ctrl = to_dense(self.model.transform(ctrl_pred_from.X))
+        latent_all = to_dense(self.model.transform(ctrl_all.X))
         latent_pred_to = to_dense(self.model.transform(pred_to.X))
 
         stim_groups = celltypes[(~ct_idx & stim_idx)].astype(str).values
@@ -105,11 +107,15 @@ class LatentVectorArithmetics:
         delta = stim_mean - ctrl_mean
 
         if weighted:
+            ctrl_groups_all = celltypes[~stim_idx].astype(str).values
+            predict_idx = celltypes[~stim_idx].isin([ct_pred]).values
             weights = self._get_weights(
-                latent_ctrl, celltypes[(~ct_idx & ~stim_idx)], 
+                latent=latent_all,
+                groups=ctrl_groups_all,
+                predict_idx=predict_idx,
                 metric=metric
             )
-            mean_delta = np.mean(delta * weights, axis=0)
+            mean_delta = np.sum(delta * weights, axis=0)
         else:
             mean_delta = np.mean(delta, axis=0)
 
@@ -132,9 +138,10 @@ class LatentVectorArithmetics:
         else:
             return x_pred
 
-    def _get_weights(self, latent, celltypes, metric='euclidean'):
-        latent_mean = aggregate(latent, celltypes, axis=0)
-        dists = sp.spatial.distance.pdist(latent_mean, metric=metric)
+    def _get_weights(self, latent, groups, predict_idx, metric='euclidean'):
+        from_mean = aggregate(latent[~predict_idx], groups[~predict_idx], axis=0)
+        to_mean = aggregate(latent[predict_idx], groups[predict_idx], axis=0)
+        dists = sp.spatial.distance.cdist(from_mean, to_mean, metric=metric)
         rev_dists = 1 / (dists + 1)
         return rev_dists / np.sum(rev_dists)
 
