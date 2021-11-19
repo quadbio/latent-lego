@@ -82,7 +82,6 @@ class Autoencoder(keras.Model):
                 **kwargs
             )
 
-    @tf.function
     def encode(self, inputs, training=None):
         """Prepare input for encoder and encode"""
         if self._conditional_encoder():
@@ -90,7 +89,6 @@ class Autoencoder(keras.Model):
         else:
             return self.encoder(inputs['x'], training=training)
 
-    @tf.function
     def decode(self, inputs, latent, training=None):
         """Prepare input for decoder and decode"""
         if self._use_sf() and not self._conditional_decoder():

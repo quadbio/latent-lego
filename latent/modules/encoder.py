@@ -97,7 +97,6 @@ class TopologicalEncoder(Encoder):
         self.add_topo_loss(inputs, x)
         return x
 
-    @tf.function
     def add_topo_loss(self, inputs, outputs):
         """Added topological loss to final model"""
         topo_loss = self.topo_weight * self.topo_regularizer(inputs, outputs)
@@ -211,7 +210,6 @@ class VariationalEncoder(Encoder):
         self.add_kld_loss(inputs, outputs)
         return outputs
 
-    @tf.function
     def add_kld_loss(self, inputs, outputs):
         """Adds KLDivergence loss to model"""
         if self.use_decomposed_kld:
