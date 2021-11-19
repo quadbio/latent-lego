@@ -74,11 +74,13 @@ class Decoder(keras.Model):
         self.add_reconstruction_loss(x, outputs)
         return outputs
 
+    @tf.function
     def hidden(self, latent, training=None):
         """Pass through hidden layers"""
         return (self.hidden_layers(latent, training=training) 
             if self.hidden_units else latent)
 
+    @tf.function
     def add_reconstruction_loss(self, x, output):
         """Adds reconstruction loss to final model loss"""
         if self.reconstruction_loss:
