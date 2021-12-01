@@ -117,11 +117,6 @@ class DenseStack(layers.Layer):
             layer = DenseBlock(units, name=layer_name, **kwargs)
             self.dense_stack += [layer]
 
-    def build(self, input_shape):
-        # Only set input shape
-        self.input_shape = input_shape
-        self.built = True
-
     def call(self, inputs, training=None):
         if self.conditional:
             x, *conditions = inputs
