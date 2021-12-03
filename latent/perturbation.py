@@ -64,64 +64,15 @@ class LatentVectorArithmetics:
         rep_name = 'X_' + rep_name
         adata.obsm[rep_name] = latent_space
 
-    def get_latent_vectors(
-        self,
-        adata,
-        group_key,
-        predict_key: str,
-        predict_label: Union[str, Iterable[str]],
-        groups_use: Union[str, Iterable[str]] = None,
-        use_rep: str = 'X_latent',
-        return_vectors: bool = False
-    ):
-        """
-        Calculate vectors in latent space.
-        Arguments:
-            adata: An AnnData object.
-            group_key: String indicating the metadata column containing group info.
-            predict_key: String indicating the metadata column containing 
-                the condition to predict info.
-            predict_label: String indicating the condition to predict.
-            group_use: String indicating the cell type to use for calculating 
-                latent vectors.
-            use_rep: String indicating the metadata column containing the
-                representation to use for calculating latent vectors.
-            return_vectors: Boolean indicating whether to return the vectors.
-        """
-        pred_label = np.array(predict_label).tolist()
-        stim_idx = adata.obs.loc[:, predict_key].isin([pred_label])
-        groups = adata.obs[group_key]
-
-        latent_rep = adata.obsm[use_rep]
-        if groups_use is not None:
-            groups_use = np.array(groups_use).tolist()
-            groups_use_idx = groups.isin([groups_use])
-            latent_rep = latent_rep[groups_use_idx, :]
-            groups = groups[groups_use_idx]
-            stim_idx = stim_idx[groups_use_idx]
-
-        latent_stim = latent_rep[stim_idx, :]
-        latent_ctrl = latent_rep[~stim_idx, :]
-
-        stim_groups = groups[stim_idx].astype(str).values
-        stim_mean = aggregate(latent_stim, groups=stim_groups, axis=0)
-        ctrl_groups = groups[~stim_idx].astype(str).values
-        ctrl_mean = aggregate(latent_ctrl, groups=ctrl_groups, axis=0)
-
-        delta = stim_mean - ctrl_mean
-        self.delta = delta
-        if return_vectors:
-            return delta
-
-
     def predict(
         self, 
         adata,
-        celltype_key: str,
-        celltype_predict: str,
-        predict_key: str,
-        predict_name: Union[str, Iterable[str]],
+        group_key: str,
+        groups_predict: Union[str, Iterable[str]],
+        predict_key: str = None,
+        predict_label: Union[str, Iterable[str]] = None,
         condition_key: str = None,
+        use_rep: str = 'X_latent',
         weighted: bool = False,
         metric: str = 'euclidean',
         return_adata: bool = False
@@ -129,8 +80,8 @@ class LatentVectorArithmetics:
         """
         Arguments:
             adata: An anndata object.
-            celltype_key: String indicating the metadata column containing celltype info.
-            celltype_predict: String indicating the cell type to predict.
+            group_key: String indicating the metadata column containing group info.
+            groups_predict: String indicating the group to predict f.
             predict_key: String indicating the metadata column containing 
                 the condition to predict info.
             predict_name: String indicating the condition to predict.
@@ -140,34 +91,34 @@ class LatentVectorArithmetics:
                 size factors.
             weighted: Whether to weight the latent vectors.
             metric: String indicating the metric to use for distance calculation.
+            use_rep: String indicating the metadata column containing the
+                representation to use for calculating latent vectors.
             return_adata: Whether to return the perturbed adata object.
         """
-        group_pred = np.array(celltype_predict).tolist()
-        pred_cond = np.array(predict_name).tolist()
-        stim_idx = adata.obs.loc[:, predict_key].isin([pred_cond])
-        celltypes = adata.obs[celltype_key]
-        ct_idx = celltypes.isin([group_pred])
+        group_pred = np.array(groups_predict).tolist()
+        pred_label = np.array(predict_label).tolist()
+        stim_idx = adata.obs.loc[:, predict_key].isin([pred_label])
+        groups = adata.obs[group_key]
+        group_idx = groups.isin([group_pred])
 
-        stim_pred_from = adata[(~ct_idx & stim_idx), :]
-        ctrl_pred_from = adata[(~ct_idx & ~stim_idx), :]
-        ctrl_all = adata[(~stim_idx), :]
-        pred_to = adata[(ct_idx & ~stim_idx), :]
-        
-        latent_stim = to_dense(self.model.transform(stim_pred_from.X))
-        latent_ctrl = to_dense(self.model.transform(ctrl_pred_from.X))
-        latent_all = to_dense(self.model.transform(ctrl_all.X))
-        latent_pred_to = to_dense(self.model.transform(pred_to.X))
+        latent_rep = adata.obsm[use_rep]
 
-        stim_groups = celltypes[(~ct_idx & stim_idx)].astype(str).values
+        latent_stim = latent_rep[(~group_idx & stim_idx), :]
+        latent_ctrl = latent_rep[(~group_idx & ~stim_idx), :]
+        latent_all = latent_rep[(~stim_idx), :]
+        latent_pred_to = latent_rep[(group_idx & ~stim_idx), :]
+        adata_pred_to = adata[(group_idx & ~stim_idx), :]
+
+        stim_groups = groups[(~group_idx & stim_idx)].astype(str).values
         stim_mean = aggregate(latent_stim, groups=stim_groups, axis=0)
-        ctrl_groups = celltypes[(~ct_idx & ~stim_idx)].astype(str).values
+        ctrl_groups = groups[(~group_idx & ~stim_idx)].astype(str).values
         ctrl_mean = aggregate(latent_ctrl, groups=ctrl_groups, axis=0)
 
         delta = stim_mean - ctrl_mean
 
         if weighted:
-            ctrl_groups_all = celltypes[~stim_idx].astype(str).values
-            predict_idx = celltypes[~stim_idx].isin([group_pred]).values
+            ctrl_groups_all = groups[~stim_idx].astype(str).values
+            predict_idx = groups[~stim_idx].isin([group_pred]).values
             weights = self._get_weights(
                 latent=latent_all,
                 groups=ctrl_groups_all,
@@ -181,16 +132,19 @@ class LatentVectorArithmetics:
         latent_pred = latent_pred_to + mean_delta
 
         if self.use_conditions:
-            conditions = self._get_conditions(pred_to, condition_key)
+            conditions = self._get_conditions(adata_pred_to, condition_key)
             x_pred = self.model.reconstruct([latent_pred, conditions])
         else:
             x_pred = self.model.reconstruct(latent_pred)
 
+        self.delta = delta
+        self.mean_delta = mean_delta
+
         if return_adata:
             ad_pred = ad.AnnData(
                 X=x_pred, 
-                obs=pred_to.obs.copy(),
-                var=pred_to.var.copy()
+                obs=adata_pred_to.obs.copy(),
+                var=adata_pred_to.var.copy()
             )
             ad_pred.obs[predict_key] = 'PREDICTED'
             return ad_pred
