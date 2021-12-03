@@ -126,8 +126,10 @@ class LatentVectorArithmetics:
                 metric=metric
             )
             mean_delta = np.sum(delta * weights, axis=0)
+            self.weights = np.squeeze(weights)
         else:
             mean_delta = np.mean(delta, axis=0)
+            self.weights = np.array([1.0] * delta.shape[0])
 
         latent_pred = latent_pred_to + mean_delta
 
