@@ -117,15 +117,19 @@ class Autoencoder(keras.Model):
             y = x[0] if self._use_sf() else x
         return super().fit(x, y, **kwargs)
 
-    def transform(self, x):
+    def transform(self, x, conditions=None):
         """
         Map data (x) to latent space (z).
         Arguments:
             x: A numpy array with input data.
+            conditions: A numpy array with conditions.
         Returns:
             A numpy array with the coordinates of the input data in latent space.
         """
-        return self.encoder.predict(x)
+        if conditions is not None:
+            return self.encoder.predict([x, conditions])
+        else:
+            return self.encoder.predict(x)
 
     def reconstruct(self, x):
         """
