@@ -78,6 +78,8 @@ class LatentVectorArithmetics:
         return_adata: bool = False
     ):
         """
+        Calculate latent vectors given an latent representstion and predict perturbation 
+        by adding them in latent space.
         Arguments:
             adata: An anndata object.
             group_key: String indicating the metadata column containing group info.
