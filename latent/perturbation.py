@@ -74,6 +74,7 @@ class LatentVectorArithmetics:
         condition_key: str = None,
         use_rep: str = 'X_latent',
         weighted: bool = False,
+        weight_rep: str = 'X_pca',
         metric: str = 'euclidean',
         return_adata: bool = False
     ):
@@ -119,10 +120,17 @@ class LatentVectorArithmetics:
         delta = stim_mean - ctrl_mean
 
         if weighted:
+            try:
+                weight_rep = adata.X if weight_rep == 'X' else adata.obsm[weight_rep]
+            except KeyError:
+                raise KeyError(
+                    f'The representation {weight_rep} does not exist.'
+                )
+            weight_rep = to_dense(weight_rep)[(~stim_idx), :]
             ctrl_groups_all = groups[~stim_idx].astype(str).values
             predict_idx = groups[~stim_idx].isin([group_pred]).values
             weights = self._get_weights(
-                latent=latent_all,
+                rep=weight_rep,
                 groups=ctrl_groups_all,
                 predict_idx=predict_idx,
                 metric=metric
@@ -155,9 +163,9 @@ class LatentVectorArithmetics:
         else:
             return x_pred
 
-    def _get_weights(self, latent, groups, predict_idx, metric='euclidean'):
-        from_mean = aggregate(latent[~predict_idx], groups[~predict_idx], axis=0)
-        to_mean = aggregate(latent[predict_idx], groups[predict_idx], axis=0)
+    def _get_weights(self, rep, groups, predict_idx, metric='euclidean'):
+        from_mean = aggregate(rep[~predict_idx], groups[~predict_idx], axis=0)
+        to_mean = aggregate(rep[predict_idx], groups[predict_idx], axis=0)
         dists = sp.spatial.distance.cdist(from_mean, to_mean, metric=metric)
         rev_dists = 1 / (dists + 1)
         return rev_dists / np.sum(rev_dists)
