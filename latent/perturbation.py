@@ -108,7 +108,6 @@ class LatentVectorArithmetics:
 
         latent_stim = latent_rep[(~group_idx & stim_idx), :]
         latent_ctrl = latent_rep[(~group_idx & ~stim_idx), :]
-        latent_all = latent_rep[(~stim_idx), :]
         latent_pred_to = latent_rep[(group_idx & ~stim_idx), :]
         adata_pred_to = adata[(group_idx & ~stim_idx), :]
 
