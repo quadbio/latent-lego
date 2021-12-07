@@ -87,22 +87,7 @@ class ArchitectureSurgery:
         new_model.set_weights(new_weights)
 
         # Freeze layers if requested
-        if unfrozen:
-            return new_model
-        else:
-            new_model = self.freeze_layers(
-                new_model, 
-                freeze_dropout=freeze_dropout, 
-                freeze_batchnorm_encoder=freeze_batchnorm_encoder, 
-                freeze_batchnorm_decoder=freeze_batchnorm_decoder, 
-                freeze_weights=freeze_weights
-            )
-            return new_model
-
-
-
-
-
+        return new_model
 
 
     def clone_model(self, model, **kwargs):
