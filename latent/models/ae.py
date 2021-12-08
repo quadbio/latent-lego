@@ -5,11 +5,12 @@ import tensorflow.keras as keras
 from typing import Iterable, Union, Callable
 from latent._compat import Literal
 
+from latent.base import BaseModel
 from latent.modules import Encoder, TopologicalEncoder
 from latent.modules import Decoder, PoissonDecoder, NegativeBinomialDecoder, ZINBDecoder
 
 
-class Autoencoder(keras.Model):
+class Autoencoder(keras.Model, BaseModel):
     """Autoencoder base class. This model stacks together an encoder and a decoder model
     to produce an autoencoder which compresses input data in a latent space by
     minimizing the reconstruction error.
@@ -82,6 +83,13 @@ class Autoencoder(keras.Model):
                 **kwargs
             )
 
+    def call(self, inputs, training=None):
+        """Full forward pass through model"""
+        inputs = self.unpack_inputs(inputs)
+        latent = self.encode(inputs, training=training)
+        outputs = self.decode(inputs, latent, training=training)
+        return outputs
+
     def encode(self, inputs, training=None):
         """Prepare input for encoder and encode"""
         if self._conditional_encoder():
@@ -101,13 +109,6 @@ class Autoencoder(keras.Model):
         if not self._use_sf() and self._conditional_decoder():
             latent = [latent, *inputs['cond']]
             return self.decoder([inputs['x'], latent], training=training)
-
-    def call(self, inputs, training=None):
-        """Full forward pass through model"""
-        inputs = self.unpack_inputs(inputs)
-        latent = self.encode(inputs, training=training)
-        outputs = self.decode(inputs, latent, training=training)
-        return outputs
 
     def compile(self, optimizer='adam', loss=None, **kwargs):
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
