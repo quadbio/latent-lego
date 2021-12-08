@@ -1,5 +1,6 @@
 """Tensorflow Autoencoder Models"""
 
+import pickle
 import tensorflow as tf
 import tensorflow.keras as keras
 from typing import Iterable, Union, Callable
@@ -156,6 +157,48 @@ class Autoencoder(keras.Model, BaseModel):
         if not self._use_sf() and self._use_conditions():
             x, *cond = inputs
             return {'x': x, 'cond': cond}
+
+    def save(self, filename):
+        """Save model to file."""
+        model_params = self._get_init_params()
+        encoder_params = self.encoder._get_init_params()
+        decoder_params = self.decoder._get_init_params()
+        encoder_params['class'] = self.encoder.__class__
+        decoder_params['class'] = self.decoder.__class__
+        weights = self.get_weights()
+        model_dict = dict(
+            model_params=model_params,
+            encoder_params=encoder_params,
+            decoder_params=decoder_params,
+            weights=weights
+        )
+        with open(filename, 'wb') as f:
+            pickle.dump(model_dict, f)
+
+    @classmethod
+    def load(cls, filename, input):
+        """Load model from file."""
+        # Load params and weights
+        with open(filename, 'rb') as f:
+            model_dict = pickle.load(f)   
+        # Create new model
+        encoder = model_dict['encoder_params']['class'](
+            **model_dict['encoder_params']['args'],
+            **model_dict['encoder_params']['kwargs']
+        )
+        decoder = model_dict['decoder_params']['class'](
+            **model_dict['decoder_params']['args'],
+            **model_dict['decoder_params']['kwargs']
+        )
+        new_model = cls(
+            encoder=encoder,
+            decoder=decoder,
+            **model_dict['model_params']['args'],
+            **model_dict['model_params']['kwargs']
+        )
+        new_model.build_model(input)
+        new_model.set_weights(model_dict['weights'])
+        return new_model
 
     def _use_sf(self):
         """Determine whether decoder uses size factors"""

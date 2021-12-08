@@ -7,13 +7,14 @@ import tensorflow.keras.layers as layers
 from typing import Iterable, Union, Callable
 from latent._compat import Literal
 
+from latent.base import BaseModel
 from latent.activations import clipped_exp
 from latent.layers import RowwiseMult, DenseStack, SharedDispersion, Constant
 from latent.losses import NegativeBinomial, ZINB
 from latent.losses import get as get_loss
 
 
-class Decoder(keras.Model):
+class Decoder(keras.Model, BaseModel):
     """Decoder base model. This model decompresses a latent space to reconstruct the
     input data by passing it through a `DenseStack`. It also takes care of adding the
     reconstruction loss to the model.

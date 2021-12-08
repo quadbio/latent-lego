@@ -7,6 +7,7 @@ import tensorflow_probability as tfp
 from typing import Iterable, Union, Callable
 from latent._compat import Literal
 
+from latent.base import BaseModel
 from latent.layers import DenseStack, PseudoInputs
 from latent.layers import KLDivergenceAddLoss, DecomposedKLDAddLoss, DISTRIBUTIONS
 from latent.losses import TopologicalSignatureDistance
@@ -16,7 +17,7 @@ tfd = tfp.distributions
 tfb = tfp.bijectors
 
 
-class Encoder(keras.Model):
+class Encoder(keras.Model, BaseModel):
     """Encoder base class. This model compresses input data in a latent space
     with `latent_dim` dimensions by through passing it through a `DenseStack`.
     """
