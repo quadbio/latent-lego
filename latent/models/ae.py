@@ -16,11 +16,12 @@ class Autoencoder(keras.Model, BaseModel):
     to produce an autoencoder which compresses input data in a latent space by
     minimizing the reconstruction error.
     """
+
     def __init__(
         self,
         encoder: keras.Model = None,
         decoder: keras.Model = None,
-        name: str = 'autoencoder',
+        name: str = "autoencoder",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
@@ -56,7 +57,7 @@ class Autoencoder(keras.Model, BaseModel):
         self.latent_dim = int(latent_dim)
         self.x_dim = int(x_dim) if x_dim else None
         if not x_dim and not decoder:
-            raise Warning('Either x_dim or decoder must be specified for this to work.')
+            raise Warning("Either x_dim or decoder must be specified for this to work.")
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
         self.reconstruction_loss = reconstruction_loss
@@ -68,9 +69,7 @@ class Autoencoder(keras.Model, BaseModel):
             self.encoder = encoder
         else:
             self.encoder = Encoder(
-                latent_dim=self.latent_dim,
-                hidden_units=self.encoder_units,
-                **kwargs
+                latent_dim=self.latent_dim, hidden_units=self.encoder_units, **kwargs
             )
 
         if decoder:
@@ -94,24 +93,24 @@ class Autoencoder(keras.Model, BaseModel):
     def encode(self, inputs, training=None):
         """Prepare input for encoder and encode"""
         if self._conditional_encoder():
-            return self.encoder([inputs['x'], *inputs['cond']], training=training)
+            return self.encoder([inputs["x"], *inputs["cond"]], training=training)
         else:
-            return self.encoder(inputs['x'], training=training)
+            return self.encoder(inputs["x"], training=training)
 
     def decode(self, inputs, latent, training=None):
         """Prepare input for decoder and decode"""
         if self._use_sf() and not self._conditional_decoder():
-            return self.decoder([inputs['x'], latent, inputs['sf']], training=training)
+            return self.decoder([inputs["x"], latent, inputs["sf"]], training=training)
         if not self._use_sf() and not self._conditional_decoder():
-            return self.decoder([inputs['x'], latent], training=training)
+            return self.decoder([inputs["x"], latent], training=training)
         if self._use_sf() and self._conditional_decoder():
-            latent = [latent, *inputs['cond']]
-            return self.decoder([inputs['x'], latent, inputs['sf']], training=training)
+            latent = [latent, *inputs["cond"]]
+            return self.decoder([inputs["x"], latent, inputs["sf"]], training=training)
         if not self._use_sf() and self._conditional_decoder():
-            latent = [latent, *inputs['cond']]
-            return self.decoder([inputs['x'], latent], training=training)
+            latent = [latent, *inputs["cond"]]
+            return self.decoder([inputs["x"], latent], training=training)
 
-    def compile(self, optimizer='adam', loss=None, **kwargs):
+    def compile(self, optimizer="adam", loss=None, **kwargs):
         return super().compile(loss=loss, optimizer=optimizer, **kwargs)
 
     def fit(self, x, y=None, **kwargs):
@@ -133,90 +132,94 @@ class Autoencoder(keras.Model, BaseModel):
         else:
             return self.encoder.predict(x)
 
-    def reconstruct(self, x):
+    def reconstruct(self, x, conditions=None):
         """
         Reconstruct data from latent space (z).
         Arguments:
             x: A numpy array with input data.
+            conditions: A numpy array with conditions.
         Returns:
             A numpy array with the reconstructed data.
         """
-        return self.decoder.predict(x)
+        if conditions is not None:
+            return self.decoder.predict([x, conditions])
+        else:
+            return self.decoder.predict(x)
 
     def unpack_inputs(self, inputs):
         """Unpacks inputs into x, conditions and size_factors."""
         if self._use_sf() and self._use_conditions():
             x, *cond, sf = inputs
-            return {'x': x, 'cond': cond, 'sf': sf}
+            return {"x": x, "cond": cond, "sf": sf}
         if self._use_sf() and not self._use_conditions():
             x, sf = inputs
-            return {'x': x, 'sf': sf}
+            return {"x": x, "sf": sf}
         if not self._use_sf() and not self._use_conditions():
             x = inputs
-            return {'x': x}
+            return {"x": x}
         if not self._use_sf() and self._use_conditions():
             x, *cond = inputs
-            return {'x': x, 'cond': cond}
+            return {"x": x, "cond": cond}
 
     def save(self, filename):
         """Save model to file."""
         model_params = self._get_init_params()
         encoder_params = self.encoder._get_init_params()
         decoder_params = self.decoder._get_init_params()
-        encoder_params['class'] = self.encoder.__class__
-        decoder_params['class'] = self.decoder.__class__
+        encoder_params["class"] = self.encoder.__class__
+        decoder_params["class"] = self.decoder.__class__
         weights = self.get_weights()
         model_dict = dict(
             model_params=model_params,
             encoder_params=encoder_params,
             decoder_params=decoder_params,
-            weights=weights
+            weights=weights,
         )
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             pickle.dump(model_dict, f)
 
     @classmethod
     def load(cls, filename, input):
         """Load model from file."""
         # Load params and weights
-        with open(filename, 'rb') as f:
-            model_dict = pickle.load(f)   
+        with open(filename, "rb") as f:
+            model_dict = pickle.load(f)
         # Create new model
-        encoder = model_dict['encoder_params']['class'](
-            **model_dict['encoder_params']['args'],
-            **model_dict['encoder_params']['kwargs']
+        encoder = model_dict["encoder_params"]["class"](
+            **model_dict["encoder_params"]["args"],
+            **model_dict["encoder_params"]["kwargs"]
         )
-        decoder = model_dict['decoder_params']['class'](
-            **model_dict['decoder_params']['args'],
-            **model_dict['decoder_params']['kwargs']
+        decoder = model_dict["decoder_params"]["class"](
+            **model_dict["decoder_params"]["args"],
+            **model_dict["decoder_params"]["kwargs"]
         )
         new_model = cls(
             encoder=encoder,
             decoder=decoder,
-            **model_dict['model_params']['args'],
-            **model_dict['model_params']['kwargs']
+            **model_dict["model_params"]["args"],
+            **model_dict["model_params"]["kwargs"]
         )
         new_model.build_model(input)
-        new_model.set_weights(model_dict['weights'])
+        new_model.set_weights(model_dict["weights"])
         return new_model
 
     def _use_sf(self):
         """Determine whether decoder uses size factors"""
-        if hasattr(self.decoder, 'use_sf'):
+        if hasattr(self.decoder, "use_sf"):
             return self.decoder.use_sf
         else:
             return False
 
     def _conditional_encoder(self):
         """Determine whether encoder injects conditions"""
-        if hasattr(self.encoder, 'hidden_layers'):
+        if hasattr(self.encoder, "hidden_layers"):
             return self.encoder.hidden_layers.conditional is not None
         else:
             return False
 
     def _conditional_decoder(self):
         """Determine whether decoder injects conditions"""
-        if hasattr(self.decoder, 'hidden_layers'):
+        if hasattr(self.decoder, "hidden_layers"):
             return self.decoder.hidden_layers.conditional is not None
         else:
             return False
@@ -224,15 +227,16 @@ class Autoencoder(keras.Model, BaseModel):
     def _use_conditions(self):
         """Determine whether to use conditions in model"""
         has_cond_module = self._conditional_decoder() or self._conditional_encoder()
-        return has_cond_module or self.use_conditions        
+        return has_cond_module or self.use_conditions
 
 
 class PoissonAutoencoder(Autoencoder):
     """Autoencoder with fixed poisson decoder and reconstruction loss."""
+
     def __init__(
         self,
         encoder: keras.Model = None,
-        name: str = 'poisson_autoencoder',
+        name: str = "poisson_autoencoder",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
@@ -259,9 +263,7 @@ class PoissonAutoencoder(Autoencoder):
         """
         super().__init__(x_dim=x_dim)
         poisson_decoder = PoissonDecoder(
-            x_dim=x_dim,
-            hidden_units=decoder_units,
-            **kwargs
+            x_dim=x_dim, hidden_units=decoder_units, **kwargs
         )
         super().__init__(
             encoder=encoder,
@@ -277,16 +279,17 @@ class PoissonAutoencoder(Autoencoder):
 
 class NegativeBinomialAutoencoder(Autoencoder):
     """Autoencoder with fixed negative binomial decoder and reconstruction loss."""
+
     def __init__(
         self,
         encoder: keras.Model = None,
-        name: str = 'nb_autoencoder',
+        name: str = "nb_autoencoder",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
         use_conditions: bool = False,
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'constant',
+        dispersion: Union[Literal["gene", "cell-gene", "constant"], float] = "constant",
         **kwargs
     ):
         """
@@ -337,16 +340,17 @@ class ZINBAutoencoder(Autoencoder):
     """Autoencoder with zero-inflated negative binomial (ZINB) decoder and reconstruction
     loss.
     """
+
     def __init__(
         self,
         encoder: keras.Model = None,
-        name: str = 'zinb_autoencoder',
+        name: str = "zinb_autoencoder",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
         use_conditions: bool = False,
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'constant',
+        dispersion: Union[Literal["gene", "cell-gene", "constant"], float] = "constant",
         **kwargs
     ):
         """
@@ -396,16 +400,17 @@ class ZINBAutoencoder(Autoencoder):
 class TopologicalAutoencoder(Autoencoder):
     """Autoencoder with fixed encoder adding topological loss on latent
     space ([Moor 2019](https://arxiv.org/abs/1906.00722))."""
+
     def __init__(
         self,
         decoder: keras.Model = None,
-        name: str = 'topological_autoencoder',
+        name: str = "topological_autoencoder",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
         use_conditions: bool = False,
-        topo_weight: float = 1.,
+        topo_weight: float = 1.0,
         **kwargs
     ):
         """
