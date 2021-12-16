@@ -19,7 +19,7 @@ def check_attributes(model, ce=False, cd=False, c=False, sf=False):
 def test_autoencoder():
     lat_dim = 18
     ae = Autoencoder(x_dim=X.shape[1], latent_dim=lat_dim)
-    ae.compile(optimizer='adam', loss='mse', run_eagerly=False)
+    ae.compile(optimizer="adam", loss="mse", run_eagerly=False)
     check_attributes(ae)
     ae.fit(X, batch_size=50, epochs=1)
     lat = ae.transform(X)
@@ -30,8 +30,8 @@ def test_autoencoder():
 
 
 def test_conditional_autoencoder():
-    ae = Autoencoder(x_dim=X.shape[1], conditional='all')
-    ae.compile(optimizer='adam', loss='mse', run_eagerly=True)
+    ae = Autoencoder(x_dim=X.shape[1], conditional="all")
+    ae.compile(optimizer="adam", loss="mse", run_eagerly=True)
     check_attributes(ae, ce=True, cd=True, c=True)
     ae.fit([X, cond], batch_size=50, epochs=1)
     lat = ae.transform([X, cond])
@@ -39,8 +39,8 @@ def test_conditional_autoencoder():
     rec = ae.predict([X, cond])
     assert rec.shape == X.shape
 
-    ae = Autoencoder(x_dim=X.shape[1], conditional='first')
-    ae.compile(optimizer='adam', loss='mse', run_eagerly=False)
+    ae = Autoencoder(x_dim=X.shape[1], conditional="first")
+    ae.compile(optimizer="adam", loss="mse", run_eagerly=False)
     check_attributes(ae, ce=True, cd=True, c=True)
     ae.fit([X, cond], batch_size=50, epochs=1)
     lat = ae.transform([X, cond])
@@ -51,7 +51,7 @@ def test_conditional_autoencoder():
 
 def test_poisson_autoencoder():
     ae = PoissonAutoencoder(x_dim=X.shape[1])
-    ae.compile(optimizer='adam', loss='mse', run_eagerly=False)
+    ae.compile(optimizer="adam", loss="mse", run_eagerly=False)
     check_attributes(ae, sf=True)
     ae.fit([X, sf], batch_size=50, epochs=1)
     lat = ae.transform(X)
@@ -61,8 +61,8 @@ def test_poisson_autoencoder():
 
 
 def test_nb_autoencoder():
-    ae = NegativeBinomialAutoencoder(x_dim=X.shape[1], dispersion='gene')
-    ae.compile(optimizer='adam', run_eagerly=False)
+    ae = NegativeBinomialAutoencoder(x_dim=X.shape[1], dispersion="gene")
+    ae.compile(optimizer="adam", run_eagerly=False)
     check_attributes(ae, sf=True)
     ae.fit([X, sf], batch_size=50, epochs=1)
     lat = ae.transform(X)
@@ -73,8 +73,9 @@ def test_nb_autoencoder():
 
 def test_conditional_zinb_autoencoder():
     ae = NegativeBinomialAutoencoder(
-        x_dim=X.shape[1], dispersion='constant', conditional='all')
-    ae.compile(optimizer='adam', run_eagerly=True)
+        x_dim=X.shape[1], dispersion="constant", conditional="all"
+    )
+    ae.compile(optimizer="adam", run_eagerly=True)
     check_attributes(ae, ce=True, cd=True, c=True, sf=True)
     ae.fit([X, cond, sf], batch_size=50, epochs=1)
     lat = ae.transform([X, cond])
@@ -85,7 +86,7 @@ def test_conditional_zinb_autoencoder():
 
 def test_topological_autoencoder():
     ae = TopologicalAutoencoder(x_dim=X.shape[1])
-    ae.compile(optimizer='adam', run_eagerly=True)
+    ae.compile(optimizer="adam", run_eagerly=True)
     check_attributes(ae)
     ae.fit(X, batch_size=50, epochs=1)
     lat = ae.transform(X)
@@ -96,7 +97,7 @@ def test_topological_autoencoder():
 
 def test_variational_autoencoder():
     ae = VariationalAutoencoder(x_dim=X.shape[1])
-    ae.compile(optimizer='adam', run_eagerly=False)
+    ae.compile(optimizer="adam", run_eagerly=False)
     check_attributes(ae)
     ae.fit(X, batch_size=50, epochs=1)
     lat = ae.transform(X)
@@ -104,8 +105,8 @@ def test_variational_autoencoder():
     rec = ae.predict(X)
     assert rec.shape == X.shape
 
-    ae = VariationalAutoencoder(x_dim=X.shape[1], latent_dist='multivariate')
-    ae.compile(optimizer='adam', run_eagerly=False)
+    ae = VariationalAutoencoder(x_dim=X.shape[1], latent_dist="multivariate")
+    ae.compile(optimizer="adam", run_eagerly=False)
     check_attributes(ae)
     ae.fit(X, batch_size=50, epochs=1)
     lat = ae.transform(X)
@@ -113,16 +114,16 @@ def test_variational_autoencoder():
     rec = ae.predict(X)
     assert rec.shape == X.shape
 
-    ae = VariationalAutoencoder(x_dim=X.shape[1], prior='iaf', iaf_units=[128, 128])
-    ae.compile(optimizer='adam', run_eagerly=False)
+    ae = VariationalAutoencoder(x_dim=X.shape[1], prior="iaf", iaf_units=[128, 128])
+    ae.compile(optimizer="adam", run_eagerly=False)
     check_attributes(ae)
     ae.fit(X, batch_size=50, epochs=1)
     lat = ae.transform(X)
     assert X.shape[0] == lat.shape[0]
     rec = ae.predict(X)
     assert rec.shape == X.shape
-    ae = VariationalAutoencoder(x_dim=X.shape[1], prior='vamp', n_pseudoinputs=30)
-    ae.compile(optimizer='adam', run_eagerly=False)
+    ae = VariationalAutoencoder(x_dim=X.shape[1], prior="vamp", n_pseudoinputs=30)
+    ae.compile(optimizer="adam", run_eagerly=False)
     check_attributes(ae)
     ae.fit(X, batch_size=50, epochs=1)
     lat = ae.transform(X)
@@ -132,8 +133,8 @@ def test_variational_autoencoder():
 
 
 def test_conditional_variational_autoencoder():
-    ae = VariationalAutoencoder(x_dim=X.shape[1], conditional='all')
-    ae.compile(optimizer='adam', run_eagerly=True)
+    ae = VariationalAutoencoder(x_dim=X.shape[1], conditional="all")
+    ae.compile(optimizer="adam", run_eagerly=True)
     check_attributes(ae, ce=True, cd=True, c=True)
     ae.fit([X, cond], batch_size=50, epochs=1)
     lat = ae.transform([X, cond])
@@ -143,8 +144,8 @@ def test_conditional_variational_autoencoder():
 
 
 def test_negative_binomial_variational_autoencoder():
-    ae = NegativeBinomialVAE(x_dim=X.shape[1], dispersion='cell-gene')
-    ae.compile(optimizer='adam', run_eagerly=False)
+    ae = NegativeBinomialVAE(x_dim=X.shape[1], dispersion="cell-gene")
+    ae.compile(optimizer="adam", run_eagerly=False)
     check_attributes(ae, sf=True)
     ae.fit([X, sf], batch_size=50, epochs=1)
     lat = ae.transform(X)
