@@ -233,7 +233,6 @@ class VariationalEncoder(Encoder):
         self.add_loss(kld_loss)
         self.add_metric(kld_loss, name="kld_loss")
 
-    @tf.function
     def _vamp_prior(self, inputs):
         """Computes VAMP prior by feeding pseudoinputs through model"""
         # Inputs are needed to infer shape
