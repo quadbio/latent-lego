@@ -272,7 +272,6 @@ class PseudoInputs(layers.Layer):
             self.initializer = tf.random_normal_initializer(mean=-0.05, stddev=0.01)
 
     def build(self, input_shape):
-        self.input_shape = input_shape
         # Conditional version of pseudoinputs if input_shape is a tuple
         # Extra pseudoinput with hard sigmoid activation for conditions
         if isinstance(input_shape, (list, tuple)):
