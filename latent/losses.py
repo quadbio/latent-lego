@@ -24,12 +24,8 @@ class MaximumMeanDiscrepancy(losses.Loss):
     """Computes Maximum Mean Discrepancy (MMD) loss between conditions (`y_true`)
     in `y_pred`.
     """
-    def __init__(
-        self,
-        n_conditions: int = 2,
-        kernel_method: str = 'ms_rbf',
-        **kwargs
-    ):
+
+    def __init__(self, n_conditions: int = 2, kernel_method: str = "ms_rbf", **kwargs):
         """
         Arguments:
             n_conditions: Positive integer indicating number of conditions.
@@ -64,15 +60,13 @@ class MaximumMeanDiscrepancy(losses.Loss):
 
         labels = tf.reshape(tf.cast(labels, tf.int32), (-1,))
         conditions = tf.dynamic_partition(
-            y_pred, labels,
-            num_partitions=self.n_conditions
+            y_pred, labels, num_partitions=self.n_conditions
         )
         result = []
         for i in range(len(conditions)):
             for j in range(i):
                 res = maximum_mean_discrepancy(
-                    conditions[i], conditions[j],
-                    kernel=self.kernel
+                    conditions[i], conditions[j], kernel=self.kernel
                 )
                 result.append(res)
         # Empty conditions will produce nan values
@@ -84,6 +78,7 @@ class NegativeBinomial(losses.Loss):
     """Computes negative binomial loss between `y_true` and `y_pred` given a dispersion
     parameter (`theta`).
     """
+
     def __init__(self, theta: Union[tf.Tensor, float], eps: float = 1e-8, **kwargs):
         """
         Arguments:
@@ -106,10 +101,9 @@ class NegativeBinomial(losses.Loss):
             - tf.math.lgamma(x + self.theta)
         )
         log_theta_mu_eps = tf.math.log(self.theta + mu + self.eps)
-        r2 = (
-            self.theta * (tf.math.log(self.theta + self.eps) - log_theta_mu_eps)
-            + x * (tf.math.log(mu + self.eps) - log_theta_mu_eps)
-        )
+        r2 = self.theta * (
+            tf.math.log(self.theta + self.eps) - log_theta_mu_eps
+        ) + x * (tf.math.log(mu + self.eps) - log_theta_mu_eps)
         res = r1 - r2
         return res
 
@@ -119,6 +113,7 @@ class ZINB(losses.Loss):
     """Computes zero-inflated negative binomial loss between `y_true` and `y_pred` given
     a dispersion parameter (`theta`) and dropout rate (`pi`).
     """
+
     def __init__(
         self,
         pi: Union[tf.Tensor, float],
@@ -142,11 +137,11 @@ class ZINB(losses.Loss):
         """Calculates negative log likelihood of the ZINB distribution"""
         x = tf.cast(y_true, tf.float32)
         mu = tf.cast(y_pred, tf.float32)
-        nb_loss = NegativeBinomial(self.theta, eps=self.eps, reduction='none')
+        nb_loss = NegativeBinomial(self.theta, eps=self.eps, reduction="none")
 
         case_nonzero = nb_loss(x, mu) - tf.math.log(1.0 - self.pi + self.eps)
         nb_zero = tf.math.pow(self.theta / (self.theta + mu), self.theta)
-        case_zero = - tf.math.log(self.pi + ((1.0 - self.pi) * nb_zero) + self.eps)
+        case_zero = -tf.math.log(self.pi + ((1.0 - self.pi) * nb_zero) + self.eps)
         res = tf.where(tf.math.less(mu, self.eps), case_zero, case_nonzero)
 
         return res
@@ -157,9 +152,10 @@ class TopologicalSignatureDistance(losses.Loss):
     """Computes distance between topological signatures
     ([Moor 2019](https://arxiv.org/abs/1906.00722)).
     """
+
     def __init__(
         self,
-        match_edges: Literal['symmetric', 'random'] = None,
+        match_edges: Literal["symmetric", "random"] = None,
         eps: float = 1e-8,
         return_additional_metrics: bool = False,
         **kwargs
@@ -226,7 +222,7 @@ class TopologicalSignatureDistance(losses.Loss):
             sig2 = self._select_distances_from_pairs(distances2, pairs2)
             distance = self._sig_error(sig1, sig2)
 
-        elif self.match_edges == 'symmetric':
+        elif self.match_edges == "symmetric":
             sig1 = self._select_distances_from_pairs(distances1, pairs1)
             sig2 = self._select_distances_from_pairs(distances2, pairs2)
             # Selected pairs of 1 on distances of 2 and vice versa
@@ -236,39 +232,41 @@ class TopologicalSignatureDistance(losses.Loss):
             distance1_2 = self._sig_error(sig1, sig1_2)
             distance2_1 = self._sig_error(sig2, sig2_1)
 
-            distance_components['metrics.distance1-2'] = distance1_2
-            distance_components['metrics.distance2-1'] = distance2_1
+            distance_components["metrics.distance1-2"] = distance1_2
+            distance_components["metrics.distance2-1"] = distance2_1
 
             distance = distance1_2 + distance2_1
 
-        elif self.match_edges == 'random':
+        elif self.match_edges == "random":
             # Create random selection in order to verify if what we are seeing
             # is the topological constraint or an implicit latent space prior
             # for compactness
             n_instances = len(pairs1[0])
-            pairs1 = tf.concat([
-                tf.random.shuffle(tf.range(n_instances))[:, None],
-                tf.random.shuffle(tf.range(n_instances))[:, None]
-            ], axis=1)
-            pairs2 = tf.concat([
-                tf.random.shuffle(tf.range(n_instances))[:, None],
-                tf.random.shuffle(tf.range(n_instances))[:, None]
-            ], axis=1)
+            pairs1 = tf.concat(
+                [
+                    tf.random.shuffle(tf.range(n_instances))[:, None],
+                    tf.random.shuffle(tf.range(n_instances))[:, None],
+                ],
+                axis=1,
+            )
+            pairs2 = tf.concat(
+                [
+                    tf.random.shuffle(tf.range(n_instances))[:, None],
+                    tf.random.shuffle(tf.range(n_instances))[:, None],
+                ],
+                axis=1,
+            )
 
-            sig1_1 = self._select_distances_from_pairs(
-                distances1, (pairs1, None))
-            sig1_2 = self._select_distances_from_pairs(
-                distances2, (pairs1, None))
+            sig1_1 = self._select_distances_from_pairs(distances1, (pairs1, None))
+            sig1_2 = self._select_distances_from_pairs(distances2, (pairs1, None))
 
-            sig2_2 = self._select_distances_from_pairs(
-                distances2, (pairs2, None))
-            sig2_1 = self._select_distances_from_pairs(
-                distances1, (pairs2, None))
+            sig2_2 = self._select_distances_from_pairs(distances2, (pairs2, None))
+            sig2_1 = self._select_distances_from_pairs(distances1, (pairs2, None))
 
             distance1_2 = self._sig_error(sig1_1, sig1_2)
             distance2_1 = self._sig_error(sig2_1, sig2_2)
-            distance_components['metrics.distance1-2'] = distance1_2
-            distance_components['metrics.distance2-1'] = distance2_1
+            distance_components["metrics.distance1-2"] = distance1_2
+            distance_components["metrics.distance2-1"] = distance2_1
 
             distance = distance1_2 + distance2_1
 
@@ -284,12 +282,8 @@ class TopologicalSignatureDistance(losses.Loss):
 
 class GromovWassersteinDistance(losses.Loss):
     """Gromov-Wasserstein distance with POT"""
-    def __init__(
-        self,
-        method='gw',
-        eps=1e-8,
-        **kwargs
-    ):
+
+    def __init__(self, method="gw", eps=1e-8, **kwargs):
         super().__init__(**kwargs)
         self.dist_func = OT_DIST.get(method)
         self.eps = eps
@@ -318,10 +312,10 @@ class GromovWassersteinDistance(losses.Loss):
 
 
 LOSSES = {
-    'negative_binomial': NegativeBinomial,
-    'zinb': ZINB,
-    'topological': TopologicalSignatureDistance(),
-    'mmd': MaximumMeanDiscrepancy()
+    "negative_binomial": NegativeBinomial,
+    "zinb": ZINB,
+    "topological": TopologicalSignatureDistance(),
+    "mmd": MaximumMeanDiscrepancy(),
 }
 
 

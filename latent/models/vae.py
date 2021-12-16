@@ -15,10 +15,11 @@ class VariationalAutoencoder(Autoencoder):
     to fit a posterior distribution as the latent space trough regularization
     by a Kullback-Leibler Divergence loss.
     """
+
     def __init__(
         self,
         decoder: keras.Model = None,
-        name: str = 'variational_autoencoder',
+        name: str = "variational_autoencoder",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
@@ -26,9 +27,9 @@ class VariationalAutoencoder(Autoencoder):
         reconstruction_loss: Callable = None,
         use_conditions: bool = False,
         kld_weight: float = 1e-5,
-        capacity: float = 0.,
-        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
-        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        capacity: float = 0.0,
+        prior: Literal["normal", "iaf", "vamp"] = "normal",
+        latent_dist: Literal["independent", "multivariate"] = "independent",
         iaf_units: Iterable[int] = [256, 256],
         n_pseudoinputs: int = 200,
         **kwargs
@@ -106,9 +107,10 @@ class PoissonVAE(Autoencoder):
     """Poisson Variational Autoencoder with fixed variational encoder and poisson decoder
     networks.
     """
+
     def __init__(
         self,
-        name: str = 'poisson_vae',
+        name: str = "poisson_vae",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
@@ -116,8 +118,8 @@ class PoissonVAE(Autoencoder):
         reconstruction_loss: Callable = None,
         use_conditions: bool = False,
         kld_weight: float = 1e-5,
-        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
-        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        prior: Literal["normal", "iaf", "vamp"] = "normal",
+        latent_dist: Literal["independent", "multivariate"] = "independent",
         iaf_units: Iterable[int] = [256, 256],
         n_pseudoinputs: int = 200,
         **kwargs
@@ -166,9 +168,7 @@ class PoissonVAE(Autoencoder):
         self.n_pseudoinputs = n_pseudoinputs
         self.latent_dist = latent_dist
         poisson_decoder = PoissonDecoder(
-            x_dim=x_dim,
-            hidden_units=decoder_units,
-            **kwargs
+            x_dim=x_dim, hidden_units=decoder_units, **kwargs
         )
         var_encoder = VariationalEncoder(
             hidden_units=encoder_units,
@@ -195,19 +195,20 @@ class NegativeBinomialVAE(Autoencoder):
     """Negative binomial variational autoencoder with fixed variational encoder and
     negative binomial decoder networks.
     """
+
     def __init__(
         self,
-        name: str = 'nb_vae',
+        name: str = "nb_vae",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
         reconstruction_loss: Callable = None,
         use_conditions: bool = False,
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'constant',
+        dispersion: Union[Literal["gene", "cell-gene", "constant"], float] = "constant",
         kld_weight: float = 1e-5,
-        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
-        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        prior: Literal["normal", "iaf", "vamp"] = "normal",
+        latent_dist: Literal["independent", "multivariate"] = "independent",
         iaf_units: Iterable[int] = [256, 256],
         n_pseudoinputs: int = 200,
         **kwargs
@@ -294,19 +295,20 @@ class ZINBVAE(Autoencoder):
     """Zero-inflated negative binomial variational autoencoder with fixed variational
     encoder and ZINB decoder networks.
     """
+
     def __init__(
         self,
-        name: str = 'nb_vae',
+        name: str = "nb_vae",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
         decoder_units: Iterable[int] = [128, 128],
         reconstruction_loss: Callable = None,
         use_conditions: bool = False,
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'constant',
+        dispersion: Union[Literal["gene", "cell-gene", "constant"], float] = "constant",
         kld_weight: float = 1e-5,
-        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
-        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        prior: Literal["normal", "iaf", "vamp"] = "normal",
+        latent_dist: Literal["independent", "multivariate"] = "independent",
         iaf_units: Iterable[int] = [256, 256],
         n_pseudoinputs: int = 200,
         **kwargs
@@ -391,10 +393,11 @@ class ZINBVAE(Autoencoder):
 
 class TopologicalVariationalAutoencoder(Autoencoder):
     """Variational autoencoder model with topological loss on latent space"""
+
     def __init__(
         self,
         decoder: keras.Model = None,
-        name: str = 'variational_autoencoder',
+        name: str = "variational_autoencoder",
         x_dim: int = None,
         latent_dim: int = 50,
         encoder_units: Iterable[int] = [128, 128],
@@ -402,9 +405,9 @@ class TopologicalVariationalAutoencoder(Autoencoder):
         reconstruction_loss: Callable = None,
         use_conditions: bool = False,
         kld_weight: float = 1e-5,
-        topo_weight: float = 1.,
-        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
-        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        topo_weight: float = 1.0,
+        prior: Literal["normal", "iaf", "vamp"] = "normal",
+        latent_dist: Literal["independent", "multivariate"] = "independent",
         iaf_units: Iterable[int] = [256, 256],
         n_pseudoinputs: int = 200,
         **kwargs

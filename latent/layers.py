@@ -24,6 +24,7 @@ class DenseBlock(layers.Layer):
     """Basic dense layer block with regularization, dropout, and batch-/layernorm
     functionality.
     """
+
     def __init__(
         self,
         units: int,
@@ -31,10 +32,10 @@ class DenseBlock(layers.Layer):
         dropout_rate: float = 0.1,
         batchnorm: bool = True,
         layernorm: bool = False,
-        l1: float = 0.,
-        l2: float = 0.,
-        activation: Union[str, Callable] = 'leaky_relu',
-        initializer: Union[str, Callable] = 'glorot_normal'
+        l1: float = 0.0,
+        l2: float = 0.0,
+        activation: Union[str, Callable] = "leaky_relu",
+        initializer: Union[str, Callable] = "glorot_normal",
     ):
         """
         Arguments:
@@ -61,7 +62,7 @@ class DenseBlock(layers.Layer):
         self.dense = layers.Dense(
             units,
             kernel_initializer=self.initializer,
-            kernel_regularizer=l1_l2(self.l1, self.l2)
+            kernel_regularizer=l1_l2(self.l1, self.l2),
         )
         self.bn = layers.BatchNormalization(center=True, scale=True)
         self.ln = layers.LayerNormalization(center=True, scale=True)
@@ -86,12 +87,13 @@ class DenseBlock(layers.Layer):
 
 class DenseStack(layers.Layer):
     """A stack of `DenseBlock` layers."""
+
     def __init__(
         self,
         name: str = None,
         hidden_units: Iterable[int] = [128, 128],
-        conditional: Literal['first', 'all'] = None,
-        **kwargs
+        conditional: Literal["first", "all"] = None,
+        **kwargs,
     ):
         """
         Arguments:
@@ -113,7 +115,7 @@ class DenseStack(layers.Layer):
         # Define stack
         self.dense_stack = []
         for idx, units in enumerate(self.hidden_units):
-            layer_name = f'{self.name}_{idx}'
+            layer_name = f"{self.name}_{idx}"
             layer = DenseBlock(units, name=layer_name, **kwargs)
             self.dense_stack += [layer]
 
@@ -132,15 +134,16 @@ class DenseStack(layers.Layer):
         """Checks if conditions should be injected into layer"""
         if not self.conditional:
             return False
-        elif self.conditional == 'all':
+        elif self.conditional == "all":
             return True
-        elif self.conditional == 'first':
+        elif self.conditional == "first":
             return idx == 0
 
 
 # Utility layers
 class RowwiseMult(layers.Layer):
     """Performs row-wise multiplication between input vectors."""
+
     def __init__(self, name: str = None):
         """
         Arguments:
@@ -154,6 +157,7 @@ class RowwiseMult(layers.Layer):
 
 class Sampling(layers.Layer):
     """Uses inputs (z_mean, log_var) to sample z."""
+
     def __init__(self, name: str = None):
         """
         Arguments:
@@ -169,12 +173,13 @@ class Sampling(layers.Layer):
 
 class SharedDispersion(layers.Layer):
     """Layer to get shared dispersion estimates per gene."""
+
     def __init__(
         self,
         units: int,
         name: str = None,
-        activation: Union[str, Callable] = 'clipped_exp',
-        initializer: Union[str, Callable] = 'glorot_normal'
+        activation: Union[str, Callable] = "clipped_exp",
+        initializer: Union[str, Callable] = "glorot_normal",
     ):
         """
         Arguments:
@@ -194,9 +199,7 @@ class SharedDispersion(layers.Layer):
 
     def build(self, input_shape):
         self.disp = self.add_weight(
-            name='dispersion',
-            shape=(1, self.units),
-            initializer=self.initializer
+            name="dispersion", shape=(1, self.units), initializer=self.initializer
         )
 
     def call(self, inputs):
@@ -207,13 +210,14 @@ class SharedDispersion(layers.Layer):
 
 class Constant(layers.Layer):
     """Layer that outputs a constant value."""
+
     def __init__(
         self,
         units: int,
-        constant: float = 1.,
+        constant: float = 1.0,
         name: str = None,
         trainable: bool = True,
-        activation: Union[str, Callable] = 'clipped_exp'
+        activation: Union[str, Callable] = "clipped_exp",
     ):
         """
         Arguments:
@@ -225,8 +229,7 @@ class Constant(layers.Layer):
         """
         super().__init__(name=name)
         self.units = units
-        self.const = tf.Variable(
-            [[constant]], dtype=tf.float32, trainable=trainable)
+        self.const = tf.Variable([[constant]], dtype=tf.float32, trainable=trainable)
         if isinstance(activation, str):
             self.activation = ACTIVATIONS.get(activation, clipped_exp)
         else:
@@ -244,12 +247,13 @@ class PseudoInputs(layers.Layer):
     ([Tomczak 2017](https://arxiv.org/abs/1705.07120)) based on input
     shapes.
     """
+
     def __init__(
         self,
         n_inputs: int,
         name: str = None,
-        activation: Union[str, Callable] = 'relu',
-        initializer: Union[str, Callable] = None
+        activation: Union[str, Callable] = "relu",
+        initializer: Union[str, Callable] = None,
     ):
         """
         Arguments:
@@ -261,7 +265,7 @@ class PseudoInputs(layers.Layer):
         super().__init__(name=name)
         self.n_inputs = n_inputs
         self.activation = activations.get(activation)
-        self.cond_activation = activations.get('hard_sigmoid')
+        self.cond_activation = activations.get("hard_sigmoid")
         if initializer:
             self.initializer = initializers.get(initializer)
         else:
@@ -278,7 +282,7 @@ class PseudoInputs(layers.Layer):
                 shape=(self.n_inputs, c_shape),
                 initializer=self.initializer,
                 dtype=tf.float32,
-                name='u'
+                name="u",
             )
             self.conditional = True
         else:
@@ -288,7 +292,7 @@ class PseudoInputs(layers.Layer):
             shape=(self.n_inputs, input_shape[-1]),
             initializer=self.initializer,
             dtype=tf.float32,
-            name='u'
+            name="u",
         )
         self.built = True
 
@@ -302,14 +306,15 @@ class PseudoInputs(layers.Layer):
 # Critic layers
 class MMDCritic(layers.Layer):
     """Adds MMD loss between conditions."""
+
     def __init__(
         self,
         name: str = None,
-        weight: float = 1.,
+        weight: float = 1.0,
         n_conditions: int = 2,
         n_groups: int = None,
-        kernel_method: Union[Literal['rbf', 'ms_rbf', 'rq'], Callable] = 'ms_rbf',
-        **kwargs
+        kernel_method: Union[Literal["rbf", "ms_rbf", "rq"], Callable] = "ms_rbf",
+        **kwargs,
     ):
         super().__init__(name=name)
         self.weight = weight
@@ -317,8 +322,7 @@ class MMDCritic(layers.Layer):
         self.kernel_method = kernel_method
         self.n_groups = n_groups
         self.loss_func = MaximumMeanDiscrepancy(
-            n_conditions=self.n_conditions,
-            kernel_method=self.kernel_method
+            n_conditions=self.n_conditions, kernel_method=self.kernel_method
         )
 
     def call(self, inputs):
@@ -335,18 +339,14 @@ class MMDCritic(layers.Layer):
             outputs, cond = inputs
             crit_loss = self.weight * self.loss_func(cond, outputs)
         self.add_loss(crit_loss)
-        self.add_metric(crit_loss, name=f'{self.name}_loss')
+        self.add_metric(crit_loss, name=f"{self.name}_loss")
         return outputs
 
 
 class PairwiseDistCritic(layers.Layer):
     """Matches paired points in latent space by forcing them to the same location."""
-    def __init__(
-        self,
-        name: str = None,
-        weight: float = 1.,
-        **kwargs
-    ):
+
+    def __init__(self, name: str = None, weight: float = 1.0, **kwargs):
         super().__init__(name=name)
         self.weight = weight
 
@@ -357,18 +357,19 @@ class PairwiseDistCritic(layers.Layer):
         dist = tf.norm(tf.math.subtract(x1, x2), axis=0)
         crit_loss = self.weight * tf.math.reduce_mean(dist)
         self.add_loss(crit_loss)
-        self.add_metric(crit_loss, name=f'{self.name}_loss')
+        self.add_metric(crit_loss, name=f"{self.name}_loss")
         return x
 
 
 class GromovWassersteinCritic(layers.Layer):
     """Adds Gromov-Wasserstein loss between conditions."""
+
     def __init__(
         self,
         name: str = None,
-        method: Literal['gw', 'entropic_gw'] = 'gw',
-        weight: float = 1.,
-        **kwargs
+        method: Literal["gw", "entropic_gw"] = "gw",
+        weight: float = 1.0,
+        **kwargs,
     ):
         super().__init__(name=name)
         self.weight = weight
@@ -380,14 +381,14 @@ class GromovWassersteinCritic(layers.Layer):
         # Element-wise difference
         crit_loss = self.weight * self.loss_func(x1, x2)
         self.add_loss(crit_loss)
-        self.add_metric(crit_loss, name=f'{self.name}_loss')
+        self.add_metric(crit_loss, name=f"{self.name}_loss")
         return x
 
 
 CRITICS = {
-    'pairing': PairwiseDistCritic,
-    'mmd': MMDCritic,
-    'wasserstein': GromovWassersteinCritic
+    "pairing": PairwiseDistCritic,
+    "mmd": MMDCritic,
+    "wasserstein": GromovWassersteinCritic,
 }
 
 
@@ -397,12 +398,9 @@ class KLDivergenceAddLoss(layers.Layer):
     ([Burgess 2018](https://arxiv.org/abs/1804.03599)) and
     ([Higgins 2017](https://openreview.net/forum?id=Sy2fzU9gl)).
     """
+
     def __init__(
-        self,
-        distribution_b,
-        weight: float = 1.,
-        capacity: float = 0.,
-        **kwargs
+        self, distribution_b, weight: float = 1.0, capacity: float = 0.0, **kwargs
     ):
         """
         Arguments:
@@ -416,15 +414,14 @@ class KLDivergenceAddLoss(layers.Layer):
         self.weight = weight
         self.capacity = capacity
         self.kld_regularizer = tfpl.KLDivergenceRegularizer(
-            distribution_b,
-            weight=1.,
-            test_points_reduce_axis=None
+            distribution_b, weight=1.0, test_points_reduce_axis=None
         )
 
     def call(self, distribution_a):
         """Calculates KLDivergence"""
         kld_loss = self.weight * tf.math.maximum(
-            0., self.kld_regularizer(distribution_a) - self.capacity)
+            0.0, self.kld_regularizer(distribution_a) - self.capacity
+        )
         return kld_loss
 
 
@@ -437,16 +434,17 @@ class DecomposedKLDAddLoss(layers.Layer):
     using minibatch weighted sampling or minibatch stratified sampling
     according to ([Chen 2019](https://arxiv.org/abs/1802.04942)).
     """
+
     def __init__(
         self,
         distribution_b,
         data_size: int = 1000,
-        mi_weight: float = 1.,
-        tc_weight: float = 1.,
-        kl_weight: float = 1.,
-        capacity: float = 0.,
+        mi_weight: float = 1.0,
+        tc_weight: float = 1.0,
+        kl_weight: float = 1.0,
+        capacity: float = 0.0,
         full_decompose: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """
         Arguments:
@@ -470,14 +468,13 @@ class DecomposedKLDAddLoss(layers.Layer):
 
         if not self.full_decompose:
             self.kld_layer = KLDivergenceAddLoss(
-                distribution_b,
-                weight=self.kl_weight,
-                capacity=self.capacity
+                distribution_b, weight=self.kl_weight, capacity=self.capacity
             )
 
     def call(self, distribution_a):
         log_pz, log_qz, log_qz_prod, log_qz_cond_x = self._get_kld_components(
-            distribution_a)
+            distribution_a
+        )
 
         # Compute TC term
         # TC[z] = KL[q(z)||\prod_i z_i]
@@ -493,9 +490,11 @@ class DecomposedKLDAddLoss(layers.Layer):
             # dw_kl_loss is KL[q(z)||p(z)] instead of usual KL[q(z|x)||p(z))]
             dw_kl_loss = tf.reduce_mean(log_qz_prod - log_pz)
             # Compute total KLD loss
-            return (self.mi_weight * mi_loss
+            return (
+                self.mi_weight * mi_loss
                 + self.tc_weight * tc_loss
-                + self.kl_weight * dw_kl_loss)
+                + self.kl_weight * dw_kl_loss
+            )
 
     def _get_kld_components(self, distribution_a):
         latent_sample = tf.convert_to_tensor(distribution_a)
@@ -507,24 +506,27 @@ class DecomposedKLDAddLoss(layers.Layer):
         # Calculate log p(z)
         # Zero mean and unit variance -> prior
         zeros = tf.zeros_like(latent_sample)
-        log_pz = tf.reduce_sum(
-            log_density_gaussian(latent_sample, zeros, 1), 1)
+        log_pz = tf.reduce_sum(log_density_gaussian(latent_sample, zeros, 1), 1)
 
         # Calculate log q(z|x)
         log_qz_cond_x = tf.math.reduce_sum(
-            log_density_gaussian(latent_sample, loc, scale), 1)
+            log_density_gaussian(latent_sample, loc, scale), 1
+        )
 
         log_qz_prob = matrix_log_density_gaussian(latent_sample, loc, scale)
 
-        log_qz = tf.reduce_logsumexp(
-            tf.reduce_sum(log_qz_prob, axis=2, keepdims=False),
-            axis=1,
-            keepdims=False
-        ) - norm_const
+        log_qz = (
+            tf.reduce_logsumexp(
+                tf.reduce_sum(log_qz_prob, axis=2, keepdims=False),
+                axis=1,
+                keepdims=False,
+            )
+            - norm_const
+        )
         log_qz_prod = tf.reduce_sum(
             tf.reduce_logsumexp(log_qz_prob, axis=1, keepdims=False) - norm_const,
             axis=1,
-            keepdims=False
+            keepdims=False,
         )
 
         return log_pz, log_qz, log_qz_prod, log_qz_cond_x
@@ -532,6 +534,6 @@ class DecomposedKLDAddLoss(layers.Layer):
 
 # PROBABILISTIC LAYERS
 DISTRIBUTIONS = {
-    'independent': tfpl.IndependentNormal,
-    'multivariate': tfpl.MultivariateNormalTriL
+    "independent": tfpl.IndependentNormal,
+    "multivariate": tfpl.MultivariateNormalTriL,
 }

@@ -7,12 +7,8 @@ from typing import Callable
 
 class ScaleCapacityOnEpoch(callbacks.Callback):
     """Scale KLD capacity of VAEs during training."""
-    def __init__(
-        self,
-        max_val: float = 10.,
-        steps: int = 100,
-        **kwargs
-    ):
+
+    def __init__(self, max_val: float = 10.0, steps: int = 100, **kwargs):
         """
         Arguments:
             max_val: Positive float. Maximum value of the capacity.
@@ -24,9 +20,9 @@ class ScaleCapacityOnEpoch(callbacks.Callback):
         self.max_val = max_val
 
     def on_epoch_end(self, epoch, logs=None):
-        if not hasattr(self.model, 'encoder'):
+        if not hasattr(self.model, "encoder"):
             raise ValueError('Model must have a "encoder" attribute.')
-        if not hasattr(self.model.encoder, 'capacity'):
+        if not hasattr(self.model.encoder, "capacity"):
             raise ValueError('Model encoder must have a "capacity" attribute.')
 
         capacity = float(K.get_value(self.model.encoder.capacity))
@@ -38,12 +34,8 @@ class ScaleCapacityOnEpoch(callbacks.Callback):
 
 class ScaleKLDOnEpoch(callbacks.Callback):
     """Scale Kullback-Leibler Divergence loss of VAEs during training."""
-    def __init__(
-        self,
-        max_val: float = 5.,
-        steps: int = 100,
-        **kwargs
-    ):
+
+    def __init__(self, max_val: float = 5.0, steps: int = 100, **kwargs):
         """
         Arguments:
             max_val: Positive float. Maximum value of KLD.
@@ -55,9 +47,9 @@ class ScaleKLDOnEpoch(callbacks.Callback):
         self.max_val = max_val
 
     def on_epoch_end(self, epoch, logs=None):
-        if not hasattr(self.model, 'encoder'):
+        if not hasattr(self.model, "encoder"):
             raise ValueError('Model must have a "encoder" attribute.')
-        if not hasattr(self.model.encoder, 'kld_weight'):
+        if not hasattr(self.model.encoder, "kld_weight"):
             raise ValueError('Model encoder must have a "kld_weight" attribute.')
 
         kld_weight = float(K.get_value(self.model.encoder.kld_weight))
@@ -69,11 +61,8 @@ class ScaleKLDOnEpoch(callbacks.Callback):
 
 class KLDivergenceScheduler(callbacks.Callback):
     """Schedule Kullback-Leibler Divergence loss of VAEs during training."""
-    def __init__(
-        self,
-        schedule: Callable,
-        **kwargs
-    ):
+
+    def __init__(self, schedule: Callable, **kwargs):
         """
         Arguments:
             schedule: a function that takes an epoch index (integer, indexed from 0) and
@@ -84,9 +73,9 @@ class KLDivergenceScheduler(callbacks.Callback):
         self.schedule = schedule
 
     def on_epoch_begin(self, epoch, logs=None):
-        if not hasattr(self.model, 'encoder'):
+        if not hasattr(self.model, "encoder"):
             raise ValueError('Model must have a "encoder" attribute.')
-        if not hasattr(self.model.encoder, 'kld_weight'):
+        if not hasattr(self.model.encoder, "kld_weight"):
             raise ValueError('Model encoder must have a "kld_weight" attribute.')
 
         kld_weight = float(K.get_value(self.model.encoder.kld_weight))
@@ -96,16 +85,13 @@ class KLDivergenceScheduler(callbacks.Callback):
 
 class CriticWeightScheduler(callbacks.Callback):
     """Schedule critic weight during training"""
-    def __init__(
-        self,
-        schedule,
-        **kwargs
-    ):
+
+    def __init__(self, schedule, **kwargs):
         super().__init__()
         self.schedule = schedule
 
     def on_epoch_begin(self, epoch, logs=None):
-        if not hasattr(self.model, 'critic_weight'):
+        if not hasattr(self.model, "critic_weight"):
             raise ValueError('Model must have a "critic_weight" attribute.')
 
         critic_weight = float(K.get_value(self.model.critic_weight))

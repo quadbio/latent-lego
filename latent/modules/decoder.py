@@ -19,15 +19,16 @@ class Decoder(keras.Model, BaseModel):
     input data by passing it through a `DenseStack`. It also takes care of adding the
     reconstruction loss to the model.
     """
+
     def __init__(
         self,
         x_dim: int,
-        name: str = 'decoder',
+        name: str = "decoder",
         hidden_units: Iterable[int] = [128, 128],
         reconstruction_loss: Union[Callable, str] = None,
-        loss_name: str = 'rec_loss',
-        initializer: Union[str, Callable] = 'glorot_normal',
-        **kwargs
+        loss_name: str = "rec_loss",
+        initializer: Union[str, Callable] = "glorot_normal",
+        **kwargs,
     ):
         """
         Arguments:
@@ -55,16 +56,16 @@ class Decoder(keras.Model, BaseModel):
         # Define components
         if self.hidden_units:
             self.hidden_layers = DenseStack(
-                name=f'{self.name}_hidden',
+                name=f"{self.name}_hidden",
                 hidden_units=self.hidden_units,
                 initializer=self.initializer,
-                **kwargs
+                **kwargs,
             )
         self.final_layer = layers.Dense(
             self.x_dim,
-            name=f'{self.name}_output',
+            name=f"{self.name}_output",
             kernel_initializer=self.initializer,
-            activation='linear'
+            activation="linear",
         )
 
     def call(self, inputs, training=None):
@@ -78,8 +79,11 @@ class Decoder(keras.Model, BaseModel):
     @tf.function
     def hidden(self, latent, training=None):
         """Pass through hidden layers"""
-        return (self.hidden_layers(latent, training=training) 
-            if self.hidden_units else latent)
+        return (
+            self.hidden_layers(latent, training=training)
+            if self.hidden_units
+            else latent
+        )
 
     def add_reconstruction_loss(self, x, output):
         """Adds reconstruction loss to final model loss"""
@@ -100,15 +104,16 @@ class PoissonDecoder(Decoder):
     """Decoder with poisson reconstruction loss. Uses size factors to deal with count
     data.
     """
+
     def __init__(
         self,
         x_dim: int,
-        name: str = 'poisson_decoder',
+        name: str = "poisson_decoder",
         hidden_units: Iterable[int] = [128, 128],
-        reconstruction_loss: Union[Callable, str] = 'poisson',
-        loss_name: str = 'poisson_loss',
-        initializer: Union[str, Callable] = 'glorot_normal',
-        **kwargs
+        reconstruction_loss: Union[Callable, str] = "poisson",
+        loss_name: str = "poisson_loss",
+        initializer: Union[str, Callable] = "glorot_normal",
+        **kwargs,
     ):
         """
         Arguments:
@@ -130,18 +135,18 @@ class PoissonDecoder(Decoder):
             reconstruction_loss=reconstruction_loss,
             loss_name=loss_name,
             initializer=initializer,
-            **kwargs
+            **kwargs,
         )
         # Here use_sf becomes True
         self.use_sf = True
         # Define new components
         self.mean_layer = layers.Dense(
             self.x_dim,
-            name='mean',
+            name="mean",
             activation=clipped_exp,
-            kernel_initializer=self.initializer
+            kernel_initializer=self.initializer,
         )
-        self.norm_layer = RowwiseMult(name='output')
+        self.norm_layer = RowwiseMult(name="output")
 
     def call(self, inputs, training=None):
         """Full forward pass through model"""
@@ -170,15 +175,16 @@ class NegativeBinomialDecoder(PoissonDecoder):
     """Decoder with negative binomial reconstruction loss. Uses size factors to deal with
     count data.
     """
+
     def __init__(
         self,
         x_dim: int,
-        name: str = 'nb_decoder',
-        loss_name: str = 'nb_loss',
+        name: str = "nb_decoder",
+        loss_name: str = "nb_loss",
         hidden_units: Iterable[int] = [128, 128],
-        initializer: Union[str, Callable] = 'glorot_normal',
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'gene',
-        **kwargs
+        initializer: Union[str, Callable] = "glorot_normal",
+        dispersion: Union[Literal["gene", "cell-gene", "constant"], float] = "gene",
+        **kwargs,
     ):
         """
         Arguments:
@@ -205,45 +211,46 @@ class NegativeBinomialDecoder(PoissonDecoder):
             hidden_units=hidden_units,
             loss_name=loss_name,
             initializer=initializer,
-            **kwargs
+            **kwargs,
         )
         self.dispersion = dispersion
         self.use_sf = True
 
         # Define new components
         self.mean_layer = layers.Dense(
-            self.x_dim, name='mean',
+            self.x_dim,
+            name="mean",
             activation=clipped_exp,
-            kernel_initializer=self.initializer
+            kernel_initializer=self.initializer,
         )
-        if dispersion == 'cell-gene':
+        if dispersion == "cell-gene":
             self.dispersion_layer = layers.Dense(
                 self.x_dim,
-                name='dispersion',
+                name="dispersion",
                 activation=clipped_exp,
-                kernel_initializer=self.initializer
+                kernel_initializer=self.initializer,
             )
-        elif dispersion == 'gene':
+        elif dispersion == "gene":
             self.dispersion_layer = SharedDispersion(
                 self.x_dim,
-                name='shared_dispersion',
+                name="shared_dispersion",
                 activation=clipped_exp,
-                initializer=self.initializer
+                initializer=self.initializer,
             )
-        elif dispersion == 'constant':
+        elif dispersion == "constant":
             self.dispersion_layer = Constant(
                 self.x_dim,
                 trainable=True,
-                name='constant_dispersion',
-                activation=clipped_exp
+                name="constant_dispersion",
+                activation=clipped_exp,
             )
         elif isinstance(dispersion, float):
             self.dispersion_layer = Constant(
                 self.x_dim,
                 constant=self.dispersion,
                 trainable=False,
-                name='constant_dispersion',
-                activation=clipped_exp
+                name="constant_dispersion",
+                activation=clipped_exp,
             )
         self.norm_layer = RowwiseMult()
 
@@ -252,7 +259,7 @@ class NegativeBinomialDecoder(PoissonDecoder):
         x, latent, sf = inputs
         h = self.hidden(latent, training=training)
         mean = self.mean_layer(h)
-        dispersion = self.dispersion_layer(h) 
+        dispersion = self.dispersion_layer(h)
         outputs = self.norm_layer([mean, sf])
         self.reconstruction_loss = NegativeBinomial(theta=dispersion)
         self.add_reconstruction_loss(x, outputs)
@@ -263,15 +270,16 @@ class ZINBDecoder(NegativeBinomialDecoder):
     """Decoder with ZINB reconstruction loss. Uses size factors to deal with
     count data.
     """
+
     def __init__(
         self,
         x_dim: int,
-        name: str = 'zinb_decoder',
-        loss_name: str = 'zinb_loss',
+        name: str = "zinb_decoder",
+        loss_name: str = "zinb_loss",
         hidden_units: Iterable[int] = [128, 128],
-        initializer: Union[str, Callable] = 'glorot_normal',
-        dispersion: Union[Literal['gene', 'cell-gene', 'constant'], float] = 'gene',
-        **kwargs
+        initializer: Union[str, Callable] = "glorot_normal",
+        dispersion: Union[Literal["gene", "cell-gene", "constant"], float] = "gene",
+        **kwargs,
     ):
         """
         Arguments:
@@ -299,16 +307,16 @@ class ZINBDecoder(NegativeBinomialDecoder):
             loss_name=loss_name,
             initializer=initializer,
             dispersion=dispersion,
-            **kwargs
+            **kwargs,
         )
         self.use_sf = True
 
         # Define new components
         self.pi_layer = layers.Dense(
             self.x_dim,
-            name='dropout_rate',
-            activation='sigmoid',
-            kernel_initializer=self.initializer
+            name="dropout_rate",
+            activation="sigmoid",
+            kernel_initializer=self.initializer,
         )
 
     def call(self, inputs, training=None):

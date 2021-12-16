@@ -21,11 +21,12 @@ class Encoder(keras.Model, BaseModel):
     """Encoder base class. This model compresses input data in a latent space
     with `latent_dim` dimensions by through passing it through a `DenseStack`.
     """
+
     def __init__(
         self,
         latent_dim: int = 50,
-        name: str = 'encoder',
-        initializer: Union[str, Callable] = 'glorot_normal',
+        name: str = "encoder",
+        initializer: Union[str, Callable] = "glorot_normal",
         **kwargs
     ):
         """
@@ -43,15 +44,13 @@ class Encoder(keras.Model, BaseModel):
 
         # Define components
         self.hidden_layers = DenseStack(
-            name=self.name,
-            initializer=self.initializer,
-            **kwargs
+            name=self.name, initializer=self.initializer, **kwargs
         )
         self.final_layer = layers.Dense(
             self.latent_dim,
-            name='encoder_latent',
+            name="encoder_latent",
             kernel_initializer=self.initializer,
-            activation='linear'
+            activation="linear",
         )
 
     def call(self, inputs, training=None):
@@ -65,12 +64,13 @@ class TopologicalEncoder(Encoder):
     """Encoder model with topological regularization loss on latent space
     ([Moor 2019](https://arxiv.org/abs/1906.00722)).
     """
+
     def __init__(
         self,
         latent_dim: int = 50,
-        name: str = 'topological_encoder',
-        initializer: Union[str, Callable] = 'glorot_normal',
-        topo_weight: float = 1.,
+        name: str = "topological_encoder",
+        initializer: Union[str, Callable] = "glorot_normal",
+        topo_weight: float = 1.0,
         **kwargs
     ):
         """
@@ -86,10 +86,7 @@ class TopologicalEncoder(Encoder):
         self.topo_weight = topo_weight
         self.topo_regularizer = TopologicalSignatureDistance()
         super().__init__(
-            latent_dim=latent_dim,
-            name=name,
-            initializer=initializer,
-            **kwargs
+            latent_dim=latent_dim, name=name, initializer=initializer, **kwargs
         )
 
     def call(self, inputs, training=None):
@@ -102,24 +99,25 @@ class TopologicalEncoder(Encoder):
         """Added topological loss to final model"""
         topo_loss = self.topo_weight * self.topo_regularizer(inputs, outputs)
         self.add_loss(topo_loss)
-        self.add_metric(topo_loss, name='topo_loss')
+        self.add_metric(topo_loss, name="topo_loss")
 
 
 class VariationalEncoder(Encoder):
     """Variational encoder. This model compresses input data by parameterizing a latent
     distribution that is regularized through a KL Divergence loss."""
+
     def __init__(
         self,
         latent_dim: int = 50,
-        name: str = 'variational_encoder',
-        initializer: Union[str, Callable] = 'glorot_normal',
+        name: str = "variational_encoder",
+        initializer: Union[str, Callable] = "glorot_normal",
         use_decomposed_kld: bool = False,
         x_size: int = 1000,
         kld_weight: float = 1e-4,
         tc_weight: float = 1e-3,
-        capacity: float = 0.,
-        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
-        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        capacity: float = 0.0,
+        prior: Literal["normal", "iaf", "vamp"] = "normal",
+        latent_dist: Literal["independent", "multivariate"] = "independent",
         iaf_units: Iterable[int] = [256, 256],
         n_pseudoinputs: int = 200,
         **kwargs
@@ -169,37 +167,35 @@ class VariationalEncoder(Encoder):
         self.n_pseudoinputs = n_pseudoinputs
         self.latent_dist = latent_dist
         super().__init__(
-            latent_dim=latent_dim,
-            name=name,
-            initializer=initializer,
-            **kwargs
+            latent_dim=latent_dim, name=name, initializer=initializer, **kwargs
         )
 
         # Define components
         self.latent_dist_layer = DISTRIBUTIONS.get(latent_dist, tfpl.IndependentNormal)
         self.dist_param_layer = layers.Dense(
             self.latent_dist_layer.params_size(self.latent_dim),
-            name='encoder_dist_params',
-            kernel_initializer=self.initializer
+            name="encoder_dist_params",
+            kernel_initializer=self.initializer,
         )
         self.sampling = self.latent_dist_layer(self.latent_dim)
 
         # Independent() reinterprets each latent_dim as an independent distribution
         self.prior_dist = tfd.Independent(
-            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.),
-            reinterpreted_batch_ndims=1
+            tfd.Normal(loc=tf.zeros(self.latent_dim), scale=1.0),
+            reinterpreted_batch_ndims=1,
         )
 
-        if self.prior == 'iaf':
+        if self.prior == "iaf":
             # Inverse autoregressive flow (Kingma et al. 2016)
             made = tfb.AutoregressiveNetwork(params=2, hidden_units=self.iaf_units)
             self.prior_dist = tfd.TransformedDistribution(
                 distribution=self.prior_dist,
-                bijector=tfb.Invert(tfb.MaskedAutoregressiveFlow(
-                    shift_and_log_scale_fn=made))
+                bijector=tfb.Invert(
+                    tfb.MaskedAutoregressiveFlow(shift_and_log_scale_fn=made)
+                ),
             )
 
-        elif self.prior == 'vamp':
+        elif self.prior == "vamp":
             # Variational mixture of posteriors (VAMP) prior (Tomczak & Welling 2018)
             self.pseudo_inputs = PseudoInputs(n_inputs=self.n_pseudoinputs)
 
@@ -220,24 +216,22 @@ class VariationalEncoder(Encoder):
                 full_decompose=False,
                 data_size=self.x_size,
                 kl_weight=self.kld_weight,
-                tc_weight=self.tc_weight
+                tc_weight=self.tc_weight,
             )
             kld_loss = kld_regularizer(outputs)
         # VAMP prior depends on input, so we have to add it here
-        elif self.prior == 'vamp':
+        elif self.prior == "vamp":
             prior_dist = self._vamp_prior(inputs)
             kld_loss = self.kld_weight * self._vamp_kld(outputs, prior_dist)
         else:
             prior_dist = self.prior_dist
             kld_regularizer = KLDivergenceAddLoss(
-                prior_dist,
-                capacity=self.capacity,
-                weight=self.kld_weight
+                prior_dist, capacity=self.capacity, weight=self.kld_weight
             )
             kld_loss = kld_regularizer(outputs)
         # Add losses manually to better monitor them
         self.add_loss(kld_loss)
-        self.add_metric(kld_loss, name='kld_loss')
+        self.add_metric(kld_loss, name="kld_loss")
 
     @tf.function
     def _vamp_prior(self, inputs):
@@ -274,17 +268,18 @@ class TopologicalVariationalEncoder(VariationalEncoder, TopologicalEncoder):
     """Variational encoder model with topological regularization loss on latent space
     ([Moor 2019](https://arxiv.org/abs/1906.00722)).
     """
+
     def __init__(
         self,
         latent_dim: int = 50,
-        name: str = 'topo_variational_encoder',
-        initializer: Union[str, Callable] = 'glorot_normal',
+        name: str = "topo_variational_encoder",
+        initializer: Union[str, Callable] = "glorot_normal",
         kld_weight: float = 1e-4,
-        prior: Literal['normal', 'iaf', 'vamp'] = 'normal',
-        latent_dist: Literal['independent', 'multivariate'] = 'independent',
+        prior: Literal["normal", "iaf", "vamp"] = "normal",
+        latent_dist: Literal["independent", "multivariate"] = "independent",
         iaf_units: Iterable[int] = [256, 256],
         n_pseudoinputs: int = 200,
-        topo_weight: float = 1.,
+        topo_weight: float = 1.0,
         **kwargs
     ):
         """
