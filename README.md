@@ -19,7 +19,7 @@ pip install latent
 or install the development version from GitHub
 
 ```python
-pip install git+https://github.com/quadbiolab/latent-lego
+pip install git+https://github.com/quadbio/latent-lego
 ```
 
 ## Overview
